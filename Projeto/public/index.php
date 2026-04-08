@@ -6,6 +6,7 @@ if (!isset($_SESSION['despesas'])) {
 }
 
 $mensagem = '';
+$tipoMensagem = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = $_POST['nome'] ?? '';
@@ -21,9 +22,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $_SESSION['despesas'][] = $novaDespesa;
         $mensagem = "Despesa adicionada com sucesso!";
+        $tipoMensagem = 'sucesso';
     } else {
         $mensagem = "Por favor, preencha todos os campos.";
+        $tipoMensagem = 'erro';
     }
+}
+
+function formatarMoeda(float $valor): string
+{
+    return 'R$ ' . number_format($valor, 2, ',', '.');
+}
+
+function formatarData(string $data): string
+{
+    $dataFormatada = DateTime::createFromFormat('Y-m-d', $data);
+
+    if ($dataFormatada === false) {
+        return htmlspecialchars($data);
+    }
+
+    return $dataFormatada->format('d/m/Y');
 }
 ?>
 <!DOCTYPE html>
@@ -36,11 +55,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="container">
-        <h2>Adicionar Nova Despesa</h2>
+        <h2>Controle Financeiro</h2>
+        <p class="subtitulo">Cadastre despesas e acompanhe a lista atualizada automaticamente.</p>
         
         <?php if ($mensagem): ?>
-            <div class="mensagem <?php echo strpos($mensagem, 'sucesso') !== false ? 'sucesso' : 'erro'; ?>">
-                <?php echo $mensagem; ?>
+            <div class="mensagem <?php echo $tipoMensagem; ?>">
+                <?php echo htmlspecialchars($mensagem); ?>
             </div>
         <?php endif; ?>
 
@@ -62,6 +82,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <button type="submit">Adicionar Despesa</button>
         </form>
+
+        <section class="lista-despesas">
+            <div class="lista-cabecalho">
+                <h3>Despesas registradas</h3>
+                <span class="contador"><?php echo count($_SESSION['despesas']); ?> item(ns)</span>
+            </div>
+
+            <?php if (!empty($_SESSION['despesas'])): ?>
+                <ul class="lista-itens">
+                    <?php foreach (array_reverse($_SESSION['despesas']) as $despesa): ?>
+                        <li class="item-despesa">
+                            <div>
+                                <strong><?php echo htmlspecialchars($despesa['nome']); ?></strong>
+                                <span><?php echo formatarData($despesa['data']); ?></span>
+                            </div>
+                            <span class="valor-despesa"><?php echo formatarMoeda((float) $despesa['valor']); ?></span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php else: ?>
+                <p class="estado-vazio">Nenhuma despesa cadastrada ainda.</p>
+            <?php endif; ?>
+        </section>
     </div>
 </body>
 </html>
