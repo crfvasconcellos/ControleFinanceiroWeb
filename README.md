@@ -22,12 +22,12 @@ O desenvolvimento foi estruturado utilizando metodologias ágeis, com o trabalho
 Foco na criação da base utilizável do sistema.
 - **US01 – Adicionar Despesa:** Inserção de nome, valor e data.
 - **US02 – Listar Despesas:** Exibição clara dos gastos registrados com atualização automática.
--
+
 ### Sprint 2: Registro e Visualização 
 Foco no controle e correção de informações.
 - **US03 – Remover Despesa:** Funcionalidade para exclusão de registros incorretos.
 - **US04 – Visualizar Total de Gastos:** Cálculo automático do somatório de todas as despesas.
-- 
+
 ### Sprint 3: Organização e Análise
 Foco na experiência do usuário e suporte à tomada de decisão.
 - **US05 – Categorizar Despesas:** Criação e associação de categorias (ex: alimentação, transporte).
