@@ -7,7 +7,7 @@ Este projeto consiste em uma aplicação web desenvolvida como parte da discipli
 - **Claudio Vasconcellos**
 - **Otavio Augusto**
 - **Samir Batista**
-- **Thiago Veras**
+- **Tiago Veras**
 
 **Professor Orientador:** Edeilson Milhomem da Silva
 
