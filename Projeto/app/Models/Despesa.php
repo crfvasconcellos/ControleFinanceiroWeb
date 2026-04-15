@@ -4,7 +4,11 @@ namespace App\Models;
 
 class Despesa {
 
-    private $storageFile = __DIR__ . '/../../data/despesas.json';
+    private $storageFile;
+
+    public function __construct() {
+        $this->storageFile = __DIR__ . '/../../data/despesas.json';
+    }
 
     public function buscarDespesas(): array {
         if(!file_exists($this->storageFile)) {

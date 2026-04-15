@@ -28,6 +28,7 @@
             <?php endif; ?>
 
             <form method="post" novalidate>
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                 <label for="nome">Nome da despesa</label>
                 <input
                     id="nome"
