@@ -6,9 +6,6 @@ class Despesa {
 
     private $storageFile = __DIR__ . '/../../data/despesas.json';
 
-    //TODO US02 - Implementar listar despesas
-    //public function listarDespesas
-
     public function buscarDespesas(): array {
         if(!file_exists($this->storageFile)) {
             return [];
@@ -21,6 +18,11 @@ class Despesa {
     }
 
     public function salvarDespesa(array $data): bool {
+        $dir = dirname($this->storageFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
         $despesas = $this->buscarDespesas();
 
         $novaDespesa = [
