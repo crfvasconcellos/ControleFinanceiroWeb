@@ -28,6 +28,15 @@ class DespesaController {
                 $errors[] = 'valor inválido';
             }
 
+            $date = \DateTime::createFromFormat('Y-m-d', $data['data']);
+            $dateErrors = \DateTime::getLastErrors();
+
+            if ($data['data'] === '' || !$date || $dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0) {
+                $errors[] = 'informe uma data válida';
+            } else {
+                $data['data'] = $date->format('Y-m-d');
+            }
+
             if (empty($errors)) {
                 $model->salvarDespesa($data);
                 $_SESSION['successMessage'] = 'despesa adicionada com sucesso';
