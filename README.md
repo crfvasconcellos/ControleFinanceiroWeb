@@ -13,8 +13,28 @@ Este projeto consiste em uma aplicação web desenvolvida como parte da discipli
 
 ---
 
-## 🚀 Sobre o Projeto
-O desenvolvimento foi estruturado utilizando metodologias ágeis, com o trabalho dividido em sprints para garantir a entrega incremental de valor ao usuário. O sistema permite desde o registro básico de despesas até análises mais detalhadas por meio de filtros e categorias.
+## 🏗️ Arquitetura do Sistema (MVC)
+A aplicação foi estruturada utilizando o padrão arquitetural **MVC** (Model-View-Controller) para garantir a separação de responsabilidades e facilitar a manutenção do código:
+
+* **Model (`app/Models`):** Responsável pela lógica de negócio, validação de dados e persistência.
+* **View (`app/Views`):** Camada de apresentação, contendo os ficheiros PHP/HTML que compõem a interface do utilizador.
+* **Controller (`app/Controllers`):** Intermediário que processa as requisições do utilizador, interage com o Model e seleciona a View a ser apresentada.
+
+## 💾 Armazenamento de Dados
+Atualmente, o sistema utiliza a persistência de dados via ficheiros **JSON** (`data/despesas.json`). Esta escolha técnica foi adotada para simplificar o protótipo inicial e garantir a portabilidade do projeto acadêmico sem a necessidade imediata de um servidor de base de dados complexo.
+
+## 🚀 Como Executar Localmente
+Para rodar o projeto no seu ambiente de desenvolvimento, siga os passos abaixo:
+
+1.  **Pré-requisitos:** Certifique-se de ter o **PHP 8.0 ou superior** instalado.
+2.  **Clone o repositório:** `git clone [url-do-repositorio]`
+3.  **Inicie o servidor:** Navegue até a pasta `Projeto/public` e execute o comando:
+    ```bash
+    php -S localhost:8000
+    ```
+4.  **Acesse:** Abra o navegador e aceda a `http://localhost:8000`.
+
+---
 
 ## 📅 Planejamento de Sprints
 
@@ -34,27 +54,29 @@ Foco na experiência do usuário e suporte à tomada de decisão.
 - **US06 – Filtrar Despesas:** Visualização segmentada por categorias.
 
 ---
+## 📅 Planejamento e Backlog do Produto
+O desenvolvimento foi dividido em Sprints para entrega incremental de valor. As estimativas de esforço (**Story Points**) seguem a **Sequência de Fibonacci** (1, 2, 3, 5, 8...), onde valores maiores indicam maior complexidade ou incerteza.
 
-## 📋 Product Backlog: Controle Financeiro Pessoal
+| ID | User Story | Pontos | Status | Critérios de Aceitação |
+| :--- | :--- | :--- | :--- | :--- |
+| **US01** | Adicionar despesa para controlar gastos | 5 | **Concluído** | Validar nome, valor positivo e data; salvar no JSON. |
+| **US02** | Visualizar despesas para acompanhar gastos | 5 | **Concluído** | Exibir lista atualizada com nome, valor e data. |
+| **US03** | Excluir despesa para corrigir erros | 3 | *Planejado* | Botão de remoção e atualização imediata do armazenamento. |
+| **US04** | Ver total de gastos para entender despesas | 3 | *Planejado* | Cálculo automático do somatório de todas as despesas. |
+| **US05** | Categorizar despesas para organização | 5 | *Planejado* | Criar e associar categorias (ex: alimentação) aos registros. |
+| **US06** | Filtrar despesas por categoria | 3 | *Planejado* | Selecionar categoria e exibir apenas registros relacionados. |
 
-| ID   | User Story | Story Points | Critérios de Aceitação |
-|------|-----------|--------------|------------------------|
-| US01 | Como usuário, quero adicionar uma despesa para controlar meus gastos | 5 | - Inserir nome da despesa<br>- Inserir valor (não pode ser negativo ou vazio)<br>- Inserir data<br>- Dados devem ser salvos corretamente |
-| US02 | Como usuário, quero visualizar minhas despesas para acompanhar meus gastos | 5 | - Exibir lista de despesas<br>- Mostrar nome, valor e data<br>- Atualizar automaticamente após novas inserções |
-| US03 | Como usuário, quero excluir uma despesa para corrigir erros | 3 | - Botão de exclusão disponível<br>- Remoção imediata da lista |
-| US04 | Como usuário, quero ver o total de gastos para entender quanto já gastei | 3 | - Cálculo automático do total<br>- Atualização ao adicionar ou remover despesas |
-| US05 | Como usuário, quero categorizar minhas despesas para organizar meus gastos | 5 | - Criar categorias (ex: alimentação, transporte)<br>- Associar categoria à despesa |
-| US06 | Como usuário, quero filtrar despesas por categoria para analisar meus gastos | 3 | - Selecionar categoria<br>- Exibir apenas despesas relacionadas |
-
+## 🌿 Gestão de Versões (GitFlow)
+O projeto adota o fluxo de trabalho **GitFlow** para organizar o desenvolvimento:
+* **`main`:** Armazena o código estável e pronto para produção.
+* **`develop`:** Ramo de integração para novas funcionalidades.
+* **`feature/`:** Ramos temporários criados a partir da `develop` para o desenvolvimento de User Stories específicas.
 
 ## 🛠️ Tecnologias Utilizadas
-Até o momento, o projeto será desenvolvido utilizando:
-- **Back-end:** PHP (nativo)
-- **Front-end:** HTML5 e CSS3
-
-> Outras tecnologias e ferramentas ainda serão definidas ao longo do desenvolvimento.
+* **Linguagem:** PHP 8.x (Nativo)
+* **Interface:** HTML5 e CSS3
+* **Persistência:** JSON
 
 ---
-
 ## 📝 Licença
-Este projeto foi desenvolvido para fins acadêmicos na Universidade Federal do Tocantins.
+Este projeto foi desenvolvido exclusivamente para fins acadêmicos na Universidade Federal do Tocantins (UFT).
