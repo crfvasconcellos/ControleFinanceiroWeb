@@ -35,6 +35,18 @@ Foco na experiência do usuário e suporte à tomada de decisão.
 
 ---
 
+## 📋 Product Backlog: Controle Financeiro Pessoal
+
+| ID   | User Story | Story Points | Critérios de Aceitação |
+|------|-----------|--------------|------------------------|
+| US01 | Como usuário, quero adicionar uma despesa para controlar meus gastos | 5 | - Inserir nome da despesa<br>- Inserir valor (não pode ser negativo ou vazio)<br>- Inserir data<br>- Dados devem ser salvos corretamente |
+| US02 | Como usuário, quero visualizar minhas despesas para acompanhar meus gastos | 5 | - Exibir lista de despesas<br>- Mostrar nome, valor e data<br>- Atualizar automaticamente após novas inserções |
+| US03 | Como usuário, quero excluir uma despesa para corrigir erros | 3 | - Botão de exclusão disponível<br>- Remoção imediata da lista |
+| US04 | Como usuário, quero ver o total de gastos para entender quanto já gastei | 3 | - Cálculo automático do total<br>- Atualização ao adicionar ou remover despesas |
+| US05 | Como usuário, quero categorizar minhas despesas para organizar meus gastos | 5 | - Criar categorias (ex: alimentação, transporte)<br>- Associar categoria à despesa |
+| US06 | Como usuário, quero filtrar despesas por categoria para analisar meus gastos | 3 | - Selecionar categoria<br>- Exibir apenas despesas relacionadas |
+
+
 ## 🛠️ Tecnologias Utilizadas
 Até o momento, o projeto será desenvolvido utilizando:
 - **Back-end:** PHP (nativo)
