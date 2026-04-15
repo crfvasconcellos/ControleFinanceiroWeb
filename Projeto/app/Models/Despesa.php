@@ -18,7 +18,13 @@ class Despesa {
         $json = file_get_contents($this->storageFile);
         $data = json_decode($json, true);
 
-        return is_array($data) ? $data : [];
+        if (!is_array($data)) {
+            return [];
+        }
+
+        usort($data, fn($a, $b) => strcmp($b['data'], $a['data']));
+
+        return $data;
     }
 
     public function salvarDespesa(array $data): bool {
