@@ -42,16 +42,21 @@ Para rodar o projeto no seu ambiente de desenvolvimento, siga os passos abaixo:
 Foco na criação da base utilizável do sistema.
 - **US01 – Adicionar Despesa:** Inserção de nome, valor e data.
 - **US02 – Listar Despesas:** Exibição clara dos gastos registrados com atualização automática.
-
 ### Sprint 2: Registro e Visualização 
 Foco no controle e correção de informações.
 - **US03 – Remover Despesa:** Funcionalidade para exclusão de registros incorretos.
 - **US04 – Visualizar Total de Gastos:** Cálculo automático do somatório de todas as despesas.
+- **US05 – Editar Despesa:** Permite alterar nome, valor e data de uma despesa já cadastrada.
+- **US06 – Validar Campos Obrigatórios:** Verificação de preenchimento e formato correto dos dados antes do salvamento.
+- **US07 – Implementar Banco de Dados SQL:** Estruturar persistência das despesas em MySQL ou MariaDB.
 
 ### Sprint 3: Organização e Análise
 Foco na experiência do usuário e suporte à tomada de decisão.
-- **US05 – Categorizar Despesas:** Criação e associação de categorias (ex: alimentação, transporte).
-- **US06 – Filtrar Despesas:** Visualização segmentada por categorias.
+- **US08 – Categorizar Despesas:** Criação e associação de categorias (ex: alimentação, transporte).
+- **US09 – Filtrar Despesas:** Visualização segmentada por categorias.
+- **US10 – Buscar Despesas por Nome:** Localização rápida de registros com base no título da despesa.
+- **US11 – Exibir Gastos por Categoria:** Apresentação do total gasto em cada categoria cadastrada.
+- **US12 – Destacar Maior Despesa do Período:** Identificação automática do maior gasto para apoio à análise financeira.
 
 ---
 ## 📅 Planejamento e Backlog do Produto
@@ -63,8 +68,14 @@ O desenvolvimento foi dividido em Sprints para entrega incremental de valor. As 
 | **US02** | Visualizar despesas para acompanhar gastos | 5 | **Concluído** | Exibir lista atualizada com nome, valor e data. |
 | **US03** | Excluir despesa para corrigir erros | 3 | *Planejado* | Botão de remoção e atualização imediata do armazenamento. |
 | **US04** | Ver total de gastos para entender despesas | 3 | *Planejado* | Cálculo automático do somatório de todas as despesas. |
-| **US05** | Categorizar despesas para organização | 5 | *Planejado* | Criar e associar categorias (ex: alimentação) aos registros. |
-| **US06** | Filtrar despesas por categoria | 3 | *Planejado* | Selecionar categoria e exibir apenas registros relacionados. |
+| **US05** | Editar despesa para corrigir informações | 5 | *Planejado* | Permitir alteração de nome, valor e data de despesas já cadastradas. |
+| **US06** | Validar campos obrigatórios no cadastro | 3 | *Planejado* | Impedir salvamento com campos vazios ou formatos inválidos, exibindo mensagem de erro. |
+| **US07** | Implementar persistência em banco SQL | 8 | *Planejado* | Migrar armazenamento para MySQL/MariaDB com operações de CRUD funcionando. |
+| **US08** | Categorizar despesas para organização | 5 | *Planejado* | Criar e associar categorias (ex: alimentação) aos registros. |
+| **US09** | Filtrar despesas por categoria | 3 | *Planejado* | Selecionar categoria e exibir apenas registros relacionados. |
+| **US10** | Buscar despesas por nome | 2 | *Planejado* | Permitir busca textual por título da despesa e exibir resultados relevantes. |
+| **US11** | Exibir gastos por categoria | 5 | *Planejado* | Apresentar o total acumulado para cada categoria cadastrada. |
+| **US12** | Destacar maior despesa do período | 3 | *Planejado* | Identificar automaticamente e mostrar o maior gasto no intervalo selecionado. |
 
 ## 🌿 Gestão de Versões (GitFlow)
 O projeto adota o fluxo de trabalho **GitFlow** para organizar o desenvolvimento:
@@ -75,7 +86,7 @@ O projeto adota o fluxo de trabalho **GitFlow** para organizar o desenvolvimento
 ## 🛠️ Tecnologias Utilizadas
 * **Linguagem:** PHP 8.x (Nativo)
 * **Interface:** HTML5 e CSS3
-* **Persistência:** JSON
+* **Persistência:** JSON (atual) e MySQL/MariaDB (planejado na US07)
 
 ---
 ## 📝 Licença
