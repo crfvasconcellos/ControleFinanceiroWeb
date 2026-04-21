@@ -110,6 +110,7 @@
                                     <div class="expense-item__value">
                                         R$ <?= number_format($despesa['valor'], 2, ',', '.') ?>
                                     </div>
+                                    <a href="editar.php?id=<?= urlencode($despesa['id']) ?>" style="display: inline-block; padding: 0.45rem 0.75rem; background: linear-gradient(90deg, #f59e0b, #d97706); color: #fff; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; text-align: center;">Editar</a>
                                     <form method="post" onsubmit="return confirm('Deseja remover esta despesa?');">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                                         <input type="hidden" name="action" value="remover">
