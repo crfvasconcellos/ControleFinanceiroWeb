@@ -3,10 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle Financeiro - Adicionar Despesa</title>
+    <title>Controle Financeiro - Dashboard</title>
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
+    <header class="top-bar">
+        <div class="top-bar__inner">
+            <div class="top-bar__user">
+                <?php $inicial = strtoupper($userNome[0] ?? '?'); ?>
+                <span class="top-bar__avatar"><?= htmlspecialchars($inicial) ?></span>
+                <span class="top-bar__name">Olá, <?= htmlspecialchars($userNome) ?></span>
+            </div>
+            <a href="index.php?route=logout" class="top-bar__logout" id="btnLogout">Sair</a>
+        </div>
+    </header>
+
     <main class="container">
         <section class="card">
             <h1>Adicionar Despesa</h1>

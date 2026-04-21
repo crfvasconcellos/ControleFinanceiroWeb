@@ -29,6 +29,119 @@ body {
 }
 
 /* ==========================================
+   TOP BAR (HEADER DO DASHBOARD)
+   ========================================== */
+.top-bar {
+    background: linear-gradient(90deg, #1e3a8a, #2563eb);
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 2px 12px rgba(30, 58, 138, 0.3);
+}
+
+.top-bar__inner {
+    max-width: 540px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.top-bar__user {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.top-bar__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+.top-bar__name {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.top-bar__logout {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.9rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    transition: background 0.2s, color 0.2s;
+}
+
+.top-bar__logout:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+/* ==========================================
+   AUTH CARD (LOGIN / REGISTRO)
+   ========================================== */
+.auth-card {
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.auth-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    animation: bounceIn 0.5s ease-out;
+}
+
+.auth-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
+}
+
+.auth-header .subtitle {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 1.2rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.auth-footer p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.auth-footer a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================
    TYPOGRAPHY
    ========================================== */
 h1 {
@@ -292,7 +405,6 @@ button:active {
     padding: 1rem 0;
     border-bottom: 1px solid #e2e8f0;
     gap: 1rem;
-    transition: background 0.2s;
 }
 
 .expense-item:last-child {
@@ -363,6 +475,13 @@ button:active {
     }
 }
 
+@keyframes bounceIn {
+    0%   { transform: scale(0.3); opacity: 0; }
+    50%  { transform: scale(1.05); }
+    70%  { transform: scale(0.95); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
 /* ==========================================
    RESPONSIVE
    ========================================== */
@@ -379,6 +498,20 @@ button:active {
 
     h1 {
         font-size: 1.35rem;
+    }
+
+    .top-bar {
+        padding: 0.6rem 1rem;
+    }
+
+    .top-bar__name {
+        font-size: 0.85rem;
+    }
+
+    .top-bar__avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
     }
 
     .modal-content {
@@ -415,6 +548,10 @@ button:active {
 
     .btn-remove {
         margin-top: 0;
+    }
+
+    .auth-icon {
+        font-size: 2.5rem;
     }
 }
 
