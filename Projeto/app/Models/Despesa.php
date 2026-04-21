@@ -6,8 +6,8 @@ class Despesa {
 
     private $storageFile;
 
-    public function __construct() {
-        $this->storageFile = __DIR__ . '/../../data/despesas.json';
+    public function __construct(string $userId) {
+        $this->storageFile = __DIR__ . '/../../data/despesas/user_' . $userId . '.json';
     }
 
     public function buscarDespesas(): array {

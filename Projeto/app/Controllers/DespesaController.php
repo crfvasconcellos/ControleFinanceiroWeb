@@ -1,10 +1,15 @@
 <?php
 
 namespace App\Controllers;
+
 use App\Models\Despesa;
+use App\Middleware\Auth;
 
 class DespesaController {
     public function create() {
+        // Verifica autenticação
+        Auth::verificar();
+
         $errors = [];
         $successMessage = '';
         $data = ['nome' => '', 'valor' => '', 'data' => ''];
@@ -19,7 +24,11 @@ class DespesaController {
         }
         $csrfToken = $_SESSION['csrf_token'];
 
-        $model = new Despesa();
+        // Dados do usuário logado
+        $userId = $_SESSION['user_id'];
+        $userNome = $_SESSION['user_nome'];
+
+        $model = new Despesa($userId);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tokenRecebido = $_POST['csrf_token'] ?? '';
@@ -82,6 +91,9 @@ class DespesaController {
         }
 
         $listaDespesas = $model->buscarDespesas();
+
+        // Calcula o total das despesas exibidas (preparado para filtros futuros)
+        $totalDespesas = array_sum(array_column($listaDespesas, 'valor'));
 
         require_once __DIR__ . '/../Views/despesa_form.php';
     }
