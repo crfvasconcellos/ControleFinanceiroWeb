@@ -66,8 +66,8 @@ O desenvolvimento foi dividido em Sprints para entrega incremental de valor. As 
 | :--- | :--- | :--- | :--- | :--- |
 | **US01** | Adicionar despesa para controlar gastos | 5 | **Concluído** | Validar nome, valor positivo e data; salvar no JSON. |
 | **US02** | Visualizar despesas para acompanhar gastos | 5 | **Concluído** | Exibir lista atualizada com nome, valor e data. |
-| **US03** | Excluir despesa para corrigir erros | 3 | *Planejado* | Botão de remoção e atualização imediata do armazenamento. |
-| **US04** | Ver total de gastos para entender despesas | 3 | *Planejado* | Cálculo automático do somatório de todas as despesas. |
+| **US03** | Excluir despesa para corrigir erros | 3 | **Concluído** | Botão de remoção e atualização imediata do armazenamento. |
+| **US04** | Ver total de gastos para entender despesas | 3 | **Concluído** | Cálculo automático do somatório de todas as despesas. |
 | **US05** | Editar despesa para corrigir informações | 5 | *Planejado* | Permitir alteração de nome, valor e data de despesas já cadastradas. |
 | **US06** | Validar campos obrigatórios no cadastro | 3 | *Planejado* | Impedir salvamento com campos vazios ou formatos inválidos, exibindo mensagem de erro. |
 | **US07** | Implementar persistência em banco SQL | 8 | *Planejado* | Migrar armazenamento para MySQL/MariaDB com operações de CRUD funcionando. |
