@@ -75,4 +75,41 @@ class Despesa {
 
         return $resultado !== false;
     }
+
+    public function buscarPorId(string $id): ?array {
+        $despesas = $this->buscarDespesas();
+        foreach ($despesas as $despesa) {
+            if ($despesa['id'] === $id) {
+                return $despesa;
+            }
+        }
+        return null;
+    }
+
+    public function editarDespesa(string $id, array $dados): bool {
+        $despesas = $this->buscarDespesas();
+        $encontrou = false;
+
+        foreach ($despesas as &$despesa) {
+            if ($despesa['id'] === $id) {
+                $despesa['nome'] = $dados['nome'];
+                $despesa['valor'] = (float) $dados['valor'];
+                $despesa['data'] = $dados['data'];
+                $encontrou = true;
+                break;
+            }
+        }
+        unset($despesa);
+
+        if (!$encontrou) {
+            return false;
+        }
+
+        $resultado = file_put_contents(
+            $this->storageFile,
+            json_encode($despesas, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        );
+
+        return $resultado !== false;
+    }
 }
