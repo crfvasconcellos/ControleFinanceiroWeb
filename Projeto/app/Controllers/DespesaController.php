@@ -22,41 +22,57 @@ class DespesaController {
         $model = new Despesa();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Validar token CSRF
             $tokenRecebido = $_POST['csrf_token'] ?? '';
             if (!hash_equals($_SESSION['csrf_token'], $tokenRecebido)) {
                 $errors[] = 'Token de segurança inválido. Recarregue a página e tente novamente.';
             }
-            $data['nome'] = trim($_POST['nome'] ?? '');
-            $data['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
-            $data['data'] = trim($_POST['data'] ?? '');
 
-            if ($data['nome'] === '') {
-                $errors[] = 'informe o nome da despesa';
+            $action = $_POST['action'] ?? 'criar';
+
+            if (empty($errors) && $action === 'remover') {
+                $despesaId = trim($_POST['despesa_id'] ?? '');
+
+                if ($despesaId === '') {
+                    $errors[] = 'identificador da despesa inválido';
+                } elseif ($model->removerDespesa($despesaId)) {
+                    $_SESSION['successMessage'] = 'despesa removida com sucesso';
+                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                    header('Location: ' . $_SERVER['REQUEST_URI']);
+                    exit;
+                } else {
+                    $errors[] = 'despesa não encontrada para remoção';
+                }
             }
 
-            if (!is_numeric($data['valor']) || (float)$data['valor'] <= 0) {
-                $errors[] = 'valor inválido';
-            }
+            if (empty($errors) && $action !== 'remover') {
+                $data['nome'] = trim($_POST['nome'] ?? '');
+                $data['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
+                $data['data'] = trim($_POST['data'] ?? '');
 
-            $date = \DateTime::createFromFormat('Y-m-d', $data['data']);
-            $dateErrors = \DateTime::getLastErrors();
+                if ($data['nome'] === '') {
+                    $errors[] = 'informe o nome da despesa';
+                }
 
-            if ($data['data'] === '' || !$date || ($dateErrors && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))) {
-                $errors[] = 'informe uma data válida';
-            } else {
-                $data['data'] = $date->format('Y-m-d');
-            }
+                if (!is_numeric($data['valor']) || (float)$data['valor'] <= 0) {
+                    $errors[] = 'valor inválido';
+                }
 
-            if (empty($errors)) {
-                $model->salvarDespesa($data);
-                $_SESSION['successMessage'] = 'despesa adicionada com sucesso';
+                $date = \DateTime::createFromFormat('Y-m-d', $data['data']);
+                $dateErrors = \DateTime::getLastErrors();
 
-                // Regenerar token CSRF após uso
-                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                if ($data['data'] === '' || !$date || ($dateErrors && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))) {
+                    $errors[] = 'informe uma data válida';
+                } else {
+                    $data['data'] = $date->format('Y-m-d');
+                }
 
-                header('Location: ' . $_SERVER['REQUEST_URI']);
-                exit;
+                if (empty($errors)) {
+                    $model->salvarDespesa($data);
+                    $_SESSION['successMessage'] = 'despesa adicionada com sucesso';
+                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                    header('Location: ' . $_SERVER['REQUEST_URI']);
+                    exit;
+                }
             }
         }
 

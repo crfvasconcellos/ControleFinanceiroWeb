@@ -82,8 +82,16 @@
                                         <?= date('d/m/Y', strtotime($despesa['data'])) ?>
                                     </small>
                                 </div>
-                                <div style="font-weight: 700; color: #2563eb;">
-                                    R$ <?= number_format($despesa['valor'], 2, ',', '.') ?>
+                                <div style="display: grid; gap: 0.5rem; justify-items: end;">
+                                    <div style="font-weight: 700; color: #2563eb;">
+                                        R$ <?= number_format($despesa['valor'], 2, ',', '.') ?>
+                                    </div>
+                                    <form method="post" onsubmit="return confirm('Deseja remover esta despesa?');">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                                        <input type="hidden" name="action" value="remover">
+                                        <input type="hidden" name="despesa_id" value="<?= htmlspecialchars($despesa['id']) ?>">
+                                        <button type="submit" style="margin: 0; padding: 0.45rem 0.75rem; background: linear-gradient(90deg, #ef4444, #dc2626);">Remover</button>
+                                    </form>
                                 </div>
                             </div>
                         <?php endforeach; ?>

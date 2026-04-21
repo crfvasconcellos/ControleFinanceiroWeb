@@ -52,4 +52,27 @@ class Despesa {
 
         return $resultado !== false;
     }
+
+    public function removerDespesa(string $id): bool {
+        if (!file_exists($this->storageFile)) {
+            return false;
+        }
+
+        $despesas = $this->buscarDespesas();
+        $despesasFiltradas = array_values(array_filter(
+            $despesas,
+            fn($despesa) => ($despesa['id'] ?? '') !== $id
+        ));
+
+        if (count($despesasFiltradas) === count($despesas)) {
+            return false;
+        }
+
+        $resultado = file_put_contents(
+            $this->storageFile,
+            json_encode($despesasFiltradas, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        );
+
+        return $resultado !== false;
+    }
 }
