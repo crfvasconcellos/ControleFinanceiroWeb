@@ -85,4 +85,74 @@ class DespesaController {
 
         require_once __DIR__ . '/../Views/despesa_form.php';
     }
+
+    public function editar() {
+        $errors = [];
+        $successMessage = '';
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        $csrfToken = $_SESSION['csrf_token'];
+
+        $model = new Despesa();
+
+        $id = $_GET['id'] ?? '';
+        $despesa = $model->buscarPorId($id);
+
+        if (!$despesa) {
+            header('Location: index.php');
+            exit;
+        }
+
+        $data = [
+            'nome' => $despesa['nome'],
+            'valor' => $despesa['valor'],
+            'data' => $despesa['data'],
+        ];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $tokenRecebido = $_POST['csrf_token'] ?? '';
+            if (!hash_equals($_SESSION['csrf_token'], $tokenRecebido)) {
+                $errors[] = 'Token de segurança inválido. Recarregue a página e tente novamente.';
+            }
+
+            if (empty($errors)) {
+                $data['nome'] = trim($_POST['nome'] ?? '');
+                $data['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
+                $data['data'] = trim($_POST['data'] ?? '');
+
+                if ($data['nome'] === '') {
+                    $errors[] = 'informe o nome da despesa';
+                }
+
+                if (!is_numeric($data['valor']) || (float)$data['valor'] <= 0) {
+                    $errors[] = 'valor inválido';
+                }
+
+                $date = \DateTime::createFromFormat('Y-m-d', $data['data']);
+                $dateErrors = \DateTime::getLastErrors();
+
+                if ($data['data'] === '' || !$date || ($dateErrors && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))) {
+                    $errors[] = 'informe uma data válida';
+                } else {
+                    $data['data'] = $date->format('Y-m-d');
+                }
+
+                if (empty($errors)) {
+                    $model->editarDespesa($id, $data);
+                    $_SESSION['successMessage'] = 'despesa editada com sucesso';
+                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                    header('Location: index.php');
+                    exit;
+                }
+            }
+        }
+
+        require_once __DIR__ . '/../Views/editar_despesa.php';
+    }
 }
