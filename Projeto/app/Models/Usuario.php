@@ -2,41 +2,33 @@
 
 namespace App\Models;
 
-class Usuario {
+use App\Config\Database;
+use PDO;
 
-    private string $storageFile;
+class Usuario {
+    private PDO $connection;
 
     public function __construct() {
-        $this->storageFile = __DIR__ . '/../../data/users.json';
+        $this->connection = Database::getConnection();
     }
 
     /**
      * Busca todos os usuários cadastrados.
      */
     public function buscarTodos(): array {
-        if (!file_exists($this->storageFile)) {
-            return [];
-        }
-
-        $json = file_get_contents($this->storageFile);
-        $data = json_decode($json, true);
-
-        return is_array($data) ? $data : [];
+        $stmt = $this->connection->query('SELECT id, nome, email, criado_em FROM usuarios ORDER BY criado_em DESC');
+        return $stmt->fetchAll();
     }
 
     /**
      * Busca um usuário pelo ID.
      */
     public function buscarPorId(string $id): ?array {
-        $usuarios = $this->buscarTodos();
+        $stmt = $this->connection->prepare('SELECT id, nome, email, criado_em FROM usuarios WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $id]);
+        $usuario = $stmt->fetch();
 
-        foreach ($usuarios as $usuario) {
-            if (($usuario['id'] ?? '') === $id) {
-                return $usuario;
-            }
-        }
-
-        return null;
+        return $usuario ?: null;
     }
 
     /**
@@ -44,25 +36,28 @@ class Usuario {
      * Retorna o array do usuário criado ou null se email já existir.
      */
     public function registrar(string $nome, string $email, string $senha): ?array {
-        $usuarios = $this->buscarTodos();
+        $emailNormalizado = strtolower(trim($email));
 
-        // Verifica se email já está cadastrado
-        foreach ($usuarios as $u) {
-            if (strtolower($u['email']) === strtolower($email)) {
-                return null;
-            }
+        $stmtExiste = $this->connection->prepare('SELECT id FROM usuarios WHERE email = :email LIMIT 1');
+        $stmtExiste->execute(['email' => $emailNormalizado]);
+        if ($stmtExiste->fetch()) {
+            return null;
         }
 
         $novoUsuario = [
             'id'        => uniqid('usr_', true),
             'nome'      => $nome,
-            'email'     => strtolower(trim($email)),
+            'email'     => $emailNormalizado,
             'senha'     => password_hash($senha, PASSWORD_BCRYPT),
-            'criado_em' => date('c'),
+            'criado_em' => date('Y-m-d H:i:s'),
         ];
 
-        $usuarios[] = $novoUsuario;
-        $this->salvar($usuarios);
+        $stmt = $this->connection->prepare(
+            'INSERT INTO usuarios (id, nome, email, senha, criado_em)
+             VALUES (:id, :nome, :email, :senha, :criado_em)'
+        );
+
+        $stmt->execute($novoUsuario);
 
         return $novoUsuario;
     }
@@ -72,39 +67,26 @@ class Usuario {
      * Retorna dados do usuário (sem a senha) ou null se inválido.
      */
     public function autenticar(string $email, string $senha): ?array {
-        $usuarios = $this->buscarTodos();
-
-        foreach ($usuarios as $usuario) {
-            if (strtolower($usuario['email']) === strtolower($email)) {
-                if (password_verify($senha, $usuario['senha'])) {
-                    // Retorna sem a senha
-                    return [
-                        'id'    => $usuario['id'],
-                        'nome'  => $usuario['nome'],
-                        'email' => $usuario['email'],
-                    ];
-                }
-                return null;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Persiste a lista de usuários no arquivo JSON.
-     */
-    private function salvar(array $usuarios): bool {
-        $dir = dirname($this->storageFile);
-        if (!is_dir($dir)) {
-            mkdir($dir, 0777, true);
-        }
-
-        $resultado = file_put_contents(
-            $this->storageFile,
-            json_encode($usuarios, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        $stmt = $this->connection->prepare(
+            'SELECT id, nome, email, senha FROM usuarios WHERE email = :email LIMIT 1'
         );
+        $stmt->execute([
+            'email' => strtolower(trim($email)),
+        ]);
 
-        return $resultado !== false;
+        $usuario = $stmt->fetch();
+        if (!$usuario) {
+            return null;
+        }
+
+        if (!password_verify($senha, $usuario['senha'])) {
+            return null;
+        }
+
+        return [
+            'id'    => $usuario['id'],
+            'nome'  => $usuario['nome'],
+            'email' => $usuario['email'],
+        ];
     }
 }
