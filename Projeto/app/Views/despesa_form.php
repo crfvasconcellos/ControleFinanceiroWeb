@@ -71,19 +71,32 @@
                         <button type="button" id="btnFechar" class="close-modal">✕</button>
                         
                         <h2>Despesas Registradas</h2>
-                        
+
+                        <div class="total-card">
+                            <div class="total-card__header">
+                                <span class="total-card__icon">💰</span>
+                                <span class="total-card__label">Total de Gastos</span>
+                            </div>
+                            <div class="total-card__amount">
+                                R$ <?= number_format($totalDespesas, 2, ',', '.') ?>
+                            </div>
+                            <div class="total-card__count">
+                                <?= count($listaDespesas) ?> despesa<?= count($listaDespesas) !== 1 ? 's' : '' ?> registrada<?= count($listaDespesas) !== 1 ? 's' : '' ?>
+                            </div>
+                        </div>
+
                         <?php foreach ($listaDespesas as $despesa): ?>
                             <div class="expense-item">
-                                <div>
-                                    <strong style="text-transform: capitalize;">
+                                <div class="expense-item__info">
+                                    <strong class="expense-item__name">
                                         <?= htmlspecialchars($despesa['nome']) ?>
                                     </strong>
-                                    <small style="display: block; color: #64748b; margin-top: 4px;">
+                                    <small class="expense-item__date">
                                         <?= date('d/m/Y', strtotime($despesa['data'])) ?>
                                     </small>
                                 </div>
-                                <div style="display: grid; gap: 0.5rem; justify-items: end;">
-                                    <div style="font-weight: 700; color: #2563eb;">
+                                <div class="expense-item__actions">
+                                    <div class="expense-item__value">
                                         R$ <?= number_format($despesa['valor'], 2, ',', '.') ?>
                                     </div>
                                     <a href="editar.php?id=<?= urlencode($despesa['id']) ?>" style="display: inline-block; padding: 0.45rem 0.75rem; background: linear-gradient(90deg, #f59e0b, #d97706); color: #fff; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; text-align: center;">Editar</a>
@@ -91,7 +104,7 @@
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                                         <input type="hidden" name="action" value="remover">
                                         <input type="hidden" name="despesa_id" value="<?= htmlspecialchars($despesa['id']) ?>">
-                                        <button type="submit" style="margin: 0; padding: 0.45rem 0.75rem; background: linear-gradient(90deg, #ef4444, #dc2626);">Remover</button>
+                                        <button type="submit" class="btn-remove">Remover</button>
                                     </form>
                                 </div>
                             </div>

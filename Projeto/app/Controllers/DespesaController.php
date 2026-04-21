@@ -83,6 +83,9 @@ class DespesaController {
 
         $listaDespesas = $model->buscarDespesas();
 
+        // Calcula o total das despesas exibidas (preparado para filtros futuros)
+        $totalDespesas = array_sum(array_column($listaDespesas, 'valor'));
+
         require_once __DIR__ . '/../Views/despesa_form.php';
     }
 
