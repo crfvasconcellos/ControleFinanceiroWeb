@@ -21,18 +21,37 @@ A aplicação foi estruturada utilizando o padrão arquitetural **MVC** (Model-V
 * **Controller (`app/Controllers`):** Intermediário que processa as requisições do utilizador, interage com o Model e seleciona a View a ser apresentada.
 
 ## 💾 Armazenamento de Dados
-Atualmente, o sistema utiliza a persistência de dados via ficheiros **JSON** (`data/despesas.json`). Esta escolha técnica foi adotada para simplificar o protótipo inicial e garantir a portabilidade do projeto acadêmico sem a necessidade imediata de um servidor de base de dados complexo.
+Atualmente, o sistema utiliza persistência em **MySQL/MariaDB** para contas de usuário e despesas. A aplicação executa CRUD completo com queries parametrizadas (PDO) e isolamento por usuário autenticado.
+
+As credenciais podem ser configuradas por variáveis de ambiente:
+
+- `DB_HOST` (padrão: `127.0.0.1`)
+- `DB_PORT` (padrão: `3306`)
+- `DB_NAME` (padrão: `controle_financeiro`)
+- `DB_USER` (padrão: `root`)
+- `DB_PASS` (padrão: vazio)
+
+O schema SQL está disponível em `Projeto/database/schema.sql`.
 
 ## 🚀 Como Executar Localmente
 Para rodar o projeto no seu ambiente de desenvolvimento, siga os passos abaixo:
 
-1.  **Pré-requisitos:** Certifique-se de ter o **PHP 8.0 ou superior** instalado.
+1.  **Pré-requisitos:** Certifique-se de ter **PHP 8.0+** e **MySQL/MariaDB** instalados.
 2.  **Clone o repositório:** `git clone [url-do-repositorio]`
+3.  **Crie o banco de dados:**
+    ```sql
+    CREATE DATABASE controle_financeiro CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    ```
+4.  **Importe o schema:**
+    ```bash
+    mysql -u root -p controle_financeiro < Projeto/database/schema.sql
+    ```
+5.  **(Opcional) Configure variáveis de ambiente** `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` conforme o seu ambiente.
 3.  **Inicie o servidor:** Navegue até a pasta `Projeto/public` e execute o comando:
     ```bash
     php -S localhost:8000
     ```
-4.  **Acesse:** Abra o navegador e aceda a `http://localhost:8000`.
+6.  **Acesse:** Abra o navegador e aceda a `http://localhost:8000`.
 
 ---
 
@@ -70,7 +89,7 @@ O desenvolvimento foi dividido em Sprints para entrega incremental de valor. As 
 | **US04** | Ver total de gastos para entender despesas | 3 | **Concluído** | Cálculo automático do somatório de todas as despesas. |
 | **US05** | Editar despesa para corrigir informações | 5 | **Concluído** | Permitir alteração de nome, valor e data de despesas já cadastradas. |
 | **US06** | Validar campos obrigatórios no cadastro | 3 | *Planejado* | Impedir salvamento com campos vazios ou formatos inválidos, exibindo mensagem de erro. |
-| **US07** | Implementar persistência em banco SQL | 8 | *Planejado* | Migrar armazenamento para MySQL/MariaDB com operações de CRUD funcionando. |
+| **US07** | Implementar persistência em banco SQL | 8 | **Concluído** | Migrar armazenamento para MySQL/MariaDB com operações de CRUD funcionando. |
 | **US08** | Categorizar despesas para organização | 5 | *Planejado* | Criar e associar categorias (ex: alimentação) aos registros. |
 | **US09** | Filtrar despesas por categoria | 3 | *Planejado* | Selecionar categoria e exibir apenas registros relacionados. |
 | **US10** | Buscar despesas por nome | 2 | *Planejado* | Permitir busca textual por título da despesa e exibir resultados relevantes. |
@@ -86,7 +105,7 @@ O projeto adota o fluxo de trabalho **GitFlow** para organizar o desenvolvimento
 ## 🛠️ Tecnologias Utilizadas
 * **Linguagem:** PHP 8.x (Nativo)
 * **Interface:** HTML5 e CSS3
-* **Persistência:** JSON (atual) e MySQL/MariaDB (planejado na US07)
+* **Persistência:** MySQL/MariaDB (PDO)
 
 ---
 ## 📝 Licença

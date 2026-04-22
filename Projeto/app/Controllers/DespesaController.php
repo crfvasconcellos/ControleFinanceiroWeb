@@ -99,6 +99,8 @@ class DespesaController {
     }
 
     public function editar() {
+        Auth::verificar();
+
         $errors = [];
         $successMessage = '';
 
@@ -111,13 +113,15 @@ class DespesaController {
         }
         $csrfToken = $_SESSION['csrf_token'];
 
-        $model = new Despesa();
+        $userId = $_SESSION['user_id'];
+
+        $model = new Despesa($userId);
 
         $id = $_GET['id'] ?? '';
         $despesa = $model->buscarPorId($id);
 
         if (!$despesa) {
-            header('Location: index.php');
+            header('Location: index.php?route=dashboard');
             exit;
         }
 
@@ -156,11 +160,14 @@ class DespesaController {
                 }
 
                 if (empty($errors)) {
-                    $model->editarDespesa($id, $data);
-                    $_SESSION['successMessage'] = 'despesa editada com sucesso';
-                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                    header('Location: index.php');
-                    exit;
+                    if ($model->editarDespesa($id, $data)) {
+                        $_SESSION['successMessage'] = 'despesa editada com sucesso';
+                        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                        header('Location: index.php?route=dashboard');
+                        exit;
+                    }
+
+                    $errors[] = 'não foi possível salvar as alterações';
                 }
             }
         }
