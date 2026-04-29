@@ -10,7 +10,9 @@
     <main class="container">
         <section class="card auth-card">
             <div class="auth-header">
-                <div class="auth-icon">💰</div>
+                <div class="auth-icon">
+                    <img src="assets/img/logo.png" alt="Logo Controle Financeiro" class="auth-logo" draggable="false" ondragstart="return false" onselectstart="return false">
+                </div>
                 <h1>Controle Financeiro</h1>
                 <p class="subtitle">Acesse sua conta para gerenciar suas despesas</p>
             </div>

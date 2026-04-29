@@ -65,6 +65,17 @@ body {
     border: 2px solid rgba(255, 255, 255, 0.35);
 }
 
+.top-bar__logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    border-radius: 6px;
+}
+
 .top-bar__name {
     color: #ffffff;
     font-weight: 600;
@@ -102,9 +113,22 @@ body {
 }
 
 .auth-icon {
-    font-size: 3rem;
     margin-bottom: 0.5rem;
     animation: bounceIn 0.5s ease-out;
+    line-height: 1;
+}
+
+.auth-logo {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
 }
 
 .auth-header h1 {
@@ -550,8 +574,9 @@ button:active {
         margin-top: 0;
     }
 
-    .auth-icon {
-        font-size: 2.5rem;
+    .auth-logo {
+        width: 70px;
+        height: 70px;
     }
 }
 

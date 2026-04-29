@@ -10,6 +10,7 @@
     <header class="top-bar">
         <div class="top-bar__inner">
             <div class="top-bar__user">
+                <img src="assets/img/logo.png" alt="Logo" class="top-bar__logo" draggable="false" ondragstart="return false" onselectstart="return false">
                 <?php $inicial = strtoupper($userNome[0] ?? '?'); ?>
                 <span class="top-bar__avatar"><?= htmlspecialchars($inicial) ?></span>
                 <span class="top-bar__name">Olá, <?= htmlspecialchars($userNome) ?></span>
