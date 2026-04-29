@@ -6,6 +6,12 @@ use PDO;
 use PDOException;
 use RuntimeException;
 
+if (!function_exists('str_contains')) {
+    function str_contains(string $haystack, string $needle): bool {
+        return '' === $needle || false !== strpos($haystack, $needle);
+    }
+}
+
 class Database {
     private static ?PDO $connection = null;
     private static bool $envLoaded = false;
