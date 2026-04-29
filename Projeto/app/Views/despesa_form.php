@@ -3,10 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle Financeiro - Adicionar Despesa</title>
+    <title>Controle Financeiro - Dashboard</title>
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
+    <header class="top-bar">
+        <div class="top-bar__inner">
+            <div class="top-bar__user">
+                <?php $inicial = strtoupper($userNome[0] ?? '?'); ?>
+                <span class="top-bar__avatar"><?= htmlspecialchars($inicial) ?></span>
+                <span class="top-bar__name">Olá, <?= htmlspecialchars($userNome) ?></span>
+            </div>
+            <a href="index.php?route=logout" class="top-bar__logout" id="btnLogout">Sair</a>
+        </div>
+    </header>
+
     <main class="container">
         <section class="card">
             <h1>Adicionar Despesa</h1>
@@ -28,6 +39,7 @@
             <?php endif; ?>
 
             <form method="post" novalidate>
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                 <label for="nome">Nome da despesa</label>
                 <input
                     id="nome"
@@ -54,70 +66,109 @@
                     name="data"
                     type="date"
                     required
-                    value="<?= htmlspecialchars($data['data'] ?? '') ?>"
+                    value="<?= htmlspecialchars($data['data'] ?? date('Y-m-d')) ?>"
                 >
 
                 <button type="submit">Salvar Despesa</button>
             </form>
 
-            <?php if (!empty($listaDespesas)): ?>
-                <button type="button" id="btnAbrir" class="btn-secondary" style="width: 100%;">
+            <div class="dashboard-actions">
+                <button type="button" id="btnAbrir" class="btn-secondary" style="flex: 5;">
                     Visualizar Despesas
                 </button>
+                <button type="button" id="btnHistorico" class="btn-history" style="flex: 1;" title="Ver Lixeira">
+                    🗑️
+                </button>
+            </div>
 
-                <div class="modal-overlay" id="modalLista">
-                    <div class="modal-content">
-                        <button type="button" id="btnFechar" class="close-modal">✕</button>
-                        
-                        <h2>Despesas Registradas</h2>
-                        
-                        <?php foreach ($listaDespesas as $despesa): ?>
-                            <div class="expense-item">
-                                <div>
-                                    <strong style="text-transform: capitalize;">
-                                        <?= htmlspecialchars($despesa['nome']) ?>
-                                    </strong>
-                                    <small style="display: block; color: #64748b; margin-top: 4px;">
-                                        <?= date('d/m/Y', strtotime($despesa['data'])) ?>
-                                    </small>
-                                </div>
-                                <div style="font-weight: 700; color: #2563eb;">
+            <div class="modal-overlay" id="modalLista">
+                <div class="modal-content">
+                    <button type="button" id="btnFechar" class="close-modal">✕</button>
+                    
+                    <h2>Despesas Registradas</h2>
+
+                    <div class="total-card">
+                        <div class="total-card__header">
+                            <span class="total-card__icon">💰</span>
+                            <span class="total-card__label">Total de Gastos</span>
+                        </div>
+                        <div class="total-card__amount">
+                            R$ <?= number_format($totalDespesas, 2, ',', '.') ?>
+                        </div>
+                        <div class="total-card__count">
+                            <?= count($listaDespesas) ?> despesa<?= count($listaDespesas) !== 1 ? 's' : '' ?> registrada<?= count($listaDespesas) !== 1 ? 's' : '' ?>
+                        </div>
+                    </div>
+
+                    <?php foreach ($listaDespesas as $despesa): ?>
+                        <div class="expense-item">
+                            <div class="expense-item__info">
+                                <strong class="expense-item__name">
+                                    <?= htmlspecialchars($despesa['nome']) ?>
+                                </strong>
+                                <small class="expense-item__date">
+                                    <?= date('d/m/Y', strtotime($despesa['data'])) ?>
+                                </small>
+                            </div>
+                            <div class="expense-item__actions">
+                                <div class="expense-item__value">
                                     R$ <?= number_format($despesa['valor'], 2, ',', '.') ?>
                                 </div>
+                                <div style="display: flex; gap: 5px;">
+                                    <a href="editar.php?id=<?= urlencode($despesa['id']) ?>" style="display: inline-block; padding: 0.45rem 0.75rem; background: linear-gradient(90deg, #f59e0b, #d97706); color: #fff; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; text-align: center;">Editar</a>
+                                    <form method="post" onsubmit="return confirm('Deseja remover esta despesa?');">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                                        <input type="hidden" name="action" value="remover">
+                                        <input type="hidden" name="despesa_id" value="<?= htmlspecialchars($despesa['id']) ?>">
+                                        <button type="submit" class="btn-remove">Remover</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="modalHistorico">
+                <div class="modal-content">
+                    <button type="button" id="btnFecharHist" class="close-modal">✕</button>
+                    <h2>Histórico e Lixeira</h2>
+                    <span class="history-info">Registros marcados com "Excluída" não somam no seu total.</span>
+                    <div class="expense-list">
+                        <?php foreach ($historicoCompleto as $h): $del = !empty($h['deletado_em']); ?>
+                            <div class="expense-item <?= $del ? 'expense-item--deleted' : '' ?>">
+                                <div class="expense-item__info">
+                                    <strong class="expense-item__name">
+                                        <?= htmlspecialchars($h['nome']) ?>
+                                        <?= $del ? '<span class="badge-status badge-status--removed">Excluída</span>' : '' ?>
+                                    </strong>
+                                    <small class="expense-item__date">
+                                        📅 <?= date('d/m/Y', strtotime($h['data'])) ?>
+                                        <?= $del ? ' | 🗑️ ' . date('d/m/Y', strtotime($h['deletado_em'])) : '' ?>
+                                    </small>
+                                </div>
+                                <div class="expense-item__value">R$ <?= number_format($h['valor'], 2, ',', '.') ?></div>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
-            <?php endif; ?>
-
+            </div>
         </section>
     </main>
 
     <script>
-        const modal = document.getElementById('modalLista');
-        const btnAbrir = document.getElementById('btnAbrir');
-        const btnFechar = document.getElementById('btnFechar');
-
-        if (btnAbrir) {
-            btnAbrir.addEventListener('click', () => {
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            });
-        }
-
-        if (btnFechar) {
-            btnFechar.addEventListener('click', () => {
-                modal.classList.remove('active');
-                document.body.style.overflow = 'auto'; 
-            });
-        }
-
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.classList.remove('active');
-                document.body.style.overflow = 'auto';
+        const setupModal = (idBtn, idModal, idClose) => {
+            const btn = document.getElementById(idBtn);
+            const modal = document.getElementById(idModal);
+            const close = document.getElementById(idClose);
+            if(btn && modal) {
+                btn.onclick = () => { modal.classList.add('active'); document.body.style.overflow = 'hidden'; };
+                close.onclick = () => { modal.classList.remove('active'); document.body.style.overflow = 'auto'; };
+                window.addEventListener('click', (e) => { if(e.target === modal) { modal.classList.remove('active'); document.body.style.overflow = 'auto'; } });
             }
-        });
+        };
+        setupModal('btnAbrir', 'modalLista', 'btnFechar');
+        setupModal('btnHistorico', 'modalHistorico', 'btnFecharHist');
     </script>
 </body>
 </html>
