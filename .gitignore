@@ -1,2 +1,32 @@
-#“database” file
+# Sistema / OS
+.DS_Store
+Thumbs.db
+
+# Variáveis de ambiente
+.env
+.env.local
+
+# Logs e arquivos temporários
+*.log
+logs/
+tmp/
+cache/
+
+# Dependências
+/vendor/
+node_modules/
+
+# IDEs / editores
+.vscode/
+.idea/
+*.iml
+
+# Dados locais (contêm informações do usuário)
+/data/users.json
+/data/despesas/
+
+# Outros
+*.sqlite
+phpunit.result.cache
+# "database" files
 Projeto/data/

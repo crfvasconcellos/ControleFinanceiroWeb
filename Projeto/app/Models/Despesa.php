@@ -2,50 +2,99 @@
 
 namespace App\Models;
 
-class Despesa {
+use App\Config\Database;
+use PDO;
 
-    private $storageFile = __DIR__ . '/../../data/despesas.json';
+class Despesa {
+    private PDO $connection;
+    private ?string $userId;
+
+    public function __construct(?string $userId = null) {
+        $this->connection = Database::getConnection();
+        $this->userId = $userId;
+    }
 
     public function buscarDespesas(): array {
-        if(!file_exists($this->storageFile)) {
-            return [];
+        if ($this->userId === null) return [];
+
+        $stmt = $this->connection->prepare(
+            'SELECT id, nome, valor, data, criado_em
+             FROM despesas
+             WHERE usuario_id = :usuario_id 
+             AND deletado_em IS NULL
+             ORDER BY data DESC, criado_em DESC'
+        );
+
+        $stmt->execute(['usuario_id' => $this->userId]);
+        $despesas = $stmt->fetchAll();
+
+        foreach ($despesas as &$despesa) {
+            $despesa['valor'] = (float) $despesa['valor'];
         }
+        return $despesas;
+    }
 
-        $json = file_get_contents($this->storageFile);
-        $data = json_decode($json, true);
+    public function buscarHistoricoCompleto(): array {
+        if ($this->userId === null) return [];
 
-        if (!is_array($data)) {
-            return [];
-        }
+        $stmt = $this->connection->prepare(
+            'SELECT id, nome, valor, data, criado_em, deletado_em
+             FROM despesas
+             WHERE usuario_id = :usuario_id
+             ORDER BY COALESCE(deletado_em, criado_em) DESC'
+        );
 
-        usort($data, fn($a, $b) => strcmp($b['data'], $a['data']));
-
-        return $data;
+        $stmt->execute(['usuario_id' => $this->userId]);
+        return $stmt->fetchAll();
     }
 
     public function salvarDespesa(array $data): bool {
-        $dir = dirname($this->storageFile);
-        if (!is_dir($dir)) {
-            mkdir($dir, 0777, true);
-        }
+        if ($this->userId === null) return false;
 
-        $despesas = $this->buscarDespesas();
+        $stmt = $this->connection->prepare(
+            'INSERT INTO despesas (id, usuario_id, nome, valor, data, criado_em)
+             VALUES (:id, :usuario_id, :nome, :valor, :data, :criado_em)'
+        );
 
-        $novaDespesa = [
+        return $stmt->execute([
             'id' => uniqid('desp_', true),
+            'usuario_id' => $this->userId,
             'nome' => $data['nome'],
             'valor' => (float) $data['valor'],
             'data' => $data['data'],
-            'criado_em' => date('c'),
-        ];
+            'criado_em' => date('Y-m-d H:i:s'),
+        ]);
+    }
 
-        $despesas[] = $novaDespesa;
+    public function removerDespesa(string $id): bool {
+        if ($this->userId === null) return false;
 
-        $resultado = file_put_contents(
-            $this->storageFile,
-            json_encode($despesas, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        $stmt = $this->connection->prepare(
+            'UPDATE despesas SET deletado_em = :agora 
+             WHERE id = :id AND usuario_id = :usuario_id'
         );
 
-        return $resultado !== false;
+        return $stmt->execute([
+            'agora' => date('Y-m-d H:i:s'),
+            'id' => $id,
+            'usuario_id' => $this->userId
+        ]);
+    }
+
+    public function editarDespesa(string $id, array $dados): bool {
+        if ($this->userId === null) return false;
+
+        $stmt = $this->connection->prepare(
+            'UPDATE despesas SET nome = :nome, valor = :valor, data = :data
+             WHERE id = :id AND usuario_id = :usuario_id AND deletado_em IS NULL'
+        );
+        
+        return $stmt->execute([
+            'nome' => $dados['nome'],
+            'valor' => (float) $dados['valor'],
+            'data' => $dados['data'],
+            'id' => $id,
+            'usuario_id' => $this->userId
+        ]);
     }
 }
