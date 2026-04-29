@@ -49,12 +49,7 @@ class Database {
 
             if (str_contains($mensagemOriginal, 'auth_gssapi_client') || $codigo === '2054') {
                 throw new RuntimeException(
-                    "Falha de autenticação no MySQL/MariaDB para o usuário '{$user}'. " .
-                    "O servidor está exigindo um plugin não suportado pelo cliente PHP (auth_gssapi_client). " .
-                    "Crie um usuário de aplicação com mysql_native_password e configure DB_USER/DB_PASS. " .
-                    "Exemplo SQL: CREATE USER 'controle_app'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('senha_forte'); " .
-                    "GRANT ALL PRIVILEGES ON {$name}.* TO 'controle_app'@'localhost'; FLUSH PRIVILEGES. " .
-                    "Depois exporte DB_USER=controle_app e DB_PASS=senha_forte antes de iniciar o servidor PHP."
+                    "Falha de autenticação no MySQL. Use mysql_native_password para o usuário '{$user}'."
                 );
             }
 
@@ -81,10 +76,12 @@ class Database {
                 valor DECIMAL(10,2) NOT NULL,
                 data DATE NOT NULL,
                 criado_em DATETIME NOT NULL,
+                deletado_em DATETIME DEFAULT NULL,
                 CONSTRAINT fk_despesas_usuario
                     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
                     ON DELETE CASCADE,
-                INDEX idx_despesas_usuario_data (usuario_id, data)
+                INDEX idx_despesas_usuario_data (usuario_id, data),
+                INDEX idx_despesas_soft_delete (usuario_id, deletado_em)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;'
         );
     }
@@ -95,17 +92,13 @@ class Database {
         }
 
         self::$envLoaded = true;
-
         $envPath = __DIR__ . '/../../../.env';
+        
         if (!is_file($envPath)) {
             return;
         }
 
         $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        if ($lines === false) {
-            return;
-        }
-
         foreach ($lines as $line) {
             $line = trim($line);
             if ($line === '' || str_starts_with($line, '#') || !str_contains($line, '=')) {
@@ -114,16 +107,13 @@ class Database {
 
             [$key, $value] = explode('=', $line, 2);
             $key = trim($key);
-            $value = trim($value);
+            $value = trim(trim($value), "\"'");
 
-            if ($key === '' || getenv($key) !== false) {
-                continue;
+            if ($key !== '' && getenv($key) === false) {
+                putenv($key . '=' . $value);
+                $_ENV[$key] = $value;
+                $_SERVER[$key] = $value;
             }
-
-            $value = trim($value, "\"'");
-            putenv($key . '=' . $value);
-            $_ENV[$key] = $value;
-            $_SERVER[$key] = $value;
         }
     }
 }
