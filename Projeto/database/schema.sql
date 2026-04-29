@@ -13,8 +13,12 @@ CREATE TABLE IF NOT EXISTS despesas (
     valor DECIMAL(10,2) NOT NULL,
     data DATE NOT NULL,
     criado_em DATETIME NOT NULL,
+    deletado_em DATETIME DEFAULT NULL, 
+    
     CONSTRAINT fk_despesas_usuario
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
         ON DELETE CASCADE,
-    INDEX idx_despesas_usuario_data (usuario_id, data)
+    
+    INDEX idx_despesas_usuario_data (usuario_id, data),
+    INDEX idx_despesas_soft_delete (usuario_id, deletado_em)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
