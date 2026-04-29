@@ -91,6 +91,7 @@ class DespesaController {
         }
 
         $listaDespesas = $model->buscarDespesas();
+        $historicoCompleto = $model->buscarHistoricoCompleto();
 
         // Calcula o total das despesas exibidas (preparado para filtros futuros)
         $totalDespesas = array_sum(array_column($listaDespesas, 'valor'));
