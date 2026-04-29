@@ -68,14 +68,15 @@ Foco no controle e correção de informações.
 - **US05 – Editar Despesa:** Permite alterar nome, valor e data de uma despesa já cadastrada.
 - **US06 – Validar Campos Obrigatórios:** Verificação de preenchimento e formato correto dos dados antes do salvamento.
 - **US07 – Implementar Banco de Dados SQL:** Estruturar persistência das despesas em MySQL ou MariaDB.
+- **US08 - Listar Histórico de Despesas:** Histórico e Lixeira de Despesas: Implementação de sistema de exclusão lógica e visualização de registros excluídos.
 
 ### Sprint 3: Organização e Análise
 Foco na experiência do usuário e suporte à tomada de decisão.
-- **US08 – Categorizar Despesas:** Criação e associação de categorias (ex: alimentação, transporte).
-- **US09 – Filtrar Despesas:** Visualização segmentada por categorias.
-- **US10 – Buscar Despesas por Nome:** Localização rápida de registros com base no título da despesa.
-- **US11 – Exibir Gastos por Categoria:** Apresentação do total gasto em cada categoria cadastrada.
-- **US12 – Destacar Maior Despesa do Período:** Identificação automática do maior gasto para apoio à análise financeira.
+- **US09 – Categorizar Despesas:** Criação e associação de categorias (ex: alimentação, transporte).
+- **US10 – Filtrar Despesas:** Visualização segmentada por categorias.
+- **US11 – Buscar Despesas por Nome:** Localização rápida de registros com base no título da despesa.
+- **US12 – Exibir Gastos por Categoria:** Apresentação do total gasto em cada categoria cadastrada.
+- **US13 – Destacar Maior Despesa do Período:** Identificação automática do maior gasto para apoio à análise financeira.
 
 ---
 ## 📅 Planejamento e Backlog do Produto
@@ -88,13 +89,14 @@ O desenvolvimento foi dividido em Sprints para entrega incremental de valor. As 
 | **US03** | Excluir despesa para corrigir erros | 3 | **Concluído** | Botão de remoção e atualização imediata do armazenamento. |
 | **US04** | Ver total de gastos para entender despesas | 3 | **Concluído** | Cálculo automático do somatório de todas as despesas. |
 | **US05** | Editar despesa para corrigir informações | 5 | **Concluído** | Permitir alteração de nome, valor e data de despesas já cadastradas. |
-| **US06** | Validar campos obrigatórios no cadastro | 3 | *Planejado* | Impedir salvamento com campos vazios ou formatos inválidos, exibindo mensagem de erro. |
+| **US06** | Validar campos obrigatórios no cadastro | 3 | **Concluído** | Impedir salvamento com campos vazios ou formatos inválidos, exibindo mensagem de erro. |
 | **US07** | Implementar persistência em banco SQL | 8 | **Concluído** | Migrar armazenamento para MySQL/MariaDB com operações de CRUD funcionando. |
-| **US08** | Categorizar despesas para organização | 5 | *Planejado* | Criar e associar categorias (ex: alimentação) aos registros. |
-| **US09** | Filtrar despesas por categoria | 3 | *Planejado* | Selecionar categoria e exibir apenas registros relacionados. |
-| **US10** | Buscar despesas por nome | 2 | *Planejado* | Permitir busca textual por título da despesa e exibir resultados relevantes. |
-| **US11** | Exibir gastos por categoria | 5 | *Planejado* | Apresentar o total acumulado para cada categoria cadastrada. |
-| **US12** | Destacar maior despesa do período | 3 | *Planejado* | Identificar automaticamente e mostrar o maior gasto no intervalo selecionado. |
+| **US08** | Listar Histórico de Despesas | 5 | **Concluído** | Listar histórico de todas despesas ativas e excluídas. |
+| **US09** | Categorizar despesas para organização | 5 | *Planejado* | Criar e associar categorias (ex: alimentação) aos registros. |
+| **US10** | Filtrar despesas por categoria | 3 | *Planejado* | Selecionar categoria e exibir apenas registros relacionados. |
+| **US11** | Buscar despesas por nome | 2 | *Planejado* | Permitir busca textual por título da despesa e exibir resultados relevantes. |
+| **US12** | Exibir gastos por categoria | 5 | *Planejado* | Apresentar o total acumulado para cada categoria cadastrada. |
+| **US13** | Destacar maior despesa do período | 3 | *Planejado* | Identificar automaticamente e mostrar o maior gasto no intervalo selecionado. |
 
 ## 🌿 Gestão de Versões (GitFlow)
 O projeto adota o fluxo de trabalho **GitFlow** para organizar o desenvolvimento:
