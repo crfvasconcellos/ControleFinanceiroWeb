@@ -38,20 +38,23 @@ Para rodar o projeto no seu ambiente de desenvolvimento, siga os passos abaixo:
 
 1.  **Pré-requisitos:** Certifique-se de ter **PHP 8.0+** e **MySQL/MariaDB** instalados.
 2.  **Clone o repositório:** `git clone [url-do-repositorio]`
-3.  **Crie o banco de dados:**
-    ```sql
-    CREATE DATABASE controle_financeiro CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+3.  **Crie o banco de dados e usuário (usando a senha `suasenha` para o root no MySQL):**
+    Abra o terminal (cmd ou PowerShell) e execute:
+    ```bash
+    mysql -u root -psuasenha -e "CREATE DATABASE IF NOT EXISTS controle_financeiro CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+    mysql -u root -psuasenha -e "CREATE USER IF NOT EXISTS 'controle_app'@'localhost' IDENTIFIED BY 'ControleApp@2026!'; GRANT ALL PRIVILEGES ON controle_financeiro.* TO 'controle_app'@'localhost'; FLUSH PRIVILEGES;"
     ```
 4.  **Importe o schema:**
     ```bash
     mysql -u root -p controle_financeiro < Projeto/database/schema.sql
     ```
 5.  **(Opcional) Configure variáveis de ambiente** `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` conforme o seu ambiente.
-3.  **Inicie o servidor:** Navegue até a pasta `Projeto/public` e execute o comando:
+6.  **Inicie o servidor local:** Navegue até a pasta `Projeto/public` e inicie o servidor embutido do PHP:
     ```bash
+    cd Projeto/public
     php -S localhost:8000
     ```
-6.  **Acesse:** Abra o navegador e aceda a `http://localhost:8000`.
+7.  **Acesse:** Abra o navegador e acesse `http://localhost:8000`.
 
 ---
 
@@ -59,7 +62,7 @@ Para rodar o projeto no seu ambiente de desenvolvimento, siga os passos abaixo:
 
 ### Sprint 1: Gerenciamento de Dados
 Foco na criação da base utilizável do sistema.
-- **US01 – Adicionar Despesa:** Inserção de nome, valor e data.
+- **US01 – Adicionar Despesa:** Inserção de nome, valor e data (com persistência em banco de dados).
 - **US02 – Listar Despesas:** Exibição clara dos gastos registrados com atualização automática.
 ### Sprint 2: Registro e Visualização 
 Foco no controle e correção de informações.
@@ -73,10 +76,13 @@ Foco no controle e correção de informações.
 ### Sprint 3: Organização e Análise
 Foco na experiência do usuário e suporte à tomada de decisão.
 - **US09 – Categorizar Despesas:** Criação e associação de categorias (ex: alimentação, transporte).
-- **US10 – Filtrar Despesas:** Visualização segmentada por categorias.
-- **US11 – Buscar Despesas por Nome:** Localização rápida de registros com base no título da despesa.
-- **US12 – Exibir Gastos por Categoria:** Apresentação do total gasto em cada categoria cadastrada.
-- **US13 – Destacar Maior Despesa do Período:** Identificação automática do maior gasto para apoio à análise financeira.
+- **US10 – Atualizar Interface:** Renovar a interface gráfica com design moderno e amigável.
+- **US11 – Adicionar Saldo:** Permitir a inserção de saldos positivos para compensar gastos.
+- **US12 – Indexar Comprovante:** Funcionalidade para anexar comprovantes em formato PDF nas transações.
+- **US13 – Filtrar Despesas:** Visualização segmentada por categorias.
+- **US14 – Buscar Despesas por Nome:** Localização rápida de registros com base no título da despesa.
+- **US15 – Exibir Gastos por Categoria:** Apresentação do total gasto em cada categoria cadastrada.
+- **US16 – Destacar Maior Despesa do Período:** Identificação automática do maior gasto para apoio à análise financeira.
 
 ---
 ## 📅 Planejamento e Backlog do Produto
@@ -84,7 +90,7 @@ O desenvolvimento foi dividido em Sprints para entrega incremental de valor. As 
 
 | ID | User Story | Pontos | Status | Critérios de Aceitação |
 | :--- | :--- | :--- | :--- | :--- |
-| **US01** | Adicionar despesa para controlar gastos | 5 | **Concluído** | Validar nome, valor positivo e data; salvar no JSON. |
+| **US01** | Adicionar despesa para controlar gastos | 5 | **Concluído** | Validar nome, valor positivo e data; salvar no banco de dados. |
 | **US02** | Visualizar despesas para acompanhar gastos | 5 | **Concluído** | Exibir lista atualizada com nome, valor e data. |
 | **US03** | Excluir despesa para corrigir erros | 3 | **Concluído** | Botão de remoção e atualização imediata do armazenamento. |
 | **US04** | Ver total de gastos para entender despesas | 3 | **Concluído** | Cálculo automático do somatório de todas as despesas. |
@@ -93,10 +99,13 @@ O desenvolvimento foi dividido em Sprints para entrega incremental de valor. As 
 | **US07** | Implementar persistência em banco SQL | 8 | **Concluído** | Migrar armazenamento para MySQL/MariaDB com operações de CRUD funcionando. |
 | **US08** | Listar Histórico de Despesas | 5 | **Concluído** | Listar histórico de todas despesas ativas e excluídas. |
 | **US09** | Categorizar despesas para organização | 5 | *Planejado* | Criar e associar categorias (ex: alimentação) aos registros. |
-| **US10** | Filtrar despesas por categoria | 3 | *Planejado* | Selecionar categoria e exibir apenas registros relacionados. |
-| **US11** | Buscar despesas por nome | 2 | *Planejado* | Permitir busca textual por título da despesa e exibir resultados relevantes. |
-| **US12** | Exibir gastos por categoria | 5 | *Planejado* | Apresentar o total acumulado para cada categoria cadastrada. |
-| **US13** | Destacar maior despesa do período | 3 | *Planejado* | Identificar automaticamente e mostrar o maior gasto no intervalo selecionado. |
+| **US10** | Atualizar interface do sistema | 5 | **Concluído** | Interface modernizada e mais amigável |
+| **US11** | Adicionar entradas e saldo | 5 | **Concluído** | Botões e formulários para adicionar valores positivos, unificando a exibição no histórico. |
+| **US12** | Indexar comprovante PDF | 3 | **Concluído** | Adição de campo para upload de arquivos `.pdf` como comprovantes das transações. |
+| **US13** | Filtrar despesas por categoria | 3 | *Planejado* | Selecionar categoria e exibir apenas registros relacionados. |
+| **US14** | Buscar despesas por nome | 2 | *Planejado* | Permitir busca textual por título da despesa e exibir resultados relevantes. |
+| **US15** | Exibir gastos por categoria | 5 | *Planejado* | Apresentar o total acumulado para cada categoria cadastrada. |
+| **US16** | Destacar maior despesa do período | 3 | *Planejado* | Identificar automaticamente e mostrar o maior gasto no intervalo selecionado. |
 
 ## 🌿 Gestão de Versões (GitFlow)
 O projeto adota o fluxo de trabalho **GitFlow** para organizar o desenvolvimento:

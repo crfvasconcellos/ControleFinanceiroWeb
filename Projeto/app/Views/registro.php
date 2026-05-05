@@ -6,13 +6,13 @@
     <title>Controle Financeiro - Criar Conta</title>
     <link rel="stylesheet" href="assets/style.css">
 </head>
-<body>
-    <main class="container">
-        <section class="card auth-card">
+<body class="body-auth">
+    <div class="auth-card-wrapper">
+        <div class="auth-card">
             <div class="auth-header">
-                <div class="auth-icon">📝</div>
+                <div class="auth-icon">✨</div>
                 <h1>Criar Conta</h1>
-                <p class="subtitle">Preencha os dados para se cadastrar</p>
+                <p>Preencha os dados para se cadastrar</p>
             </div>
 
             <?php if (!empty($errors)): ?>
@@ -28,55 +28,33 @@
             <form method="post" novalidate>
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
 
-                <label for="nome">Nome</label>
-                <input
-                    id="nome"
-                    name="nome"
-                    type="text"
-                    required
-                    autocomplete="name"
-                    value="<?= htmlspecialchars($data['nome'] ?? '') ?>"
-                    placeholder="Seu nome completo"
-                >
+                <div class="form-floating">
+                    <input id="nome" name="nome" type="text" required autocomplete="name" value="<?= htmlspecialchars($data['nome'] ?? '') ?>" placeholder="Seu nome completo">
+                    <label for="nome">Nome Completo</label>
+                </div>
 
-                <label for="email">E-mail</label>
-                <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    autocomplete="email"
-                    value="<?= htmlspecialchars($data['email'] ?? '') ?>"
-                    placeholder="seu@email.com"
-                >
+                <div class="form-floating">
+                    <input id="email" name="email" type="email" required autocomplete="email" value="<?= htmlspecialchars($data['email'] ?? '') ?>" placeholder="E-mail">
+                    <label for="email">E-mail</label>
+                </div>
 
-                <label for="senha">Senha</label>
-                <input
-                    id="senha"
-                    name="senha"
-                    type="password"
-                    required
-                    autocomplete="new-password"
-                    placeholder="Mínimo 6 caracteres"
-                >
+                <div class="form-floating">
+                    <input id="senha" name="senha" type="password" required autocomplete="new-password" placeholder="Senha">
+                    <label for="senha">Senha</label>
+                </div>
 
-                <label for="confirmar_senha">Confirmar Senha</label>
-                <input
-                    id="confirmar_senha"
-                    name="confirmar_senha"
-                    type="password"
-                    required
-                    autocomplete="new-password"
-                    placeholder="Repita a senha"
-                >
+                <div class="form-floating">
+                    <input id="confirmar_senha" name="confirmar_senha" type="password" required autocomplete="new-password" placeholder="Repita a senha">
+                    <label for="confirmar_senha">Confirmar Senha</label>
+                </div>
 
-                <button type="submit" id="btnRegistro">Criar Conta</button>
+                <button type="submit" class="btn btn-primary btn-block mt-4" style="padding: 1.25rem; font-size: 1.1rem; border-radius: var(--radius-md);">Criar Conta</button>
             </form>
 
-            <div class="auth-footer">
-                <p>Já tem uma conta? <a href="index.php?route=login">Entrar</a></p>
+            <div class="text-center mt-4 text-sm" style="padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05);">
+                Já tem uma conta? <a href="index.php?route=login" class="font-bold">Entrar</a>
             </div>
-        </section>
-    </main>
+        </div>
+    </div>
 </body>
 </html>
