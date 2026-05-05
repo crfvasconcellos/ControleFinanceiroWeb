@@ -96,15 +96,15 @@ $areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle Financeiro - Dashboard</title>
+    <link rel="icon" href="assets/img/logo.png" type="image/png">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <header class="top-bar">
         <div class="top-bar__inner">
             <div class="top-bar__user" style="display:flex; gap:1.5rem; align-items: center;">
-                <div style="display:flex; align-items: center; gap:1rem;">
-                    <?php $inicial = strtoupper($userNome[0] ?? '?'); ?>
-                    <span class="top-bar__avatar"><?= htmlspecialchars($inicial) ?></span>
+                <div style="display:flex; align-items: center; gap:0.8rem;">
+                    <img src="assets/img/logo.png" alt="Logo" style="width: 40px; height: 40px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" draggable="false" ondragstart="return false" onselectstart="return false">
                     <span class="top-bar__name">Olá, <?= htmlspecialchars($userNome) ?></span>
                 </div>
                 <a href="index.php?route=logout" class="btn btn-outline btn-sm">Sair</a>
@@ -280,7 +280,7 @@ $areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
     <!-- Modais -->
     <div id="modalNovaDespesa" class="modal-overlay">
         <div class="modal-content">
-            <a href="#" class="modal-close">✕</a>
+            <a href="#!" class="modal-close">✕</a>
             <h2>Nova Despesa</h2>
             <form method="post" enctype="multipart/form-data" style="margin-top:2rem;">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
@@ -335,7 +335,7 @@ $areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
 
     <div id="modalAdicionarSaldo" class="modal-overlay">
         <div class="modal-content">
-            <a href="#" class="modal-close">✕</a>
+            <a href="#!" class="modal-close">✕</a>
             <h2>Novo Saldo</h2>
             <form method="post" enctype="multipart/form-data" style="margin-top:2rem;">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
@@ -386,7 +386,7 @@ $areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
 
     <div id="modalHistorico" class="modal-overlay">
         <div class="modal-content" style="max-width: 600px;">
-            <a href="#" class="modal-close">✕</a>
+            <a href="#!" class="modal-close">✕</a>
             <h2>Lixeira e Histórico Completo</h2>
             <p class="text-sm mb-4" style="color: var(--color-text-light);">Registros riscados foram excluídos e não afetam o saldo total.</p>
             

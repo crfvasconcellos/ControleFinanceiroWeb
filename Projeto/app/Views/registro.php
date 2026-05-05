@@ -4,13 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle Financeiro - Criar Conta</title>
+    <link rel="icon" href="assets/img/logo.png" type="image/png">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body class="body-auth">
     <div class="auth-card-wrapper">
         <div class="auth-card">
             <div class="auth-header">
-                <div class="auth-icon">✨</div>
+                <div class="auth-icon">
+                    <img src="assets/img/logo.png" alt="Logo Controle Financeiro" class="auth-logo" draggable="false" ondragstart="return false" onselectstart="return false" style="width: 50px;">
+                </div>
                 <h1>Criar Conta</h1>
                 <p>Preencha os dados para se cadastrar</p>
             </div>

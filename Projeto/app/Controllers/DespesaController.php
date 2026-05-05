@@ -109,7 +109,7 @@ class DespesaController {
         }
 
         $listaDespesas = $model->buscarDespesas();
-        $historicoCompleto = $model->buscarHistoricoCompleto();
+        $historicoDespesas = $model->buscarHistoricoCompleto();
 
         // Calcula o total das despesas exibidas (preparado para filtros futuros)
         $totalDespesas = array_sum(array_column($listaDespesas, 'valor'));
@@ -142,6 +142,16 @@ class DespesaController {
         usort($todasTransacoes, function($a, $b) {
             $dateA = $a['data'] . ' ' . (isset($a['criado_em']) ? substr($a['criado_em'], 11) : '00:00:00');
             $dateB = $b['data'] . ' ' . (isset($b['criado_em']) ? substr($b['criado_em'], 11) : '00:00:00');
+            return strcmp($dateB, $dateA);
+        });
+
+        // Junta histórico de despesas com histórico completo de saldos
+        $historicoSaldosCompleto = $saldoModel->buscarHistoricoCompleto();
+        $historicoCompleto = array_merge($historicoDespesas, $historicoSaldosCompleto);
+        
+        usort($historicoCompleto, function($a, $b) {
+            $dateA = $a['deletado_em'] ?? $a['criado_em'] ?? '0000-00-00';
+            $dateB = $b['deletado_em'] ?? $b['criado_em'] ?? '0000-00-00';
             return strcmp($dateB, $dateA);
         });
 

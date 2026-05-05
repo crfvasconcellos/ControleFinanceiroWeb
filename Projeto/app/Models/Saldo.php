@@ -96,6 +96,24 @@ class Saldo {
         return $results;
     }
 
+    public function buscarHistoricoCompleto(): array {
+        if ($this->userId === null) return [];
+
+        $stmt = $this->connection->prepare(
+            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em, deletado_em
+             FROM saldos
+             WHERE usuario_id = :usuario_id
+             ORDER BY COALESCE(deletado_em, criado_em) DESC'
+        );
+        $stmt->execute(['usuario_id' => $this->userId]);
+        $results = $stmt->fetchAll();
+
+        foreach ($results as &$row) {
+            $row['valor'] = (float) $row['valor'];
+        }
+        return $results;
+    }
+
     public function removerSaldo(string $id): bool {
         if ($this->userId === null) return false;
 

@@ -129,7 +129,7 @@ a:hover { color: var(--color-primary-hover); }
 .btn-outline { background: transparent; border: 1px solid var(--color-border); color: var(--color-secondary); }
 .btn-outline:hover { background: var(--color-surface-hover); border-color: var(--color-text-light); }
 .btn-danger { background: var(--color-danger); color: white; }
-.btn-danger:hover { background: var(--color-danger-hover); transform: translateY(-1px); }
+.btn-danger:hover { background: var(--color-danger-hover); color: white; transform: translateY(-1px); }
 .btn-success { background: var(--color-success); color: white; box-shadow: 0 4px 10px -2px var(--color-success-bg); }
 .btn-success:hover { background: #059669; color: white; transform: translateY(-2px); box-shadow: 0 8px 15px -3px var(--color-success-bg); }
 .btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; }
