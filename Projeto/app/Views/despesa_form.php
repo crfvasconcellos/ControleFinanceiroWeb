@@ -28,21 +28,11 @@ $cores = ['#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef'];
 $despesasFiltradas = [];
 $gastosPorCategoria = [];
 $totalMes = 0;
+$totalEntradasFiltradas = 0;
 
-$evolucaoMensal = [];
-for ($i = 5; $i >= 0; $i--) {
-    $m = date('Y-m', strtotime("-$i months"));
-    $evolucaoMensal[$m] = 0;
-}
-
+// --- Filtragem das transações ---
 foreach ($todasTransacoes as $transacao) {
     $mesDespesa = substr($transacao['data'], 0, 7);
-    
-    if ($transacao['tipo'] === 'saida') {
-        if (isset($evolucaoMensal[$mesDespesa])) {
-            $evolucaoMensal[$mesDespesa] += $transacao['valor'];
-        }
-    }
 
     if ($mesFiltro !== 'todos' && $mesDespesa !== $mesFiltro) continue;
     if ($tipoFiltro !== 'todas' && $transacao['tipo'] !== $tipoFiltro) continue;
@@ -65,18 +55,73 @@ foreach ($todasTransacoes as $transacao) {
     if ($transacao['tipo'] === 'saida') {
         $totalMes += $transacao['valor'];
     }
+    if ($transacao['tipo'] === 'entrada') {
+        $totalEntradasFiltradas += $transacao['valor'];
+    }
 }
 
-$maxMes = max($evolucaoMensal) ?: 1;
+// Recalcula saldo com base nos filtros aplicados
+$saldoDisponivel = $totalEntradasFiltradas - $totalMes;
+
+// --- Gráfico dinâmico baseado no filtro ---
+$evolucaoGrafico = [];
+$chartTitle = 'Gastos Mensais';
+
+if ($mesFiltro === 'todos') {
+    // Modo "Todos": mostra gastos mensais (últimos 6 meses)
+    for ($i = 5; $i >= 0; $i--) {
+        $m = date('Y-m', strtotime("-$i months"));
+        $evolucaoGrafico[$m] = ['gastos' => 0, 'label' => substr($mesesPt[date('m', strtotime("-$i months"))], 0, 3)];
+    }
+    foreach ($todasTransacoes as $t) {
+        $mk = substr($t['data'], 0, 7);
+        if ($t['tipo'] === 'saida' && isset($evolucaoGrafico[$mk])) {
+            $evolucaoGrafico[$mk]['gastos'] += $t['valor'];
+        }
+    }
+} else {
+    // Modo mês específico: mostra gastos diários do mês
+    $chartTitle = 'Gastos Diários — ' . $mesesPt[substr($mesFiltro, 5, 2)] . ' ' . substr($mesFiltro, 0, 4);
+    $ano = (int)substr($mesFiltro, 0, 4);
+    $mesNum = (int)substr($mesFiltro, 5, 2);
+    $diasNoMes = cal_days_in_month(CAL_GREGORIAN, $mesNum, $ano);
+    
+    for ($d = 1; $d <= $diasNoMes; $d++) {
+        $dk = sprintf('%s-%02d', $mesFiltro, $d);
+        $evolucaoGrafico[$dk] = ['gastos' => 0, 'label' => (string)$d];
+    }
+    foreach ($todasTransacoes as $t) {
+        if ($t['tipo'] === 'saida' && isset($evolucaoGrafico[$t['data']])) {
+            $evolucaoGrafico[$t['data']]['gastos'] += $t['valor'];
+        }
+    }
+}
+
+// --- Construir pontos do SVG ---
 $svgWidth = 1000;
 $svgHeight = 300;
 $svgPoints = [];
-$svgStepX = $svgWidth / (count($evolucaoMensal) - 1 ?: 1);
+$valores = array_column($evolucaoGrafico, 'gastos');
+$maxVal = count($valores) > 0 ? max($valores) : 0;
+if ($maxVal == 0) $maxVal = 1;
+$numPontos = count($evolucaoGrafico);
+$svgStepX = $numPontos > 1 ? $svgWidth / ($numPontos - 1) : $svgWidth;
 $currentX = 0;
 
-foreach ($evolucaoMensal as $m => $val) {
-    $currentY = $svgHeight - (($val / $maxMes) * ($svgHeight * 0.85)); 
-    $svgPoints[] = ['x' => $currentX, 'y' => $currentY, 'val' => $val, 'label' => substr($mesesPt[substr($m, 5, 2)], 0, 3)];
+// Para mês específico com muitos dias, mostrar apenas alguns labels
+$mostrarTodosLabels = ($numPontos <= 12);
+
+foreach ($evolucaoGrafico as $k => $item) {
+    $currentY = $svgHeight - (($item['gastos'] / $maxVal) * ($svgHeight * 0.85));
+    $label = $item['label'];
+    // Para dias, mostrar label a cada 5 dias
+    if (!$mostrarTodosLabels) {
+        $diaNum = (int)$label;
+        if ($diaNum !== 1 && $diaNum % 5 !== 0 && $diaNum !== $diasNoMes) {
+            $label = '';
+        }
+    }
+    $svgPoints[] = ['x' => $currentX, 'y' => $currentY, 'val' => $item['gastos'], 'label' => $label];
     $currentX += $svgStepX;
 }
 
@@ -87,7 +132,9 @@ if (count($svgPoints) > 0) {
         $pathD .= " L " . $svgPoints[$i]['x'] . "," . $svgPoints[$i]['y'];
     }
 }
-$areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
+$lastX = end($svgPoints)['x'] ?? $svgWidth;
+$areaD = $pathD . " L $lastX,$svgHeight L 0,$svgHeight Z";
+$temDadosGrafico = max($valores) > 0;
 
 ?>
 <!DOCTYPE html>
@@ -143,8 +190,8 @@ $areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
             <section>
                 
                 <div class="chart-container">
-                    <h3 class="chart-title">Evolução Mensal</h3>
-                    <?php if(max($evolucaoMensal) == 0): ?>
+                    <h3 class="chart-title"><?= htmlspecialchars($chartTitle) ?></h3>
+                    <?php if(!$temDadosGrafico): ?>
                         <div class="empty-state">
                             <div class="empty-icon">📈</div>
                             <div class="empty-title">Sem Dados Suficientes</div>
@@ -190,9 +237,10 @@ $areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
                     </div>
                 </div>
 
-                <form method="GET" class="filter-bar mb-4">
+                <form method="GET" action="index.php" class="filter-bar mb-4">
+                    <input type="hidden" name="route" value="dashboard">
                     <div class="filter-select-wrapper">
-                        <select name="mes" class="filter-btn" onchange="this.form.submit()">
+                        <select name="mes" class="filter-btn">
                             <option value="todos" <?= $mesFiltro === 'todos' ? 'selected' : '' ?>>Todos os Meses</option>
                             <?php for ($i = 0; $i < 12; $i++): 
                                 $m = date('Y-m', strtotime("-$i months"));
@@ -204,7 +252,7 @@ $areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
                         </select>
                     </div>
                     <div class="filter-select-wrapper">
-                        <select name="prioridade" class="filter-btn" onchange="this.form.submit()">
+                        <select name="prioridade" class="filter-btn">
                             <option value="todas" <?= $prioridadeFiltro === 'todas' ? 'selected' : '' ?>>Qualquer Valor</option>
                             <option value="alta" <?= $prioridadeFiltro === 'alta' ? 'selected' : '' ?>>Alto (> 500)</option>
                             <option value="media" <?= $prioridadeFiltro === 'media' ? 'selected' : '' ?>>Médio (> 100)</option>
@@ -212,13 +260,13 @@ $areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
                         </select>
                     </div>
                     <div class="filter-select-wrapper">
-                        <select name="tipo" class="filter-btn" onchange="this.form.submit()">
+                        <select name="tipo" class="filter-btn">
                             <option value="todas" <?= $tipoFiltro === 'todas' ? 'selected' : '' ?>>Todas as Transações</option>
                             <option value="entrada" <?= $tipoFiltro === 'entrada' ? 'selected' : '' ?>>Apenas Entradas</option>
                             <option value="saida" <?= $tipoFiltro === 'saida' ? 'selected' : '' ?>>Apenas Saídas</option>
                         </select>
                     </div>
-                    <noscript><button type="submit" class="btn btn-primary">Filtrar</button></noscript>
+                    <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
                 </form>
 
                 <?php if (!empty($errors)): ?>
@@ -262,12 +310,7 @@ $areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
                                 <?php endif; ?>
                                 <div class="expense-actions-btns">
                                     <a href="editar.php?id=<?= urlencode($despesa['id']) ?>" class="btn-icon" title="Editar">✏️</a>
-                                    <form method="post" onsubmit="return confirm('Deseja excluir esta transação?');" style="margin:0;">
-                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
-                                        <input type="hidden" name="action" value="remover">
-                                        <input type="hidden" name="despesa_id" value="<?= htmlspecialchars($despesa['id']) ?>">
-                                        <button type="submit" class="btn-icon danger" title="Excluir">🗑️</button>
-                                    </form>
+                                    <a href="#confirmarExcluir_<?= htmlspecialchars($despesa['id']) ?>" class="btn-icon danger" title="Excluir">🗑️</a>
                                 </div>
                             </div>
                         </div>
@@ -408,5 +451,30 @@ $areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
             </div>
         </div>
     </div>
+
+    <!-- Modais de confirmação de exclusão (CSS puro, sem JS) -->
+    <?php foreach ($despesasFiltradas as $despesa): ?>
+        <div id="confirmarExcluir_<?= htmlspecialchars($despesa['id']) ?>" class="modal-overlay">
+            <div class="modal-content" style="max-width: 420px; text-align: center;">
+                <a href="#!" class="modal-close">✕</a>
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                <h2 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Confirmar Exclusão</h2>
+                <p style="color: var(--color-text-light); margin-bottom: 2rem;">
+                    Deseja excluir "<strong><?= htmlspecialchars($despesa['nome']) ?></strong>"?<br>
+                    Esta ação pode ser desfeita na lixeira.
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <a href="#!" class="btn btn-outline">Cancelar</a>
+                    <form method="post" action="index.php?route=dashboard" style="margin:0;">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                        <input type="hidden" name="action" value="remover">
+                        <input type="hidden" name="despesa_id" value="<?= htmlspecialchars($despesa['id']) ?>">
+                        <button type="submit" class="btn btn-danger">Excluir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
+
 </body>
 </html>
