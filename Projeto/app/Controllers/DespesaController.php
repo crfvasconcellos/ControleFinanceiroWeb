@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Despesa;
 use App\Models\Saldo;
 use App\Middleware\Auth;
+use App\Models\Usuario;
 
 class DespesaController {
     public function create() {
@@ -28,6 +29,11 @@ class DespesaController {
         // Dados do usuário logado
         $userId = $_SESSION['user_id'];
         $userNome = $_SESSION['user_nome'];
+
+        $usuarioModel = new Usuario();
+        $usuarioDados = $usuarioModel->buscarPorId((string)$userId);
+        $userApiKey = $usuarioDados['api_key'] ?? null;
+
 
         $model = new Despesa($userId);
 

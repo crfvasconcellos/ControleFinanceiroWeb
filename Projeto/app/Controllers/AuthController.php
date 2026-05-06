@@ -54,6 +54,7 @@ class AuthController {
                         $_SESSION['user_id'] = $usuario['id'];
                         $_SESSION['user_nome'] = $usuario['nome'];
                         $_SESSION['user_email'] = $usuario['email'];
+                        $_SESSION['user_api_key'] = $usuario['api_key'] ?? ''; 
                         unset($_SESSION['csrf_token']);
 
                         header('Location: index.php?route=dashboard');
