@@ -106,6 +106,7 @@ $areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
                 <div style="display:flex; align-items: center; gap:0.8rem;">
                     <img src="assets/img/logo.png" alt="Logo" style="width: 40px; height: 40px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" draggable="false" ondragstart="return false" onselectstart="return false">
                     <span class="top-bar__name">Olá, <?= htmlspecialchars($userNome) ?></span>
+                    <a href="#modalApiKey" class="btn-api-access" title="Minha API Key"></a>
                 </div>
                 <a href="index.php?route=logout" class="btn btn-outline btn-sm">Sair</a>
             </div>
@@ -277,7 +278,32 @@ $areaD = $pathD . " L $svgWidth,$svgHeight L 0,$svgHeight Z";
         </div>
     </main>
 
-    <!-- Modais -->
+<div id="modalApiKey" class="modal-overlay">
+    <div class="modal-content" style="max-width: 450px;">
+        <a href="#!" class="modal-close">✕</a>
+        <h2>Acesso à API</h2>
+        <p style="color: var(--color-text-light); font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Use esta chave no header <strong>X-API-KEY</strong> para autenticar suas requisições.
+        </p>
+        
+        <div style="background: var(--color-background); padding: 1rem; border-radius: 8px; border: 1px dashed var(--color-border); word-break: break-all; font-family: monospace; font-size: 0.95rem; color: var(--color-primary); min-height: 1.2rem;">
+            <?php 
+                if (!empty($userApiKey)) {
+                    echo htmlspecialchars($userApiKey);
+                } else {
+                    echo "<span style='color: var(--color-danger); opacity: 0.5;'>Chave não encontrada</span>";
+                }
+            ?>
+        </div>
+
+        <button 
+            onclick="const key = '<?= $userApiKey ?? '' ?>'; if(key) { navigator.clipboard.writeText(key).then(() => alert('Chave copiada!')); } else { alert('Nenhuma chave para copiar'); }" 
+            class="btn btn-outline btn-block mt-4">
+            Copiar Chave
+        </button>
+    </div>
+</div>
+
     <div id="modalNovaDespesa" class="modal-overlay">
         <div class="modal-content">
             <a href="#!" class="modal-close">✕</a>
