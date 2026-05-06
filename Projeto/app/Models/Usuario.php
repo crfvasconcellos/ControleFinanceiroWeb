@@ -89,4 +89,12 @@ class Usuario {
             'email' => $usuario['email'],
         ];
     }
+    /**
+     * Verifica se um usuário existe pelo ID.
+     */
+    public function existePorId(string $id): bool {
+        $stmt = $this->connection->prepare('SELECT 1 FROM usuarios WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $id]);
+        return (bool) $stmt->fetch();
+    }
 }
