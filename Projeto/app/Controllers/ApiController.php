@@ -59,7 +59,6 @@ class ApiController {
     }
 
     private function isCurl(): bool {
-        $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
-        return !empty($_SERVER['HTTP_X_API_KEY']) && !str_contains($accept, 'text/html');
+    return !empty($_SERVER['HTTP_X_API_KEY']);
     }
 }
