@@ -83,6 +83,7 @@ Foco na experiência do usuário e suporte à tomada de decisão.
 - **US14 – Buscar Despesas por Nome:** Localização rápida de registros com base no título da despesa.
 - **US15 – Exibir Gastos por Categoria:** Apresentação do total gasto em cada categoria cadastrada.
 - **US16 – Destacar Maior Despesa do Período:** Identificação automática do maior gasto para apoio à análise financeira.
+- **US17 – Despesas Recorrentes (Fixas):** Cadastro de despesas que se repetem todo mês automaticamente, com controle de ativação/pausa.
 
 ---
 ## 📅 Planejamento e Backlog do Produto
@@ -106,6 +107,7 @@ O desenvolvimento foi dividido em Sprints para entrega incremental de valor. As 
 | **US14** | Buscar despesas por nome | 2 | *Planejado* | Permitir busca textual por título da despesa e exibir resultados relevantes. |
 | **US15** | Exibir gastos por categoria | 5 | *Planejado* | Apresentar o total acumulado para cada categoria cadastrada. |
 | **US16** | Destacar maior despesa do período | 3 | *Planejado* | Identificar automaticamente e mostrar o maior gasto no intervalo selecionado. |
+| **US17** | Despesas recorrentes (fixas) mensais | 5 | **Concluído** | Cadastrar despesas fixas com dia de vencimento; geração automática mensal; pausar/reativar/remover recorrências. |
 
 ## 🌿 Gestão de Versões (GitFlow)
 O projeto adota o fluxo de trabalho **GitFlow** para organizar o desenvolvimento:
