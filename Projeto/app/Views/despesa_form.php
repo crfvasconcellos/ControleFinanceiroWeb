@@ -586,7 +586,7 @@ $temDadosGrafico = max($valores) > 0;
 
                 <div class="form-floating">
                     <input id="rec_data_inicio" name="data_inicio" type="date" value="<?= date('Y-m-d') ?>">
-                    <label for="rec_data_inicio">Contando desde (opcional)</label>
+                    <label for="rec_data_inicio">Primeiro pagamento</label>
                 </div>
 
                 <div class="form-floating" style="margin-top: 1.5rem;">

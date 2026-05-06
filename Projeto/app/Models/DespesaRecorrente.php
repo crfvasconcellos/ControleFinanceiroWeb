@@ -136,10 +136,10 @@ class DespesaRecorrente {
         $geradas = 0;
 
         foreach ($ativas as $rec) {
-            // Determina o mês de início (a partir de data_inicio)
+            // Gera a partir do mês do primeiro pagamento
             $mesInicio = substr($rec['data_inicio'], 0, 7);
 
-            // Itera de mesInicio até mesAtual
+            // Itera do mês de início até o mês atual
             $periodo = new \DateTime($mesInicio . '-01');
             $fim = new \DateTime($mesAtual . '-01');
 
