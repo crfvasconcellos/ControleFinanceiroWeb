@@ -153,7 +153,17 @@ $temDadosGrafico = max($valores) > 0;
                 <div style="display:flex; align-items: center; gap:0.8rem;">
                     <img src="assets/img/logo.png" alt="Logo" style="width: 40px; height: 40px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" draggable="false" ondragstart="return false" onselectstart="return false">
                     <span class="top-bar__name">Olá, <?= htmlspecialchars($userNome) ?></span>
-                    <a href="#modalApiKey" class="btn-api-access" title="Minha API Key"></a>
+                    <?php 
+                    /*
+                     * Correção de segurança: O desenvolvedor anterior deixou a API Key visível para todos os usuários, 
+                     * o que poderia causar quebras no sistema ou expor chaves indevidamente.
+                     * Para fins de testes controlados, limitamos a visualização desta funcionalidade
+                     * apenas ao administrador com o e-mail específico.
+                     */
+                    if ($userNome === 'admin' && $userEmail === 'admin@mail.uft.edu.br'): 
+                    ?>
+                        <a href="#modalApiKey" class="btn-api-access" title="Minha API Key"></a>
+                    <?php endif; ?>
                 </div>
                 <a href="index.php?route=logout" class="btn btn-outline btn-sm">Sair</a>
             </div>
@@ -321,6 +331,7 @@ $temDadosGrafico = max($valores) > 0;
         </div>
     </main>
 
+<?php if ($userNome === 'admin' && $userEmail === 'admin@mail.uft.edu.br'): ?>
 <div id="modalApiKey" class="modal-overlay">
     <div class="modal-content" style="max-width: 450px;">
         <a href="#!" class="modal-close">✕</a>
@@ -346,6 +357,7 @@ $temDadosGrafico = max($valores) > 0;
         </button>
     </div>
 </div>
+<?php endif; ?>
 
     <div id="modalNovaDespesa" class="modal-overlay">
         <div class="modal-content">

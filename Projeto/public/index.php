@@ -37,11 +37,6 @@ switch ($route) {
         $app->exportarCsv();
         break;
 
-    case 'exportar_pdf':
-        $app = new DespesaController();
-        $app->exportarPdf();
-        break;
-
     case 'api_despesas':
     (new \App\Controllers\ApiController())->despesas();
     break;
