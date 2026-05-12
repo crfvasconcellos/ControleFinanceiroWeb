@@ -111,7 +111,9 @@ class DespesaController {
                                 $dataRecorrente,
                                 $dataArr['descricao'] ?: null,
                                 $dataArr['comprovante'],
-                                $dataArr['icone']
+                                $dataArr['icone'],
+                                $recorrenteMensal ? 1 : 0,
+                                $recorrenciaMeses
                             );
                             if (!$salvou) {
                                 $salvouTudo = false;
@@ -122,6 +124,8 @@ class DespesaController {
                         foreach ($datasRecorrentes as $dataRecorrente) {
                             $novaDespesa = $dataArr;
                             $novaDespesa['data'] = $dataRecorrente;
+                            $novaDespesa['recorrente_mensal'] = $recorrenteMensal ? 1 : 0;
+                            $novaDespesa['recorrencia_meses'] = $recorrenciaMeses;
                             $salvou = $model->salvarDespesa($novaDespesa);
                             if (!$salvou) {
                                 $salvouTudo = false;
@@ -155,6 +159,8 @@ class DespesaController {
                 if (is_numeric($dataArr['valor']) && (float)$dataArr['valor'] > 99999999.99) $dataArr['valor'] = '99999999.99';
                 $dataArr['data'] = trim($_POST['data'] ?? '');
                 $dataArr['icone'] = $_POST['icone'] ?? ($isSaldo ? '💵' : '📄');
+                $dataArr['recorrente_mensal'] = ($_POST['recorrente_mensal'] ?? '') === '1' ? 1 : 0;
+                $dataArr['recorrencia_meses'] = $this->clampRecorrenciaMeses($_POST['recorrencia_meses'] ?? null);
                 
                 $novoComprovante = $this->handleUpload();
                 if ($novoComprovante !== null) {
