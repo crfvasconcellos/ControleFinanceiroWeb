@@ -18,7 +18,7 @@ class Despesa {
         if ($this->userId === null) return [];
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em
+            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em, recorrente_mensal, recorrencia_meses
              FROM despesas
              WHERE usuario_id = :usuario_id 
              AND deletado_em IS NULL
@@ -38,7 +38,7 @@ class Despesa {
         if ($this->userId === null) return null;
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em
+            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em, recorrente_mensal, recorrencia_meses
              FROM despesas
              WHERE id = :id AND usuario_id = :usuario_id AND deletado_em IS NULL'
         );
@@ -70,8 +70,8 @@ class Despesa {
         if ($this->userId === null) return false;
 
         $stmt = $this->connection->prepare(
-            'INSERT INTO despesas (id, usuario_id, nome, descricao, valor, data, comprovante, icone, criado_em)
-             VALUES (:id, :usuario_id, :nome, :descricao, :valor, :data, :comprovante, :icone, :criado_em)'
+            'INSERT INTO despesas (id, usuario_id, nome, descricao, valor, data, comprovante, icone, recorrente_mensal, recorrencia_meses, criado_em)
+             VALUES (:id, :usuario_id, :nome, :descricao, :valor, :data, :comprovante, :icone, :recorrente_mensal, :recorrencia_meses, :criado_em)'
         );
 
         return $stmt->execute([
@@ -83,6 +83,8 @@ class Despesa {
             'data' => $data['data'],
             'comprovante' => $data['comprovante'] ?? null,
             'icone' => $data['icone'] ?? '📄',
+            'recorrente_mensal' => $data['recorrente_mensal'] ?? 0,
+            'recorrencia_meses' => $data['recorrencia_meses'] ?? 1,
             'criado_em' => date('Y-m-d H:i:s'),
         ]);
     }
@@ -106,7 +108,7 @@ class Despesa {
         if ($this->userId === null) return false;
 
         $stmt = $this->connection->prepare(
-            'UPDATE despesas SET nome = :nome, descricao = :descricao, valor = :valor, data = :data, comprovante = :comprovante, icone = :icone
+            'UPDATE despesas SET nome = :nome, descricao = :descricao, valor = :valor, data = :data, comprovante = :comprovante, icone = :icone, recorrente_mensal = :recorrente_mensal, recorrencia_meses = :recorrencia_meses
              WHERE id = :id AND usuario_id = :usuario_id AND deletado_em IS NULL'
         );
         
@@ -117,6 +119,8 @@ class Despesa {
             'data' => $dados['data'],
             'comprovante' => $dados['comprovante'] ?? null,
             'icone' => $dados['icone'] ?? '📄',
+            'recorrente_mensal' => $dados['recorrente_mensal'] ?? 0,
+            'recorrencia_meses' => $dados['recorrencia_meses'] ?? 1,
             'id' => $id,
             'usuario_id' => $this->userId
         ]);
