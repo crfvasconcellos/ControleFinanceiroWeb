@@ -10,6 +10,7 @@ $mesesPt = [
 $mesFiltro = $_GET['mes'] ?? date('Y-m');
 $prioridadeFiltro = $_GET['prioridade'] ?? 'todas';
 $tipoFiltro = $_GET['tipo'] ?? 'todas';
+$categoriaFiltro = $_GET['categoria'] ?? 'todas';
 
 function getIconForExpense($name) {
     $n = strtolower($name);
@@ -48,6 +49,8 @@ foreach ($todasTransacoes as $transacao) {
         if ($prioridadeFiltro !== 'todas' && $prioridade !== $prioridadeFiltro) continue;
         $icone = !empty($transacao['icone']) ? $transacao['icone'] : getIconForExpense($transacao['nome']);
     }
+
+    if ($categoriaFiltro !== 'todas' && $icone !== $categoriaFiltro) continue;
 
     $transacao['prioridade'] = $prioridade;
     $transacao['icone'] = $icone;
@@ -264,6 +267,21 @@ $temDadosGrafico = max($valores) > 0;
                             <option value="todas" <?= $tipoFiltro === 'todas' ? 'selected' : '' ?>>Todas as Transações</option>
                             <option value="entrada" <?= $tipoFiltro === 'entrada' ? 'selected' : '' ?>>Apenas Entradas</option>
                             <option value="saida" <?= $tipoFiltro === 'saida' ? 'selected' : '' ?>>Apenas Saídas</option>
+                        </select>
+                    </div>
+                    <div class="filter-select-wrapper">
+                        <select name="categoria" class="filter-btn">
+                            <option value="todas" <?= $categoriaFiltro === 'todas' ? 'selected' : '' ?>>Todas Categorias</option>
+                            <option value="🛒" <?= $categoriaFiltro === '🛒' ? 'selected' : '' ?>>🛒 Mercado/Comida</option>
+                            <option value="⚡" <?= $categoriaFiltro === '⚡' ? 'selected' : '' ?>>⚡ Energia</option>
+                            <option value="💧" <?= $categoriaFiltro === '💧' ? 'selected' : '' ?>>💧 Água</option>
+                            <option value="📶" <?= $categoriaFiltro === '📶' ? 'selected' : '' ?>>📶 Internet/Tel</option>
+                            <option value="🚗" <?= $categoriaFiltro === '🚗' ? 'selected' : '' ?>>🚗 Transporte</option>
+                            <option value="💊" <?= $categoriaFiltro === '💊' ? 'selected' : '' ?>>💊 Saúde</option>
+                            <option value="🍿" <?= $categoriaFiltro === '🍿' ? 'selected' : '' ?>>🍿 Lazer</option>
+                            <option value="🏠" <?= $categoriaFiltro === '🏠' ? 'selected' : '' ?>>🏠 Moradia</option>
+                            <option value="🛍️" <?= $categoriaFiltro === '🛍️' ? 'selected' : '' ?>>🛍️ Compras</option>
+                            <option value="📄" <?= $categoriaFiltro === '📄' ? 'selected' : '' ?>>📄 Outros</option>
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
