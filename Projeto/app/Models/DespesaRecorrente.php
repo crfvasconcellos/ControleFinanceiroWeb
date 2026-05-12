@@ -17,15 +17,17 @@ class DespesaRecorrente {
     /**
      * Cria uma nova despesa recorrente (template mensal).
      * Aceita 'data_inicio' para gerar retroativamente.
+     * Aceita 'tipo' para diferenciar entre 'saida' (despesa) e 'entrada' (saldo).
      */
     public function criar(array $data): bool {
         if ($this->userId === null) return false;
 
         $dataInicio = !empty($data['data_inicio']) ? $data['data_inicio'] : date('Y-m-d');
+        $tipo = ($data['tipo'] ?? 'saida') === 'entrada' ? 'entrada' : 'saida';
 
         $stmt = $this->connection->prepare(
-            'INSERT INTO despesas_recorrentes (id, usuario_id, nome, descricao, valor, dia_vencimento, icone, data_inicio, ativo, criado_em)
-             VALUES (:id, :usuario_id, :nome, :descricao, :valor, :dia_vencimento, :icone, :data_inicio, 1, :criado_em)'
+            'INSERT INTO despesas_recorrentes (id, usuario_id, nome, descricao, valor, dia_vencimento, icone, tipo, data_inicio, ativo, criado_em)
+             VALUES (:id, :usuario_id, :nome, :descricao, :valor, :dia_vencimento, :icone, :tipo, :data_inicio, 1, :criado_em)'
         );
 
         return $stmt->execute([
@@ -36,6 +38,7 @@ class DespesaRecorrente {
             'valor' => (float) $data['valor'],
             'dia_vencimento' => (int) $data['dia_vencimento'],
             'icone' => $data['icone'] ?? '🔄',
+            'tipo' => $tipo,
             'data_inicio' => $dataInicio,
             'criado_em' => date('Y-m-d H:i:s'),
         ]);
@@ -48,7 +51,7 @@ class DespesaRecorrente {
         if ($this->userId === null) return [];
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, dia_vencimento, icone, data_inicio, criado_em
+            'SELECT id, nome, descricao, valor, dia_vencimento, icone, tipo, data_inicio, criado_em
              FROM despesas_recorrentes
              WHERE usuario_id = :usuario_id AND ativo = 1
              ORDER BY dia_vencimento ASC'
@@ -58,6 +61,7 @@ class DespesaRecorrente {
 
         foreach ($results as &$row) {
             $row['valor'] = (float) $row['valor'];
+            $row['tipo'] = $row['tipo'] ?? 'saida';
         }
         return $results;
     }
@@ -69,7 +73,7 @@ class DespesaRecorrente {
         if ($this->userId === null) return [];
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, dia_vencimento, icone, data_inicio, ativo, criado_em
+            'SELECT id, nome, descricao, valor, dia_vencimento, icone, tipo, data_inicio, ativo, criado_em
              FROM despesas_recorrentes
              WHERE usuario_id = :usuario_id
              ORDER BY ativo DESC, dia_vencimento ASC'
@@ -79,6 +83,7 @@ class DespesaRecorrente {
 
         foreach ($results as &$row) {
             $row['valor'] = (float) $row['valor'];
+            $row['tipo'] = $row['tipo'] ?? 'saida';
         }
         return $results;
     }
@@ -123,10 +128,10 @@ class DespesaRecorrente {
     }
 
     /**
-     * Processa as despesas recorrentes ativas.
-     * Gera despesas desde a data_inicio até o mês atual.
+     * Processa as despesas/saldos recorrentes ativas.
+     * Gera despesas (tipo=saida) ou saldos (tipo=entrada) desde a data_inicio até o mês atual.
      * Se o usuário excluiu uma instância de um mês, ela NÃO será regenerada.
-     * Retorna o número de despesas geradas.
+     * Retorna o número de registros gerados.
      */
     public function processarPendentes(): int {
         if ($this->userId === null) return 0;
@@ -136,6 +141,9 @@ class DespesaRecorrente {
         $geradas = 0;
 
         foreach ($ativas as $rec) {
+            $tipo = $rec['tipo'] ?? 'saida';
+            $tabela = ($tipo === 'entrada') ? 'saldos' : 'despesas';
+
             // Gera a partir do mês do primeiro pagamento
             $mesInicio = substr($rec['data_inicio'], 0, 7);
 
@@ -146,13 +154,13 @@ class DespesaRecorrente {
             while ($periodo <= $fim) {
                 $mesLoop = $periodo->format('Y-m');
 
-                // Verifica se já existe UMA despesa para este recorrente neste mês
-                // (deletada ou não — se o usuário excluiu, não recria)
+                // Verifica se já existe UM registro para este recorrente neste mês
+                // (deletado ou não — se o usuário excluiu, não recria)
                 $stmt = $this->connection->prepare(
-                    'SELECT COUNT(*) as total FROM despesas
+                    "SELECT COUNT(*) as total FROM {$tabela}
                      WHERE usuario_id = :usuario_id
                      AND recorrente_id = :recorrente_id
-                     AND data LIKE :mes'
+                     AND data LIKE :mes"
                 );
                 $stmt->execute([
                     'usuario_id' => $this->userId,
@@ -167,22 +175,41 @@ class DespesaRecorrente {
                     $dia = min($rec['dia_vencimento'], $diasNoMes);
                     $dataVencimento = sprintf('%s-%02d', $mesLoop, $dia);
 
-                    // Gera a despesa
-                    $stmtInsert = $this->connection->prepare(
-                        'INSERT INTO despesas (id, usuario_id, nome, descricao, valor, data, icone, recorrente_id, criado_em)
-                         VALUES (:id, :usuario_id, :nome, :descricao, :valor, :data, :icone, :recorrente_id, :criado_em)'
-                    );
-                    $stmtInsert->execute([
-                        'id' => uniqid('desp_', true),
-                        'usuario_id' => $this->userId,
-                        'nome' => $rec['nome'],
-                        'descricao' => $rec['descricao'],
-                        'valor' => $rec['valor'],
-                        'data' => $dataVencimento,
-                        'icone' => $rec['icone'],
-                        'recorrente_id' => $rec['id'],
-                        'criado_em' => date('Y-m-d H:i:s'),
-                    ]);
+                    if ($tipo === 'entrada') {
+                        // Gera saldo (entrada recorrente)
+                        $stmtInsert = $this->connection->prepare(
+                            'INSERT INTO saldos (id, usuario_id, nome, descricao, valor, data, icone, recorrente_id, criado_em)
+                             VALUES (:id, :usuario_id, :nome, :descricao, :valor, :data, :icone, :recorrente_id, :criado_em)'
+                        );
+                        $stmtInsert->execute([
+                            'id' => uniqid('saldo_', true),
+                            'usuario_id' => $this->userId,
+                            'nome' => $rec['nome'],
+                            'descricao' => $rec['descricao'],
+                            'valor' => $rec['valor'],
+                            'data' => $dataVencimento,
+                            'icone' => $rec['icone'],
+                            'recorrente_id' => $rec['id'],
+                            'criado_em' => date('Y-m-d H:i:s'),
+                        ]);
+                    } else {
+                        // Gera despesa (saída recorrente)
+                        $stmtInsert = $this->connection->prepare(
+                            'INSERT INTO despesas (id, usuario_id, nome, descricao, valor, data, icone, recorrente_id, criado_em)
+                             VALUES (:id, :usuario_id, :nome, :descricao, :valor, :data, :icone, :recorrente_id, :criado_em)'
+                        );
+                        $stmtInsert->execute([
+                            'id' => uniqid('desp_', true),
+                            'usuario_id' => $this->userId,
+                            'nome' => $rec['nome'],
+                            'descricao' => $rec['descricao'],
+                            'valor' => $rec['valor'],
+                            'data' => $dataVencimento,
+                            'icone' => $rec['icone'],
+                            'recorrente_id' => $rec['id'],
+                            'criado_em' => date('Y-m-d H:i:s'),
+                        ]);
+                    }
                     $geradas++;
                 }
 

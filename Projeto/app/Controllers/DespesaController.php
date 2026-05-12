@@ -176,16 +176,17 @@ class DespesaController {
                     'valor' => str_replace(',', '.', trim($_POST['valor'] ?? '')),
                     'dia_vencimento' => (int)($_POST['dia_vencimento'] ?? 1),
                     'icone' => $_POST['icone'] ?? '🔄',
+                    'tipo' => ($_POST['tipo_recorrente'] ?? 'saida') === 'entrada' ? 'entrada' : 'saida',
                     'data_inicio' => trim($_POST['data_inicio'] ?? ''),
                 ];
 
-                if ($recData['nome'] === '') $errors[] = 'informe o nome da despesa fixa';
+                if ($recData['nome'] === '') $errors[] = 'informe o nome do registro fixo';
                 if (!is_numeric($recData['valor']) || (float)$recData['valor'] <= 0) $errors[] = 'valor inválido';
                 if ($recData['dia_vencimento'] < 1 || $recData['dia_vencimento'] > 31) $errors[] = 'dia inválido';
 
                 if (empty($errors)) {
                     $recModel->criar($recData);
-                    // Processa imediatamente para gerar despesas pendentes
+                    // Processa imediatamente para gerar pendentes
                     $recModel->processarPendentes();
                     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                     header('Location: index.php?route=dashboard#');

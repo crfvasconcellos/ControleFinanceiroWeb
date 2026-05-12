@@ -560,39 +560,45 @@ $temDadosGrafico = max($valores) > 0;
     <?php endforeach; ?>
 
 
-    <!-- Modal: Gerenciar Despesas Fixas -->
+    <!-- Modal: Gerenciar Recorrentes Fixos -->
     <div id="modalDespesasFixas" class="modal-overlay">
         <div class="modal-content" style="max-width: 650px;">
             <a href="#!" class="modal-close">✕</a>
-            <h2>🔄 Despesas Fixas</h2>
+            <h2>🔄 Recorrentes Fixos</h2>
             <p class="text-sm mb-4" style="color: var(--color-text-light);">
-                Despesas que se repetem todo mês automaticamente.
+                Despesas e saldos que se repetem todo mês automaticamente.
             </p>
 
-            <!-- Botão para abrir modal de nova fixa -->
-            <div style="margin-bottom: 1.5rem;">
-                <a href="#modalNovaRecorrente" class="btn btn-primary btn-sm">➕ Nova Despesa Fixa</a>
+            <!-- Botão para abrir modal de novo recorrente -->
+            <div style="margin-bottom: 1.5rem; display: flex; gap: 0.75rem;">
+                <a href="#modalNovaRecorrente" class="btn btn-primary btn-sm">➕ Novo Recorrente</a>
             </div>
 
             <div class="expense-list" style="max-height: 50vh; overflow-y: auto;">
                 <?php if (empty($despesasRecorrentes)): ?>
                     <div class="empty-state">
                         <div class="empty-icon">🔄</div>
-                        <div class="empty-title">Nenhuma Despesa Fixa</div>
-                        <div class="empty-desc">Adicione despesas que se repetem todo mês, como aluguel ou internet.</div>
+                        <div class="empty-title">Nenhum Recorrente</div>
+                        <div class="empty-desc">Adicione despesas ou saldos que se repetem todo mês, como aluguel, salário ou internet.</div>
                     </div>
                 <?php else: ?>
-                    <?php foreach ($despesasRecorrentes as $rec): ?>
+                    <?php foreach ($despesasRecorrentes as $rec): 
+                        $tipoRec = $rec['tipo'] ?? 'saida';
+                        $isEntrada = $tipoRec === 'entrada';
+                    ?>
                         <div class="expense-item <?= $rec['ativo'] ? '' : 'expense-item--deleted' ?>">
                             <div class="expense-item__info">
                                 <div class="expense-item__icon"><?= $rec['icone'] ?></div>
                                 <div class="expense-item__details">
                                     <div class="expense-item__name">
                                         <?= htmlspecialchars($rec['nome']) ?>
-                                        <?php if ($rec['ativo']): ?>
-                                            <span class="badge badge-default">Ativa</span>
+                                        <?php if ($isEntrada): ?>
+                                            <span class="badge badge-entrada">Saldo</span>
                                         <?php else: ?>
-                                            <span class="badge badge-alta">Pausada</span>
+                                            <span class="badge badge-alta">Despesa</span>
+                                        <?php endif; ?>
+                                        <?php if (!$rec['ativo']): ?>
+                                            <span class="badge badge-media">Pausada</span>
                                         <?php endif; ?>
                                     </div>
                                     <?php if (!empty($rec['descricao'])): ?>
@@ -602,7 +608,11 @@ $temDadosGrafico = max($valores) > 0;
                                 </div>
                             </div>
                             <div class="expense-item__actions">
-                                <div class="expense-item__value">R$ <?= number_format($rec['valor'], 2, ',', '.') ?></div>
+                                <?php if ($isEntrada): ?>
+                                    <div class="expense-item__value" style="color: var(--color-success);">+ R$ <?= number_format($rec['valor'], 2, ',', '.') ?></div>
+                                <?php else: ?>
+                                    <div class="expense-item__value expense-item__value--expense">- R$ <?= number_format($rec['valor'], 2, ',', '.') ?></div>
+                                <?php endif; ?>
                                 <div class="expense-actions-btns">
                                     <?php if ($rec['ativo']): ?>
                                         <form method="post" action="index.php?route=dashboard" style="margin:0;">
@@ -634,14 +644,30 @@ $temDadosGrafico = max($valores) > 0;
         </div>
     </div>
 
-    <!-- Modal: Criar Nova Despesa Recorrente -->
+    <!-- Modal: Criar Novo Recorrente (Despesa ou Saldo) -->
     <div id="modalNovaRecorrente" class="modal-overlay">
         <div class="modal-content">
             <a href="#modalDespesasFixas" class="modal-close">✕</a>
-            <h2>🔄 Nova Despesa Fixa</h2>
-            <form method="post" action="index.php?route=dashboard" style="margin-top:2rem;">
+            <h2>🔄 Novo Recorrente Fixo</h2>
+            <form method="post" action="index.php?route=dashboard" style="margin-top:1.5rem;">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                 <input type="hidden" name="action" value="salvar_recorrente">
+
+                <!-- Seletor de Tipo: Despesa ou Saldo -->
+                <div style="display: flex; gap: 0; margin-bottom: 1.5rem; border-radius: var(--radius-full); overflow: hidden; border: 2px solid var(--color-border);">
+                    <label style="flex: 1; cursor: pointer;">
+                        <input type="radio" name="tipo_recorrente" value="saida" checked style="display: none;">
+                        <div class="tipo-toggle tipo-toggle--despesa" style="padding: 0.75rem; text-align: center; font-weight: 700; font-size: 0.95rem; transition: all 0.2s; background: var(--color-danger); color: white;">
+                            📉 Despesa Fixa
+                        </div>
+                    </label>
+                    <label style="flex: 1; cursor: pointer;">
+                        <input type="radio" name="tipo_recorrente" value="entrada" style="display: none;">
+                        <div class="tipo-toggle tipo-toggle--saldo" style="padding: 0.75rem; text-align: center; font-weight: 700; font-size: 0.95rem; transition: all 0.2s; background: var(--color-surface-hover); color: var(--color-text-light);">
+                            📈 Saldo Fixo
+                        </div>
+                    </label>
+                </div>
 
                 <div class="form-floating">
                     <input id="rec_nome" name="nome" type="text" required placeholder="Ex: Aluguel">
@@ -664,31 +690,41 @@ $temDadosGrafico = max($valores) > 0;
                             <option value="<?= $d ?>" <?= $d === (int)date('d') ? 'selected' : '' ?>>Dia <?= $d ?></option>
                         <?php endfor; ?>
                     </select>
-                    <label for="rec_dia" style="top: 0.6rem; transform: translateY(0); font-size: 0.75rem; font-weight: 600; color: var(--color-primary);">Dia do Vencimento</label>
+                    <label for="rec_dia" style="top: 0.6rem; transform: translateY(0); font-size: 0.75rem; font-weight: 600; color: var(--color-primary);">Dia do Mês</label>
                 </div>
 
                 <div class="form-floating">
                     <input id="rec_data_inicio" name="data_inicio" type="date" value="<?= date('Y-m-d') ?>">
-                    <label for="rec_data_inicio">Primeiro pagamento</label>
+                    <label for="rec_data_inicio">Primeiro lançamento</label>
                 </div>
 
                 <div class="form-floating" style="margin-top: 1.5rem;">
                     <select id="rec_icone" name="icone" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
-                        <option value="🔄">🔄 Recorrente (Padrão)</option>
-                        <option value="🏠">🏠 Aluguel / Moradia</option>
-                        <option value="📶">📶 Internet / Telefone</option>
-                        <option value="⚡">⚡ Energia / Luz</option>
-                        <option value="💧">💧 Água</option>
-                        <option value="📺">📺 Streaming / Assinatura</option>
-                        <option value="🚗">🚗 Seguro / Veículo</option>
-                        <option value="🏫">🏫 Escola / Faculdade</option>
-                        <option value="🏋️">🏋️ Academia</option>
-                        <option value="💳">💳 Cartão / Parcela</option>
+                        <optgroup label="— Despesas —">
+                            <option value="🔄">🔄 Recorrente (Padrão)</option>
+                            <option value="🏠">🏠 Aluguel / Moradia</option>
+                            <option value="📶">📶 Internet / Telefone</option>
+                            <option value="⚡">⚡ Energia / Luz</option>
+                            <option value="💧">💧 Água</option>
+                            <option value="📺">📺 Streaming / Assinatura</option>
+                            <option value="🚗">🚗 Seguro / Veículo</option>
+                            <option value="🏫">🏫 Escola / Faculdade</option>
+                            <option value="🏋️">🏋️ Academia</option>
+                            <option value="💳">💳 Cartão / Parcela</option>
+                        </optgroup>
+                        <optgroup label="— Saldos —">
+                            <option value="💵">💵 Dinheiro</option>
+                            <option value="💼">💼 Salário</option>
+                            <option value="📈">📈 Rendimento / Investimento</option>
+                            <option value="🏦">🏦 Transferência</option>
+                            <option value="🤑">🤑 Bônus / Freelance</option>
+                            <option value="🎁">🎁 Presente / Doação</option>
+                        </optgroup>
                     </select>
                     <label for="rec_icone" style="font-size: 0.8rem; color: var(--color-text-light); top: -20px; left: 0;">Símbolo (Ícone)</label>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block mt-4" style="padding: 1rem; font-size:1.05rem;">Criar Despesa Fixa</button>
+                <button type="submit" class="btn btn-primary btn-block mt-4" style="padding: 1rem; font-size:1.05rem;">Criar Recorrente Fixo</button>
             </form>
         </div>
     </div>

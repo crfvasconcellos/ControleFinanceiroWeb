@@ -157,6 +157,22 @@ class Database {
                 'UPDATE despesas_recorrentes SET data_inicio = DATE(criado_em) WHERE data_inicio IS NULL'
             );
         }
+
+        // Adiciona coluna tipo na tabela despesas_recorrentes (saida ou entrada)
+        $cols3 = $connection->query('SHOW COLUMNS FROM despesas_recorrentes LIKE \'tipo\'')->fetchAll();
+        if (empty($cols3)) {
+            $connection->exec(
+                'ALTER TABLE despesas_recorrentes ADD COLUMN tipo VARCHAR(10) DEFAULT \'saida\' AFTER icone'
+            );
+        }
+
+        // Adiciona coluna recorrente_id na tabela saldos (para saldos gerados por recorrentes)
+        $cols4 = $connection->query('SHOW COLUMNS FROM saldos LIKE \'recorrente_id\'')->fetchAll();
+        if (empty($cols4)) {
+            $connection->exec(
+                'ALTER TABLE saldos ADD COLUMN recorrente_id VARCHAR(64) DEFAULT NULL AFTER icone'
+            );
+        }
     }
 
     private static function loadLocalEnv(): void {
