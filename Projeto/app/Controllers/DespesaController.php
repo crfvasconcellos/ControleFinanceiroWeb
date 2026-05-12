@@ -229,6 +229,8 @@ class DespesaController {
                 'comprovante' => $s['comprovante'],
                 'icone' => $s['icone'],
                 'criado_em' => $s['criado_em'],
+                'recorrente_mensal' => $s['recorrente_mensal'] ?? 0,
+                'recorrencia_meses' => $s['recorrencia_meses'] ?? 1,
                 'tipo' => 'entrada'
             ];
         }
