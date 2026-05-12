@@ -561,6 +561,17 @@ $temDadosGrafico = max($valores) > 0;
                         <label for="edit_comprovante_<?= htmlspecialchars($despesa['id']) ?>" style="top: -5px; font-size: 0.85rem;">Novo Comprovante (PDF opcional)</label>
                     </div>
 
+                    <div style="margin-top: 1rem; padding: 0.9rem; border: 1px dashed var(--color-border); border-radius: var(--radius-md);">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--color-secondary);">
+                            <input type="checkbox" name="recorrente_mensal" value="1" <?= ($despesa['recorrente_mensal'] ?? 0) ? 'checked' : '' ?>>
+                            Transação recorrente mensal
+                        </label>
+                        <div class="form-floating" style="margin-top: 0.75rem; margin-bottom: 0;">
+                            <input id="edit_recorrencia_meses_<?= htmlspecialchars($despesa['id']) ?>" name="recorrencia_meses" type="number" min="1" max="24" value="<?= htmlspecialchars($despesa['recorrencia_meses'] ?? 1) ?>" placeholder="Quantidade de meses">
+                            <label for="edit_recorrencia_meses_<?= htmlspecialchars($despesa['id']) ?>">Quantidade de meses (1 a 24)</label>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn btn-primary btn-block mt-4" style="padding: 1rem; font-size:1.05rem;">Salvar Alterações</button>
                 </form>
             </div>
