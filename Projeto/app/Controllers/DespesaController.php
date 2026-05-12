@@ -76,6 +76,8 @@ class DespesaController {
                 $dataArr['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
                 if (is_numeric($dataArr['valor']) && (float)$dataArr['valor'] > 99999999.99) $dataArr['valor'] = '99999999.99';
                 $dataArr['data'] = trim($_POST['data'] ?? '');
+                $dataArr['data_termino'] = trim($_POST['data_termino'] ?? '');
+                if ($dataArr['data_termino'] === '') $dataArr['data_termino'] = null;
                 $dataArr['icone'] = $_POST['icone'] ?? ($tipo === 'entrada' ? '💵' : '📄');
                 $dataArr['comprovante'] = $this->handleUpload();
 
@@ -97,15 +99,22 @@ class DespesaController {
                 }
 
                 if (empty($errors)) {
+                    $salvouTudo = true;
                     if ($tipo === 'entrada') {
                         $saldoModel = new Saldo($userId);
-                        $saldoModel->adicionarSaldo((float)$dataArr['valor'], $dataArr['nome'], $dataArr['data'], $dataArr['descricao'] ?: null, $dataArr['comprovante'], $dataArr['icone']);
+                        $salvouTudo = $saldoModel->adicionarSaldo((float)$dataArr['valor'], $dataArr['nome'], $dataArr['data'], $dataArr['descricao'] ?: null, $dataArr['comprovante'], $dataArr['icone'], $dataArr['data_termino']);
                     } else {
-                        $model->salvarDespesa($dataArr);
+                        $salvouTudo = $model->salvarDespesa($dataArr);
                     }
-                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                    header('Location: index.php?route=dashboard#');
-                    exit;
+
+                    if (!$salvouTudo) {
+                        $errors[] = 'não foi possível salvar a transação';
+                    } else {
+                        $_SESSION['successMessage'] = 'transação cadastrada com sucesso';
+                        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                        header('Location: index.php?route=dashboard#');
+                        exit;
+                    }
                 }
             }
 
@@ -119,6 +128,8 @@ class DespesaController {
                 $dataArr['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
                 if (is_numeric($dataArr['valor']) && (float)$dataArr['valor'] > 99999999.99) $dataArr['valor'] = '99999999.99';
                 $dataArr['data'] = trim($_POST['data'] ?? '');
+                $dataArr['data_termino'] = trim($_POST['data_termino'] ?? '');
+                if ($dataArr['data_termino'] === '') $dataArr['data_termino'] = null;
                 $dataArr['icone'] = $_POST['icone'] ?? ($isSaldo ? '💵' : '📄');
                 
                 $novoComprovante = $this->handleUpload();
@@ -185,6 +196,7 @@ class DespesaController {
                 'descricao' => $s['descricao'],
                 'valor' => $s['valor'],
                 'data' => $s['data'] ?? substr($s['criado_em'], 0, 10),
+                'data_termino' => $s['data_termino'] ?? null,
                 'comprovante' => $s['comprovante'],
                 'icone' => $s['icone'],
                 'criado_em' => $s['criado_em'],
@@ -247,6 +259,7 @@ class DespesaController {
             'descricao' => $despesa['descricao'] ?? '',
             'valor' => $despesa['valor'],
             'data' => $despesa['data'],
+            'data_termino' => $despesa['data_termino'] ?? null,
             'icone' => $despesa['icone'] ?? ($isSaldo ? '💵' : '📄'),
             'comprovante' => $despesa['comprovante'] ?? null,
         ];
@@ -263,6 +276,8 @@ class DespesaController {
                 $data['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
                 if (is_numeric($data['valor']) && (float)$data['valor'] > 99999999.99) $data['valor'] = '99999999.99';
                 $data['data'] = trim($_POST['data'] ?? '');
+                $data['data_termino'] = trim($_POST['data_termino'] ?? '');
+                if ($data['data_termino'] === '') $data['data_termino'] = null;
                 $data['icone'] = $_POST['icone'] ?? ($isSaldo ? '💵' : '📄');
                 
                 $novoComprovante = $this->handleUpload();
@@ -317,6 +332,7 @@ class DespesaController {
         }
         return null;
     }
+
 
     private function getDespesasFiltradas() {
         Auth::verificar();

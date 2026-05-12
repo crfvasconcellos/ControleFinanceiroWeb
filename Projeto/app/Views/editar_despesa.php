@@ -46,9 +46,15 @@
                     <label for="edit_valor">Valor (R$)</label>
                 </div>
 
-                <div class="form-floating">
-                    <input id="edit_data" name="data" type="date" required value="<?= htmlspecialchars($data['data'] ?? '') ?>">
-                    <label for="edit_data">Data da Transação</label>
+                <div class="form-floating" style="display: flex; gap: 1rem;">
+                    <div style="flex: 1; position: relative;">
+                        <input id="edit_data" name="data" type="date" required value="<?= htmlspecialchars($data['data'] ?? '') ?>" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
+                        <label for="edit_data" style="position: absolute; top: -20px; left: 0; font-size: 0.8rem; color: var(--color-text-light);">Data Inicial</label>
+                    </div>
+                    <div style="flex: 1; position: relative;">
+                        <input id="edit_data_termino" name="data_termino" type="date" value="<?= htmlspecialchars($data['data_termino'] ?? '') ?>" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
+                        <label for="edit_data_termino" style="position: absolute; top: -20px; left: 0; font-size: 0.8rem; color: var(--color-text-light);">Data Final (Recorrência)</label>
+                    </div>
                 </div>
 
                 <div class="form-floating" style="margin-top: 1.5rem;">
