@@ -78,6 +78,8 @@ class DespesaController {
                 $dataArr['data'] = trim($_POST['data'] ?? '');
                 $dataArr['icone'] = $_POST['icone'] ?? ($tipo === 'entrada' ? '💵' : '📄');
                 $dataArr['comprovante'] = $this->handleUpload();
+                $recorrenteMensal = ($_POST['recorrente_mensal'] ?? '') === '1';
+                $recorrenciaMeses = $recorrenteMensal ? $this->clampRecorrenciaMeses($_POST['recorrencia_meses'] ?? null) : 1;
 
                 if ($dataArr['nome'] === '') {
                     $errors[] = 'informe um título válido';
@@ -97,15 +99,48 @@ class DespesaController {
                 }
 
                 if (empty($errors)) {
+                    $datasRecorrentes = $this->buildMonthlyRecurrenceDates($dataArr['data'], $recorrenciaMeses);
+                    $salvouTudo = true;
+
                     if ($tipo === 'entrada') {
                         $saldoModel = new Saldo($userId);
-                        $saldoModel->adicionarSaldo((float)$dataArr['valor'], $dataArr['nome'], $dataArr['data'], $dataArr['descricao'] ?: null, $dataArr['comprovante'], $dataArr['icone']);
+                        foreach ($datasRecorrentes as $dataRecorrente) {
+                            $salvou = $saldoModel->adicionarSaldo(
+                                (float)$dataArr['valor'],
+                                $dataArr['nome'],
+                                $dataRecorrente,
+                                $dataArr['descricao'] ?: null,
+                                $dataArr['comprovante'],
+                                $dataArr['icone']
+                            );
+                            if (!$salvou) {
+                                $salvouTudo = false;
+                                break;
+                            }
+                        }
                     } else {
-                        $model->salvarDespesa($dataArr);
+                        foreach ($datasRecorrentes as $dataRecorrente) {
+                            $novaDespesa = $dataArr;
+                            $novaDespesa['data'] = $dataRecorrente;
+                            $salvou = $model->salvarDespesa($novaDespesa);
+                            if (!$salvou) {
+                                $salvouTudo = false;
+                                break;
+                            }
+                        }
                     }
-                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                    header('Location: index.php?route=dashboard#');
-                    exit;
+
+                    if (!$salvouTudo) {
+                        $errors[] = 'não foi possível salvar todas as transações recorrentes';
+                    } else {
+                        $totalGerado = count($datasRecorrentes);
+                        $_SESSION['successMessage'] = $totalGerado > 1
+                            ? "{$totalGerado} transações mensais foram geradas com sucesso"
+                            : 'transação cadastrada com sucesso';
+                        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                        header('Location: index.php?route=dashboard#');
+                        exit;
+                    }
                 }
             }
 
@@ -316,6 +351,41 @@ class DespesaController {
             }
         }
         return null;
+    }
+
+    private function clampRecorrenciaMeses(?string $meses): int {
+        $valor = (int)($meses ?? 1);
+        if ($valor < 1) {
+            return 1;
+        }
+        if ($valor > 24) {
+            return 24;
+        }
+        return $valor;
+    }
+
+    private function buildMonthlyRecurrenceDates(string $startDate, int $meses): array {
+        $base = \DateTimeImmutable::createFromFormat('Y-m-d', $startDate);
+        if (!$base) {
+            return [$startDate];
+        }
+
+        $diaOriginal = (int)$base->format('d');
+        $datas = [];
+
+        for ($i = 0; $i < $meses; $i++) {
+            $mesBase = $base
+                ->modify('first day of this month')
+                ->modify("+{$i} month");
+            $ultimoDiaMes = (int)$mesBase->format('t');
+            $diaAjustado = min($diaOriginal, $ultimoDiaMes);
+
+            $datas[] = $mesBase
+                ->setDate((int)$mesBase->format('Y'), (int)$mesBase->format('m'), $diaAjustado)
+                ->format('Y-m-d');
+        }
+
+        return $datas;
     }
 
     private function getDespesasFiltradas() {

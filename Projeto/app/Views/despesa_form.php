@@ -302,7 +302,7 @@ $temDadosGrafico = max($valores) > 0;
                                 <?php if ($despesa['tipo'] === 'entrada'): ?>
                                     <div class="expense-item__value" style="color: var(--color-success);">+ R$ <?= number_format($despesa['valor'], 2, ',', '.') ?></div>
                                 <?php else: ?>
-                                    <div class="expense-item__value">R$ <?= number_format($despesa['valor'], 2, ',', '.') ?></div>
+                                    <div class="expense-item__value expense-item__value--expense">- R$ <?= number_format($despesa['valor'], 2, ',', '.') ?></div>
                                 <?php endif; ?>
                                 <div class="expense-actions-btns">
                                     <a href="#modalEditar_<?= htmlspecialchars($despesa['id']) ?>" class="btn-icon" title="Editar">✏️</a>
@@ -345,6 +345,17 @@ $temDadosGrafico = max($valores) > 0;
                 <div class="form-floating">
                     <input id="new_data" name="data" type="date" required value="<?= date('Y-m-d') ?>">
                     <label for="new_data">Data da Transação</label>
+                </div>
+
+                <div style="margin-top: 1rem; padding: 0.9rem; border: 1px dashed var(--color-border); border-radius: var(--radius-md);">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--color-secondary);">
+                        <input type="checkbox" name="recorrente_mensal" value="1">
+                        Gerar despesa recorrente mensal
+                    </label>
+                    <div class="form-floating" style="margin-top: 0.75rem; margin-bottom: 0;">
+                        <input id="new_recorrencia_meses" name="recorrencia_meses" type="number" min="1" max="24" value="12" placeholder="Quantidade de meses">
+                        <label for="new_recorrencia_meses">Quantidade de meses (1 a 24)</label>
+                    </div>
                 </div>
 
                 <div class="form-floating" style="margin-top: 1.5rem;">
@@ -402,6 +413,17 @@ $temDadosGrafico = max($valores) > 0;
                     <label for="saldo_data">Data da Transação</label>
                 </div>
 
+                <div style="margin-top: 1rem; padding: 0.9rem; border: 1px dashed var(--color-border); border-radius: var(--radius-md);">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--color-secondary);">
+                        <input type="checkbox" name="recorrente_mensal" value="1">
+                        Gerar saldo recorrente mensal
+                    </label>
+                    <div class="form-floating" style="margin-top: 0.75rem; margin-bottom: 0;">
+                        <input id="saldo_recorrencia_meses" name="recorrencia_meses" type="number" min="1" max="24" value="12" placeholder="Quantidade de meses">
+                        <label for="saldo_recorrencia_meses">Quantidade de meses (1 a 24)</label>
+                    </div>
+                </div>
+
                 <div class="form-floating" style="margin-top: 1.5rem;">
                     <select id="saldo_icone" name="icone" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
                         <option value="💵">💵 Dinheiro (Padrão)</option>
@@ -431,7 +453,10 @@ $temDadosGrafico = max($valores) > 0;
             <p class="text-sm mb-4" style="color: var(--color-text-light);">Registros riscados foram excluídos e não afetam o saldo total.</p>
             
             <div class="expense-list" style="max-height: 55vh; overflow-y: auto; padding-right: 1rem;">
-                <?php foreach ($historicoCompleto as $h): $del = !empty($h['deletado_em']); ?>
+                <?php foreach ($historicoCompleto as $h):
+                    $del = !empty($h['deletado_em']);
+                    $tipoHistorico = str_starts_with((string)$h['id'], 'saldo_') ? 'entrada' : 'saida';
+                ?>
                     <div class="expense-item <?= $del ? 'expense-item--deleted' : '' ?>">
                         <div class="expense-item__info">
                             <div class="expense-item__details">
@@ -442,7 +467,11 @@ $temDadosGrafico = max($valores) > 0;
                                 <span class="expense-item__date"><?= date('d/m/Y', strtotime($h['data'])) ?></span>
                             </div>
                         </div>
-                        <div class="expense-item__value">R$ <?= number_format($h['valor'], 2, ',', '.') ?></div>
+                        <?php if ($tipoHistorico === 'entrada'): ?>
+                            <div class="expense-item__value" style="color: var(--color-success);">+ R$ <?= number_format($h['valor'], 2, ',', '.') ?></div>
+                        <?php else: ?>
+                            <div class="expense-item__value expense-item__value--expense">- R$ <?= number_format($h['valor'], 2, ',', '.') ?></div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>

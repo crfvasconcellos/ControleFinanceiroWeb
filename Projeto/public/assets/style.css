@@ -313,6 +313,7 @@ select.filter-btn:focus { outline: none; border-color: var(--color-primary); box
 
 .expense-item__actions { display: flex; align-items: center; gap: 1.5rem; }
 .expense-item__value { font-weight: 700; color: var(--color-secondary); font-size: 1.35rem; letter-spacing: -0.03em; }
+.expense-item__value--expense { color: var(--color-danger); }
 
 .expense-actions-btns { display: flex; gap: 0.5rem; opacity: 1; transition: transform 0.2s; }
 .expense-item:hover .expense-actions-btns { transform: scale(1.05); }
