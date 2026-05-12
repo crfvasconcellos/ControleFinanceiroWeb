@@ -8,7 +8,8 @@ require_once __DIR__ . '/../app/Models/Saldo.php';
 require_once __DIR__ . '/../app/Models/DespesaRecorrente.php';
 require_once __DIR__ . '/../app/Controllers/DespesaController.php';
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
-require_once __DIR__ . '/../app/Middleware/Auth.php';
+require_once __DIR__ . '/../app/Middleware/Auth.php';require_once __DIR__ . '/../app/Controllers/ApiController.php';
+
 
 use App\Controllers\DespesaController;
 use App\Controllers\AuthController;
@@ -37,10 +38,9 @@ switch ($route) {
         $app->exportarCsv();
         break;
 
-    case 'exportar_pdf':
-        $app = new DespesaController();
-        $app->exportarPdf();
-        break;
+    case 'api_despesas':
+    (new \App\Controllers\ApiController())->despesas();
+    break;
 
     case 'dashboard':
     default:

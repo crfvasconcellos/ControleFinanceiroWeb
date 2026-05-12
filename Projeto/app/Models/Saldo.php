@@ -17,12 +17,12 @@ class Saldo {
     /**
      * Adiciona um valor de saldo para o usuário.
      */
-    public function adicionarSaldo(float $valor, string $nome, string $data, ?string $descricao = null, ?string $comprovante = null, ?string $icone = '💵'): bool {
+    public function adicionarSaldo(float $valor, string $nome, string $data, ?string $descricao = null, ?string $comprovante = null, ?string $icone = '💵', ?string $data_termino = null): bool {
         if ($this->userId === null) return false;
 
         $stmt = $this->connection->prepare(
-            'INSERT INTO saldos (id, usuario_id, nome, descricao, valor, data, comprovante, icone, criado_em)
-             VALUES (:id, :usuario_id, :nome, :descricao, :valor, :data, :comprovante, :icone, :criado_em)'
+            'INSERT INTO saldos (id, usuario_id, nome, descricao, valor, data, data_termino, comprovante, icone, criado_em)
+             VALUES (:id, :usuario_id, :nome, :descricao, :valor, :data, :data_termino, :comprovante, :icone, :criado_em)'
         );
 
         return $stmt->execute([
@@ -30,6 +30,7 @@ class Saldo {
             'usuario_id' => $this->userId,
             'valor' => $valor,
             'data' => $data,
+            'data_termino' => $data_termino,
             'comprovante' => $comprovante,
             'icone' => $icone,
             'nome' => $nome,
@@ -82,7 +83,7 @@ class Saldo {
         if ($this->userId === null) return [];
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em
+            'SELECT id, nome, descricao, valor, data, data_termino, comprovante, icone, criado_em
              FROM saldos
              WHERE usuario_id = :usuario_id AND deletado_em IS NULL
              ORDER BY data DESC, criado_em DESC'
@@ -100,7 +101,7 @@ class Saldo {
         if ($this->userId === null) return [];
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em, deletado_em
+            'SELECT id, nome, descricao, valor, data, data_termino, comprovante, icone, criado_em, deletado_em
              FROM saldos
              WHERE usuario_id = :usuario_id
              ORDER BY COALESCE(deletado_em, criado_em) DESC'
@@ -133,7 +134,7 @@ class Saldo {
         if ($this->userId === null) return null;
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em
+            'SELECT id, nome, descricao, valor, data, data_termino, comprovante, icone, criado_em
              FROM saldos
              WHERE id = :id AND usuario_id = :usuario_id AND deletado_em IS NULL'
         );
@@ -147,7 +148,7 @@ class Saldo {
         if ($this->userId === null) return false;
 
         $stmt = $this->connection->prepare(
-            'UPDATE saldos SET nome = :nome, descricao = :descricao, valor = :valor, data = :data, comprovante = :comprovante, icone = :icone
+            'UPDATE saldos SET nome = :nome, descricao = :descricao, valor = :valor, data = :data, data_termino = :data_termino, comprovante = :comprovante, icone = :icone
              WHERE id = :id AND usuario_id = :usuario_id AND deletado_em IS NULL'
         );
         
@@ -156,6 +157,7 @@ class Saldo {
             'descricao' => $dados['descricao'] ?? null,
             'valor' => (float) $dados['valor'],
             'data' => $dados['data'],
+            'data_termino' => $dados['data_termino'] ?? null,
             'comprovante' => $dados['comprovante'] ?? null,
             'icone' => $dados['icone'] ?? '💵',
             'id' => $id,

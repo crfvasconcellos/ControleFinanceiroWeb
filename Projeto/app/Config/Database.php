@@ -70,6 +70,7 @@ class Database {
                 nome VARCHAR(120) NOT NULL,
                 email VARCHAR(160) NOT NULL UNIQUE,
                 senha VARCHAR(255) NOT NULL,
+                api_key VARCHAR(64) UNIQUE,
                 criado_em DATETIME NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;'
         );
@@ -82,6 +83,7 @@ class Database {
                 descricao VARCHAR(200) DEFAULT NULL,
                 valor DECIMAL(10,2) NOT NULL,
                 data DATE NOT NULL,
+                data_termino DATE DEFAULT NULL,
                 comprovante VARCHAR(255) DEFAULT NULL,
                 icone VARCHAR(10) DEFAULT \'📄\',
                 criado_em DATETIME NOT NULL,
@@ -102,6 +104,7 @@ class Database {
                 descricao VARCHAR(200) DEFAULT NULL,
                 valor DECIMAL(10,2) NOT NULL,
                 data DATE NOT NULL,
+                data_termino DATE DEFAULT NULL,
                 comprovante VARCHAR(255) DEFAULT NULL,
                 icone VARCHAR(10) DEFAULT \'💵\',
                 criado_em DATETIME NOT NULL,
