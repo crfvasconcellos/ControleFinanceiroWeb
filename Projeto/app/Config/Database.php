@@ -116,6 +116,47 @@ class Database {
                 INDEX idx_saldos_soft_delete (usuario_id, deletado_em)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;'
         );
+
+        // Tabela de despesas recorrentes (templates mensais)
+        $connection->exec(
+            'CREATE TABLE IF NOT EXISTS despesas_recorrentes (
+                id VARCHAR(64) PRIMARY KEY,
+                usuario_id VARCHAR(64) NOT NULL,
+                nome VARCHAR(140) NOT NULL,
+                descricao VARCHAR(200) DEFAULT NULL,
+                valor DECIMAL(10,2) NOT NULL,
+                dia_vencimento INT NOT NULL DEFAULT 1,
+                icone VARCHAR(10) DEFAULT \'🔄\',
+                data_inicio DATE DEFAULT NULL,
+                ativo TINYINT(1) DEFAULT 1,
+                criado_em DATETIME NOT NULL,
+                CONSTRAINT fk_recorrentes_usuario
+                    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+                    ON DELETE CASCADE,
+                INDEX idx_recorrentes_usuario (usuario_id),
+                INDEX idx_recorrentes_ativo (usuario_id, ativo)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;'
+        );
+
+        // Adiciona coluna recorrente_id na tabela despesas (se não existir)
+        $cols = $connection->query('SHOW COLUMNS FROM despesas LIKE \'recorrente_id\'')->fetchAll();
+        if (empty($cols)) {
+            $connection->exec(
+                'ALTER TABLE despesas ADD COLUMN recorrente_id VARCHAR(64) DEFAULT NULL AFTER icone'
+            );
+        }
+
+        // Adiciona coluna data_inicio na tabela despesas_recorrentes (se não existir)
+        $cols2 = $connection->query('SHOW COLUMNS FROM despesas_recorrentes LIKE \'data_inicio\'')->fetchAll();
+        if (empty($cols2)) {
+            $connection->exec(
+                'ALTER TABLE despesas_recorrentes ADD COLUMN data_inicio DATE DEFAULT NULL AFTER icone'
+            );
+            // Preenche data_inicio com criado_em para registros existentes
+            $connection->exec(
+                'UPDATE despesas_recorrentes SET data_inicio = DATE(criado_em) WHERE data_inicio IS NULL'
+            );
+        }
     }
 
     private static function loadLocalEnv(): void {

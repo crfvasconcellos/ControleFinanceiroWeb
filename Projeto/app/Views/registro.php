@@ -12,7 +12,7 @@
         <div class="auth-card">
             <div class="auth-header">
                 <div class="auth-icon">
-                    <img src="assets/img/logo.png" alt="Logo Controle Financeiro" class="auth-logo" draggable="false" ondragstart="return false" onselectstart="return false" style="width: 50px;">
+                    <img src="assets/img/logo.png" alt="Logo Controle Financeiro" class="auth-logo" draggable="false" style="width: 50px;">
                 </div>
                 <h1>Criar Conta</h1>
                 <p>Preencha os dados para se cadastrar</p>

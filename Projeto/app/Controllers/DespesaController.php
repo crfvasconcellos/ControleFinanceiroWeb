@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Despesa;
 use App\Models\Saldo;
+use App\Models\DespesaRecorrente;
 use App\Middleware\Auth;
 use App\Models\Usuario;
 
@@ -165,12 +166,68 @@ class DespesaController {
                     $errors[] = 'não foi possível salvar as alterações';
                 }
             }
+
+            // Ações de despesas recorrentes
+            if (empty($errors) && $action === 'salvar_recorrente') {
+                $recModel = new DespesaRecorrente($userId);
+                $recData = [
+                    'nome' => trim($_POST['nome'] ?? ''),
+                    'descricao' => trim($_POST['descricao'] ?? ''),
+                    'valor' => str_replace(',', '.', trim($_POST['valor'] ?? '')),
+                    'dia_vencimento' => (int)($_POST['dia_vencimento'] ?? 1),
+                    'icone' => $_POST['icone'] ?? '🔄',
+                    'data_inicio' => trim($_POST['data_inicio'] ?? ''),
+                ];
+
+                if ($recData['nome'] === '') $errors[] = 'informe o nome da despesa fixa';
+                if (!is_numeric($recData['valor']) || (float)$recData['valor'] <= 0) $errors[] = 'valor inválido';
+                if ($recData['dia_vencimento'] < 1 || $recData['dia_vencimento'] > 31) $errors[] = 'dia inválido';
+
+                if (empty($errors)) {
+                    $recModel->criar($recData);
+                    // Processa imediatamente para gerar despesas pendentes
+                    $recModel->processarPendentes();
+                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                    header('Location: index.php?route=dashboard#');
+                    exit;
+                }
+            }
+
+            if (empty($errors) && $action === 'desativar_recorrente') {
+                $recModel = new DespesaRecorrente($userId);
+                $recModel->desativar(trim($_POST['recorrente_id'] ?? ''));
+                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                header('Location: index.php?route=dashboard#modalDespesasFixas');
+                exit;
+            }
+
+            if (empty($errors) && $action === 'reativar_recorrente') {
+                $recModel = new DespesaRecorrente($userId);
+                $recModel->reativar(trim($_POST['recorrente_id'] ?? ''));
+                // Processa para gerar despesas pendentes
+                $recModel->processarPendentes();
+                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                header('Location: index.php?route=dashboard#modalDespesasFixas');
+                exit;
+            }
+
+            if (empty($errors) && $action === 'remover_recorrente') {
+                $recModel = new DespesaRecorrente($userId);
+                $recModel->remover(trim($_POST['recorrente_id'] ?? ''));
+                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                header('Location: index.php?route=dashboard#modalDespesasFixas');
+                exit;
+            }
         }
 
         if (!empty($_SESSION['successMessage'])) {
             $successMessage = $_SESSION['successMessage'];
             unset($_SESSION['successMessage']);
         }
+
+        // Processa despesas recorrentes pendentes
+        $recorrenteModel = new DespesaRecorrente($userId);
+        $recorrenteModel->processarPendentes();
 
         $listaDespesas = $model->buscarDespesas();
         $historicoDespesas = $model->buscarHistoricoCompleto();
@@ -219,6 +276,9 @@ class DespesaController {
             $dateB = $b['deletado_em'] ?? $b['criado_em'] ?? '0000-00-00';
             return strcmp($dateB, $dateA);
         });
+
+        // Dados de despesas recorrentes para a view
+        $despesasRecorrentes = $recorrenteModel->listarTodas();
 
         require_once __DIR__ . '/../Views/despesa_form.php';
     }
