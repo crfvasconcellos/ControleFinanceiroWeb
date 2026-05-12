@@ -34,8 +34,11 @@ $totalEntradasFiltradas = 0;
 // --- Filtragem das transações ---
 foreach ($todasTransacoes as $transacao) {
     $mesDespesa = substr($transacao['data'], 0, 7);
+    $mesTermino = !empty($transacao['data_termino']) ? substr($transacao['data_termino'], 0, 7) : $mesDespesa;
 
-    if ($mesFiltro !== 'todos' && $mesDespesa !== $mesFiltro) continue;
+    if ($mesFiltro !== 'todos') {
+        if ($mesFiltro < $mesDespesa || $mesFiltro > $mesTermino) continue;
+    }
     if ($tipoFiltro !== 'todas' && $transacao['tipo'] !== $tipoFiltro) continue;
 
     $prioridade = 'baixa';
@@ -52,14 +55,24 @@ foreach ($todasTransacoes as $transacao) {
 
     if ($categoriaFiltro !== 'todas' && $icone !== $categoriaFiltro) continue;
 
+    $mesesMultiplicador = 1;
+    if ($mesFiltro === 'todos' && !empty($transacao['data_termino'])) {
+        $d1 = new DateTime(substr($transacao['data'], 0, 7) . '-01');
+        $d2 = new DateTime(substr($transacao['data_termino'], 0, 7) . '-01');
+        if ($d2 >= $d1) {
+            $diff = $d1->diff($d2);
+            $mesesMultiplicador = ($diff->y * 12) + $diff->m + 1;
+        }
+    }
+
     $transacao['prioridade'] = $prioridade;
     $transacao['icone'] = $icone;
     $despesasFiltradas[] = $transacao;
     if ($transacao['tipo'] === 'saida') {
-        $totalMes += $transacao['valor'];
+        $totalMes += ($transacao['valor'] * $mesesMultiplicador);
     }
     if ($transacao['tipo'] === 'entrada') {
-        $totalEntradasFiltradas += $transacao['valor'];
+        $totalEntradasFiltradas += ($transacao['valor'] * $mesesMultiplicador);
     }
 }
 
@@ -77,9 +90,15 @@ if ($mesFiltro === 'todos') {
         $evolucaoGrafico[$m] = ['gastos' => 0, 'label' => substr($mesesPt[date('m', strtotime("-$i months"))], 0, 3)];
     }
     foreach ($todasTransacoes as $t) {
-        $mk = substr($t['data'], 0, 7);
-        if ($t['tipo'] === 'saida' && isset($evolucaoGrafico[$mk])) {
-            $evolucaoGrafico[$mk]['gastos'] += $t['valor'];
+        if ($t['tipo'] === 'saida') {
+            $mStart = substr($t['data'], 0, 7);
+            $mEnd = !empty($t['data_termino']) ? substr($t['data_termino'], 0, 7) : $mStart;
+            
+            foreach ($evolucaoGrafico as $mk => &$item) {
+                if ($mk >= $mStart && $mk <= $mEnd) {
+                    $item['gastos'] += $t['valor'];
+                }
+            }
         }
     }
 } else {
@@ -94,8 +113,18 @@ if ($mesFiltro === 'todos') {
         $evolucaoGrafico[$dk] = ['gastos' => 0, 'label' => (string)$d];
     }
     foreach ($todasTransacoes as $t) {
-        if ($t['tipo'] === 'saida' && isset($evolucaoGrafico[$t['data']])) {
-            $evolucaoGrafico[$t['data']]['gastos'] += $t['valor'];
+        if ($t['tipo'] === 'saida') {
+            $dStart = $t['data'];
+            $dEnd = !empty($t['data_termino']) ? $t['data_termino'] : $dStart;
+            
+            $diaTransacao = substr($dStart, 8, 2);
+            $dataNoMesFiltro = $mesFiltro . '-' . $diaTransacao;
+            
+            if ($dataNoMesFiltro >= $dStart && $dataNoMesFiltro <= $dEnd) {
+                if (isset($evolucaoGrafico[$dataNoMesFiltro])) {
+                    $evolucaoGrafico[$dataNoMesFiltro]['gastos'] += $t['valor'];
+                }
+            }
         }
     }
 }
@@ -310,7 +339,12 @@ $temDadosGrafico = max($valores) > 0;
                                     <?php if (!empty($despesa['descricao'])): ?>
                                         <div style="font-size: 0.8rem; color: var(--color-text-light); margin-top: 0.1rem;"><?= htmlspecialchars($despesa['descricao']) ?></div>
                                     <?php endif; ?>
-                                    <span class="expense-item__date"><?= date('d M, Y', strtotime($despesa['data'])) ?></span>
+                                    <span class="expense-item__date">
+                                        <?= date('d M, Y', strtotime($despesa['data'])) ?>
+                                        <?php if (!empty($despesa['data_termino'])): ?>
+                                            <span style="opacity: 0.6; font-size: 0.85em; margin-left: 4px;">➔ até <?= date('d M, Y', strtotime($despesa['data_termino'])) ?></span>
+                                        <?php endif; ?>
+                                    </span>
                                     <?php if (!empty($despesa['comprovante'])): ?>
                                         <a href="<?= htmlspecialchars($despesa['comprovante']) ?>" target="_blank" style="font-size: 0.75rem; color: var(--color-primary); margin-left: 0.5rem; text-decoration: none;">📄 PDF</a>
                                     <?php endif; ?>
@@ -360,21 +394,18 @@ $temDadosGrafico = max($valores) > 0;
                     <label for="new_valor">Valor (R$)</label>
                 </div>
                 
-                <div class="form-floating">
-                    <input id="new_data" name="data" type="date" required value="<?= date('Y-m-d') ?>">
-                    <label for="new_data">Data da Transação</label>
-                </div>
-
-                <div style="margin-top: 1rem; padding: 0.9rem; border: 1px dashed var(--color-border); border-radius: var(--radius-md);">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--color-secondary);">
-                        <input type="checkbox" name="recorrente_mensal" value="1">
-                        Gerar despesa recorrente mensal
-                    </label>
-                    <div class="form-floating" style="margin-top: 0.75rem; margin-bottom: 0;">
-                        <input id="new_recorrencia_meses" name="recorrencia_meses" type="number" min="1" max="24" value="12" placeholder="Quantidade de meses">
-                        <label for="new_recorrencia_meses">Quantidade de meses (1 a 24)</label>
+                <div class="form-floating" style="display: flex; gap: 1rem;">
+                    <div style="flex: 1; position: relative;">
+                        <input id="new_data" name="data" type="date" required value="<?= date('Y-m-d') ?>" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
+                        <label for="new_data" style="position: absolute; top: -20px; left: 0; font-size: 0.8rem; color: var(--color-text-light);">Data Inicial</label>
+                    </div>
+                    <div style="flex: 1; position: relative;">
+                        <input id="new_data_termino" name="data_termino" type="date" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
+                        <label for="new_data_termino" style="position: absolute; top: -20px; left: 0; font-size: 0.8rem; color: var(--color-text-light);">Data Final (Recorrência)</label>
                     </div>
                 </div>
+
+
 
                 <div class="form-floating" style="margin-top: 1.5rem;">
                     <select id="new_icone" name="icone" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
@@ -426,21 +457,18 @@ $temDadosGrafico = max($valores) > 0;
                     <label for="saldo_valor">Valor (R$)</label>
                 </div>
                 
-                <div class="form-floating">
-                    <input id="saldo_data" name="data" type="date" required value="<?= date('Y-m-d') ?>">
-                    <label for="saldo_data">Data da Transação</label>
-                </div>
-
-                <div style="margin-top: 1rem; padding: 0.9rem; border: 1px dashed var(--color-border); border-radius: var(--radius-md);">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--color-secondary);">
-                        <input type="checkbox" name="recorrente_mensal" value="1">
-                        Gerar saldo recorrente mensal
-                    </label>
-                    <div class="form-floating" style="margin-top: 0.75rem; margin-bottom: 0;">
-                        <input id="saldo_recorrencia_meses" name="recorrencia_meses" type="number" min="1" max="24" value="12" placeholder="Quantidade de meses">
-                        <label for="saldo_recorrencia_meses">Quantidade de meses (1 a 24)</label>
+                <div class="form-floating" style="display: flex; gap: 1rem;">
+                    <div style="flex: 1; position: relative;">
+                        <input id="saldo_data" name="data" type="date" required value="<?= date('Y-m-d') ?>" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
+                        <label for="saldo_data" style="position: absolute; top: -20px; left: 0; font-size: 0.8rem; color: var(--color-text-light);">Data Inicial</label>
+                    </div>
+                    <div style="flex: 1; position: relative;">
+                        <input id="saldo_data_termino" name="data_termino" type="date" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
+                        <label for="saldo_data_termino" style="position: absolute; top: -20px; left: 0; font-size: 0.8rem; color: var(--color-text-light);">Data Final (Recorrência)</label>
                     </div>
                 </div>
+
+
 
                 <div class="form-floating" style="margin-top: 1.5rem;">
                     <select id="saldo_icone" name="icone" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
@@ -546,9 +574,15 @@ $temDadosGrafico = max($valores) > 0;
                         <label for="edit_valor_<?= htmlspecialchars($despesa['id']) ?>">Valor (R$)</label>
                     </div>
                     
-                    <div class="form-floating">
-                        <input id="edit_data_<?= htmlspecialchars($despesa['id']) ?>" name="data" type="date" required value="<?= htmlspecialchars(substr($despesa['data'], 0, 10)) ?>">
-                        <label for="edit_data_<?= htmlspecialchars($despesa['id']) ?>">Data da Transação</label>
+                    <div class="form-floating" style="display: flex; gap: 1rem;">
+                        <div style="flex: 1; position: relative;">
+                            <input id="edit_data_<?= htmlspecialchars($despesa['id']) ?>" name="data" type="date" required value="<?= htmlspecialchars(substr($despesa['data'], 0, 10)) ?>" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
+                            <label for="edit_data_<?= htmlspecialchars($despesa['id']) ?>" style="position: absolute; top: -20px; left: 0; font-size: 0.8rem; color: var(--color-text-light);">Data Inicial</label>
+                        </div>
+                        <div style="flex: 1; position: relative;">
+                            <input id="edit_data_termino_<?= htmlspecialchars($despesa['id']) ?>" name="data_termino" type="date" value="<?= htmlspecialchars(!empty($despesa['data_termino']) ? substr($despesa['data_termino'], 0, 10) : '') ?>" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
+                            <label for="edit_data_termino_<?= htmlspecialchars($despesa['id']) ?>" style="position: absolute; top: -20px; left: 0; font-size: 0.8rem; color: var(--color-text-light);">Data Final (Recorrência)</label>
+                        </div>
                     </div>
 
                     <div class="form-floating" style="margin-top: 1rem;">
@@ -579,16 +613,7 @@ $temDadosGrafico = max($valores) > 0;
                         <label for="edit_comprovante_<?= htmlspecialchars($despesa['id']) ?>" style="top: -5px; font-size: 0.85rem;">Novo Comprovante (PDF opcional)</label>
                     </div>
 
-                    <div style="margin-top: 1rem; padding: 0.9rem; border: 1px dashed var(--color-border); border-radius: var(--radius-md);">
-                        <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--color-secondary);">
-                            <input type="checkbox" name="recorrente_mensal" value="1" <?= ($despesa['recorrente_mensal'] ?? 0) ? 'checked' : '' ?>>
-                            Transação recorrente mensal
-                        </label>
-                        <div class="form-floating" style="margin-top: 0.75rem; margin-bottom: 0;">
-                            <input id="edit_recorrencia_meses_<?= htmlspecialchars($despesa['id']) ?>" name="recorrencia_meses" type="number" min="1" max="24" value="<?= htmlspecialchars($despesa['recorrencia_meses'] ?? 1) ?>" placeholder="Quantidade de meses">
-                            <label for="edit_recorrencia_meses_<?= htmlspecialchars($despesa['id']) ?>">Quantidade de meses (1 a 24)</label>
-                        </div>
-                    </div>
+
 
                     <button type="submit" class="btn btn-primary btn-block mt-4" style="padding: 1rem; font-size:1.05rem;">Salvar Alterações</button>
                 </form>

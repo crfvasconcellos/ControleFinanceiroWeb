@@ -76,10 +76,10 @@ class DespesaController {
                 $dataArr['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
                 if (is_numeric($dataArr['valor']) && (float)$dataArr['valor'] > 99999999.99) $dataArr['valor'] = '99999999.99';
                 $dataArr['data'] = trim($_POST['data'] ?? '');
+                $dataArr['data_termino'] = trim($_POST['data_termino'] ?? '');
+                if ($dataArr['data_termino'] === '') $dataArr['data_termino'] = null;
                 $dataArr['icone'] = $_POST['icone'] ?? ($tipo === 'entrada' ? '💵' : '📄');
                 $dataArr['comprovante'] = $this->handleUpload();
-                $recorrenteMensal = ($_POST['recorrente_mensal'] ?? '') === '1';
-                $recorrenciaMeses = $recorrenteMensal ? $this->clampRecorrenciaMeses($_POST['recorrencia_meses'] ?? null) : 1;
 
                 if ($dataArr['nome'] === '') {
                     $errors[] = 'informe um título válido';
@@ -99,48 +99,18 @@ class DespesaController {
                 }
 
                 if (empty($errors)) {
-                    $datasRecorrentes = $this->buildMonthlyRecurrenceDates($dataArr['data'], $recorrenciaMeses);
                     $salvouTudo = true;
-
                     if ($tipo === 'entrada') {
                         $saldoModel = new Saldo($userId);
-                        foreach ($datasRecorrentes as $dataRecorrente) {
-                            $salvou = $saldoModel->adicionarSaldo(
-                                (float)$dataArr['valor'],
-                                $dataArr['nome'],
-                                $dataRecorrente,
-                                $dataArr['descricao'] ?: null,
-                                $dataArr['comprovante'],
-                                $dataArr['icone'],
-                                $recorrenteMensal ? 1 : 0,
-                                $recorrenciaMeses
-                            );
-                            if (!$salvou) {
-                                $salvouTudo = false;
-                                break;
-                            }
-                        }
+                        $salvouTudo = $saldoModel->adicionarSaldo((float)$dataArr['valor'], $dataArr['nome'], $dataArr['data'], $dataArr['descricao'] ?: null, $dataArr['comprovante'], $dataArr['icone'], $dataArr['data_termino']);
                     } else {
-                        foreach ($datasRecorrentes as $dataRecorrente) {
-                            $novaDespesa = $dataArr;
-                            $novaDespesa['data'] = $dataRecorrente;
-                            $novaDespesa['recorrente_mensal'] = $recorrenteMensal ? 1 : 0;
-                            $novaDespesa['recorrencia_meses'] = $recorrenciaMeses;
-                            $salvou = $model->salvarDespesa($novaDespesa);
-                            if (!$salvou) {
-                                $salvouTudo = false;
-                                break;
-                            }
-                        }
+                        $salvouTudo = $model->salvarDespesa($dataArr);
                     }
 
                     if (!$salvouTudo) {
-                        $errors[] = 'não foi possível salvar todas as transações recorrentes';
+                        $errors[] = 'não foi possível salvar a transação';
                     } else {
-                        $totalGerado = count($datasRecorrentes);
-                        $_SESSION['successMessage'] = $totalGerado > 1
-                            ? "{$totalGerado} transações mensais foram geradas com sucesso"
-                            : 'transação cadastrada com sucesso';
+                        $_SESSION['successMessage'] = 'transação cadastrada com sucesso';
                         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                         header('Location: index.php?route=dashboard#');
                         exit;
@@ -158,9 +128,9 @@ class DespesaController {
                 $dataArr['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
                 if (is_numeric($dataArr['valor']) && (float)$dataArr['valor'] > 99999999.99) $dataArr['valor'] = '99999999.99';
                 $dataArr['data'] = trim($_POST['data'] ?? '');
+                $dataArr['data_termino'] = trim($_POST['data_termino'] ?? '');
+                if ($dataArr['data_termino'] === '') $dataArr['data_termino'] = null;
                 $dataArr['icone'] = $_POST['icone'] ?? ($isSaldo ? '💵' : '📄');
-                $dataArr['recorrente_mensal'] = ($_POST['recorrente_mensal'] ?? '') === '1' ? 1 : 0;
-                $dataArr['recorrencia_meses'] = $this->clampRecorrenciaMeses($_POST['recorrencia_meses'] ?? null);
                 
                 $novoComprovante = $this->handleUpload();
                 if ($novoComprovante !== null) {
@@ -226,11 +196,10 @@ class DespesaController {
                 'descricao' => $s['descricao'],
                 'valor' => $s['valor'],
                 'data' => $s['data'] ?? substr($s['criado_em'], 0, 10),
+                'data_termino' => $s['data_termino'] ?? null,
                 'comprovante' => $s['comprovante'],
                 'icone' => $s['icone'],
                 'criado_em' => $s['criado_em'],
-                'recorrente_mensal' => $s['recorrente_mensal'] ?? 0,
-                'recorrencia_meses' => $s['recorrencia_meses'] ?? 1,
                 'tipo' => 'entrada'
             ];
         }
@@ -290,6 +259,7 @@ class DespesaController {
             'descricao' => $despesa['descricao'] ?? '',
             'valor' => $despesa['valor'],
             'data' => $despesa['data'],
+            'data_termino' => $despesa['data_termino'] ?? null,
             'icone' => $despesa['icone'] ?? ($isSaldo ? '💵' : '📄'),
             'comprovante' => $despesa['comprovante'] ?? null,
         ];
@@ -306,6 +276,8 @@ class DespesaController {
                 $data['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
                 if (is_numeric($data['valor']) && (float)$data['valor'] > 99999999.99) $data['valor'] = '99999999.99';
                 $data['data'] = trim($_POST['data'] ?? '');
+                $data['data_termino'] = trim($_POST['data_termino'] ?? '');
+                if ($data['data_termino'] === '') $data['data_termino'] = null;
                 $data['icone'] = $_POST['icone'] ?? ($isSaldo ? '💵' : '📄');
                 
                 $novoComprovante = $this->handleUpload();
@@ -361,40 +333,6 @@ class DespesaController {
         return null;
     }
 
-    private function clampRecorrenciaMeses(?string $meses): int {
-        $valor = (int)($meses ?? 1);
-        if ($valor < 1) {
-            return 1;
-        }
-        if ($valor > 24) {
-            return 24;
-        }
-        return $valor;
-    }
-
-    private function buildMonthlyRecurrenceDates(string $startDate, int $meses): array {
-        $base = \DateTimeImmutable::createFromFormat('Y-m-d', $startDate);
-        if (!$base) {
-            return [$startDate];
-        }
-
-        $diaOriginal = (int)$base->format('d');
-        $datas = [];
-
-        for ($i = 0; $i < $meses; $i++) {
-            $mesBase = $base
-                ->modify('first day of this month')
-                ->modify("+{$i} month");
-            $ultimoDiaMes = (int)$mesBase->format('t');
-            $diaAjustado = min($diaOriginal, $ultimoDiaMes);
-
-            $datas[] = $mesBase
-                ->setDate((int)$mesBase->format('Y'), (int)$mesBase->format('m'), $diaAjustado)
-                ->format('Y-m-d');
-        }
-
-        return $datas;
-    }
 
     private function getDespesasFiltradas() {
         Auth::verificar();

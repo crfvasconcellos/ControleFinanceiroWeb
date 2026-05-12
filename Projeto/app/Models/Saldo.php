@@ -17,12 +17,12 @@ class Saldo {
     /**
      * Adiciona um valor de saldo para o usuário.
      */
-    public function adicionarSaldo(float $valor, string $nome, string $data, ?string $descricao = null, ?string $comprovante = null, ?string $icone = '💵', int $recorrenteMensal = 0, int $recorrenciaMeses = 1): bool {
+    public function adicionarSaldo(float $valor, string $nome, string $data, ?string $descricao = null, ?string $comprovante = null, ?string $icone = '💵', ?string $data_termino = null): bool {
         if ($this->userId === null) return false;
 
         $stmt = $this->connection->prepare(
-            'INSERT INTO saldos (id, usuario_id, nome, descricao, valor, data, comprovante, icone, recorrente_mensal, recorrencia_meses, criado_em)
-             VALUES (:id, :usuario_id, :nome, :descricao, :valor, :data, :comprovante, :icone, :recorrente_mensal, :recorrencia_meses, :criado_em)'
+            'INSERT INTO saldos (id, usuario_id, nome, descricao, valor, data, data_termino, comprovante, icone, criado_em)
+             VALUES (:id, :usuario_id, :nome, :descricao, :valor, :data, :data_termino, :comprovante, :icone, :criado_em)'
         );
 
         return $stmt->execute([
@@ -30,12 +30,11 @@ class Saldo {
             'usuario_id' => $this->userId,
             'valor' => $valor,
             'data' => $data,
+            'data_termino' => $data_termino,
             'comprovante' => $comprovante,
             'icone' => $icone,
             'nome' => $nome,
             'descricao' => $descricao,
-            'recorrente_mensal' => $recorrenteMensal,
-            'recorrencia_meses' => $recorrenciaMeses,
             'criado_em' => date('Y-m-d H:i:s'),
         ]);
     }
@@ -84,7 +83,7 @@ class Saldo {
         if ($this->userId === null) return [];
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em, recorrente_mensal, recorrencia_meses
+            'SELECT id, nome, descricao, valor, data, data_termino, comprovante, icone, criado_em
              FROM saldos
              WHERE usuario_id = :usuario_id AND deletado_em IS NULL
              ORDER BY data DESC, criado_em DESC'
@@ -102,7 +101,7 @@ class Saldo {
         if ($this->userId === null) return [];
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em, deletado_em
+            'SELECT id, nome, descricao, valor, data, data_termino, comprovante, icone, criado_em, deletado_em
              FROM saldos
              WHERE usuario_id = :usuario_id
              ORDER BY COALESCE(deletado_em, criado_em) DESC'
@@ -135,7 +134,7 @@ class Saldo {
         if ($this->userId === null) return null;
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em, recorrente_mensal, recorrencia_meses
+            'SELECT id, nome, descricao, valor, data, data_termino, comprovante, icone, criado_em
              FROM saldos
              WHERE id = :id AND usuario_id = :usuario_id AND deletado_em IS NULL'
         );
@@ -149,7 +148,7 @@ class Saldo {
         if ($this->userId === null) return false;
 
         $stmt = $this->connection->prepare(
-            'UPDATE saldos SET nome = :nome, descricao = :descricao, valor = :valor, data = :data, comprovante = :comprovante, icone = :icone, recorrente_mensal = :recorrente_mensal, recorrencia_meses = :recorrencia_meses
+            'UPDATE saldos SET nome = :nome, descricao = :descricao, valor = :valor, data = :data, data_termino = :data_termino, comprovante = :comprovante, icone = :icone
              WHERE id = :id AND usuario_id = :usuario_id AND deletado_em IS NULL'
         );
         
@@ -158,10 +157,9 @@ class Saldo {
             'descricao' => $dados['descricao'] ?? null,
             'valor' => (float) $dados['valor'],
             'data' => $dados['data'],
+            'data_termino' => $dados['data_termino'] ?? null,
             'comprovante' => $dados['comprovante'] ?? null,
             'icone' => $dados['icone'] ?? '💵',
-            'recorrente_mensal' => $dados['recorrente_mensal'] ?? 0,
-            'recorrencia_meses' => $dados['recorrencia_meses'] ?? 1,
             'id' => $id,
             'usuario_id' => $this->userId
         ]);

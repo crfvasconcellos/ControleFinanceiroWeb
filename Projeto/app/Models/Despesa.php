@@ -18,7 +18,7 @@ class Despesa {
         if ($this->userId === null) return [];
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em, recorrente_mensal, recorrencia_meses
+            'SELECT id, nome, descricao, valor, data, data_termino, comprovante, icone, criado_em
              FROM despesas
              WHERE usuario_id = :usuario_id 
              AND deletado_em IS NULL
@@ -38,7 +38,7 @@ class Despesa {
         if ($this->userId === null) return null;
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em, recorrente_mensal, recorrencia_meses
+            'SELECT id, nome, descricao, valor, data, data_termino, comprovante, icone, criado_em
              FROM despesas
              WHERE id = :id AND usuario_id = :usuario_id AND deletado_em IS NULL'
         );
@@ -56,7 +56,7 @@ class Despesa {
         if ($this->userId === null) return [];
 
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, descricao, valor, data, comprovante, icone, criado_em, deletado_em
+            'SELECT id, nome, descricao, valor, data, data_termino, comprovante, icone, criado_em, deletado_em
              FROM despesas
              WHERE usuario_id = :usuario_id
              ORDER BY COALESCE(deletado_em, criado_em) DESC'
@@ -70,8 +70,8 @@ class Despesa {
         if ($this->userId === null) return false;
 
         $stmt = $this->connection->prepare(
-            'INSERT INTO despesas (id, usuario_id, nome, descricao, valor, data, comprovante, icone, recorrente_mensal, recorrencia_meses, criado_em)
-             VALUES (:id, :usuario_id, :nome, :descricao, :valor, :data, :comprovante, :icone, :recorrente_mensal, :recorrencia_meses, :criado_em)'
+            'INSERT INTO despesas (id, usuario_id, nome, descricao, valor, data, data_termino, comprovante, icone, criado_em)
+             VALUES (:id, :usuario_id, :nome, :descricao, :valor, :data, :data_termino, :comprovante, :icone, :criado_em)'
         );
 
         return $stmt->execute([
@@ -81,10 +81,9 @@ class Despesa {
             'descricao' => $data['descricao'] ?? null,
             'valor' => (float) $data['valor'],
             'data' => $data['data'],
+            'data_termino' => $data['data_termino'] ?? null,
             'comprovante' => $data['comprovante'] ?? null,
             'icone' => $data['icone'] ?? '📄',
-            'recorrente_mensal' => $data['recorrente_mensal'] ?? 0,
-            'recorrencia_meses' => $data['recorrencia_meses'] ?? 1,
             'criado_em' => date('Y-m-d H:i:s'),
         ]);
     }
@@ -108,7 +107,7 @@ class Despesa {
         if ($this->userId === null) return false;
 
         $stmt = $this->connection->prepare(
-            'UPDATE despesas SET nome = :nome, descricao = :descricao, valor = :valor, data = :data, comprovante = :comprovante, icone = :icone, recorrente_mensal = :recorrente_mensal, recorrencia_meses = :recorrencia_meses
+            'UPDATE despesas SET nome = :nome, descricao = :descricao, valor = :valor, data = :data, data_termino = :data_termino, comprovante = :comprovante, icone = :icone
              WHERE id = :id AND usuario_id = :usuario_id AND deletado_em IS NULL'
         );
         
@@ -117,10 +116,9 @@ class Despesa {
             'descricao' => $dados['descricao'] ?? null,
             'valor' => (float) $dados['valor'],
             'data' => $dados['data'],
+            'data_termino' => $dados['data_termino'] ?? null,
             'comprovante' => $dados['comprovante'] ?? null,
             'icone' => $dados['icone'] ?? '📄',
-            'recorrente_mensal' => $dados['recorrente_mensal'] ?? 0,
-            'recorrencia_meses' => $dados['recorrencia_meses'] ?? 1,
             'id' => $id,
             'usuario_id' => $this->userId
         ]);
