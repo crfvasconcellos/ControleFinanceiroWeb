@@ -85,9 +85,14 @@ $chartTitle = 'Gastos Mensais';
 
 if ($mesFiltro === 'todos') {
     // Modo "Todos": mostra gastos mensais (últimos 6 meses)
+    // Usa DateTime para evitar bugs do strtotime com meses
+    $baseDate = new DateTime('first day of this month');
     for ($i = 5; $i >= 0; $i--) {
-        $m = date('Y-m', strtotime("-$i months"));
-        $evolucaoGrafico[$m] = ['gastos' => 0, 'label' => substr($mesesPt[date('m', strtotime("-$i months"))], 0, 3)];
+        $dt = clone $baseDate;
+        $dt->modify("-{$i} months");
+        $m = $dt->format('Y-m');
+        $mesNum = $dt->format('m');
+        $evolucaoGrafico[$m] = ['gastos' => 0, 'label' => substr($mesesPt[$mesNum], 0, 3)];
     }
     foreach ($todasTransacoes as $t) {
         if ($t['tipo'] === 'saida') {
@@ -99,6 +104,7 @@ if ($mesFiltro === 'todos') {
                     $item['gastos'] += $t['valor'];
                 }
             }
+            unset($item);
         }
     }
 } else {
@@ -275,10 +281,14 @@ $temDadosGrafico = max($valores) > 0;
                     <div class="filter-select-wrapper">
                         <select name="mes" class="filter-btn">
                             <option value="todos" <?= $mesFiltro === 'todos' ? 'selected' : '' ?>>Todos os Meses</option>
-                            <?php for ($i = 0; $i < 12; $i++): 
-                                $m = date('Y-m', strtotime("-$i months"));
-                                $mesStr = $mesesPt[date('m', strtotime("-$i months"))];
-                                $anoStr = date('Y', strtotime("-$i months"));
+                            <?php 
+                            $filterBaseDate = new DateTime('first day of this month');
+                            for ($i = 0; $i < 12; $i++): 
+                                $filterDt = clone $filterBaseDate;
+                                $filterDt->modify("-{$i} months");
+                                $m = $filterDt->format('Y-m');
+                                $mesStr = $mesesPt[$filterDt->format('m')];
+                                $anoStr = $filterDt->format('Y');
                             ?>
                                 <option value="<?= $m ?>" <?= $mesFiltro === $m ? 'selected' : '' ?>><?= "$mesStr $anoStr" ?></option>
                             <?php endfor; ?>

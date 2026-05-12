@@ -331,6 +331,7 @@ select.filter-btn:focus { outline: none; border-color: var(--color-primary); box
 .badge-media { background: var(--color-warning-bg); color: var(--color-warning); }
 .badge-baixa { background: var(--color-success-bg); color: var(--color-success); }
 .badge-default { background: var(--color-primary-bg); color: var(--color-primary); }
+.badge-entrada { background: var(--color-success-bg); color: var(--color-success); }
 
 /* ==========================================
    CSS-ONLY MODALS
