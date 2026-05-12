@@ -114,7 +114,7 @@ O desenvolvimento foi dividido em Sprints para entrega incremental de valor. As 
 | **US14** | Buscar despesas por nome | 2 | *Planejado* | Permitir busca textual por título da despesa e exibir resultados relevantes. |
 | **US15** | Exibir gastos por categoria | 5 | *Planejado* | Apresentar o total acumulado para cada categoria cadastrada. |
 | **US16** | Destacar maior despesa do período | 3 | *Planejado* | Identificar automaticamente e mostrar o maior gasto no intervalo selecionado. |
-| **US17** | Despesas recorrentes (fixas) mensais | 5 | **Concluído** | Cadastrar despesas fixas com dia de vencimento; geração automática mensal; pausar/reativar/remover recorrências. |
+| **US17** | Despesas e saldos recorrentes (fixas) mensais | 5 | **Concluído** | Cadastrar despesas fixas com dia de vencimento e Saldos; geração automática mensal; pausar/reativar/remover recorrências. |
 
 ## 🌿 Gestão de Versões (GitFlow)
 O projeto adota o fluxo de trabalho **GitFlow** para organizar o desenvolvimento:
