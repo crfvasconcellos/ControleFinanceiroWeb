@@ -1,2 +1,4 @@
 # "database" files
 Projeto/data/
+Projeto/public/uploads/*
+!Projeto/public/uploads/.gitkeep

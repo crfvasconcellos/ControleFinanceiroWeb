@@ -70,6 +70,7 @@ class Database {
                 nome VARCHAR(120) NOT NULL,
                 email VARCHAR(160) NOT NULL UNIQUE,
                 senha VARCHAR(255) NOT NULL,
+                api_key VARCHAR(64) UNIQUE,
                 criado_em DATETIME NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;'
         );

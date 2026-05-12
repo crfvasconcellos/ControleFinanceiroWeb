@@ -32,12 +32,12 @@
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                 
                 <div class="form-floating">
-                    <input id="edit_nome" name="nome" type="text" required value="<?= htmlspecialchars($data['nome'] ?? '') ?>" placeholder="Ex: Mercado">
+                    <input id="edit_nome" name="nome" type="text" required value="<?= htmlspecialchars($data['nome'] ?? '') ?>" placeholder="Ex: Mercado" maxlength="140">
                     <label for="edit_nome">Título / Nome</label>
                 </div>
 
                 <div class="form-floating">
-                    <input id="edit_descricao" name="descricao" type="text" value="<?= htmlspecialchars($data['descricao'] ?? '') ?>" placeholder="Ex: Detalhes da compra">
+                    <input id="edit_descricao" name="descricao" type="text" value="<?= htmlspecialchars($data['descricao'] ?? '') ?>" placeholder="Ex: Detalhes da compra" maxlength="200">
                     <label for="edit_descricao">Descrição (opcional)</label>
                 </div>
 

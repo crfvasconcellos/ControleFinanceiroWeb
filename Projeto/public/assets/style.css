@@ -174,7 +174,7 @@ a:hover { color: var(--color-primary-hover); }
 .form-control:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 4px var(--color-primary-bg); }
 
 /* Floating Labels Advanced */
-.form-floating { position: relative; margin-bottom: 1.5rem; }
+.form-floating { position: relative; margin-bottom: 1rem; }
 .form-floating input, .form-floating select {
     width: 100%; padding: 1.75rem 1.25rem 0.5rem;
     font-size: 1.05rem; font-weight: 500;
@@ -342,9 +342,17 @@ select.filter-btn:focus { outline: none; border-color: var(--color-primary); box
 .modal-overlay:target { display: flex; animation: fadeIn 0.3s ease-out; } 
 .modal-content {
     background: var(--color-surface); width: min(92%, 550px); max-height: 90vh; overflow-y: auto;
-    border-radius: var(--radius-xl); padding: 3rem; position: relative;
+    border-radius: var(--radius-xl); padding: 2rem; position: relative;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
     animation: scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    scrollbar-width: none; /* Firefox */
+}
+.modal-overlay * {
+    scrollbar-width: none; /* Firefox */
+}
+.modal-overlay *::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 .modal-close {
     position: absolute; top: 1.5rem; right: 1.5rem; width: 40px; height: 40px;
@@ -353,7 +361,7 @@ select.filter-btn:focus { outline: none; border-color: var(--color-primary); box
     border-radius: 50%; font-weight: bold; transition: all 0.2s;
 }
 .modal-close:hover { background: var(--color-danger-bg); color: var(--color-danger); transform: rotate(90deg); }
-.modal-content h2 { margin-bottom: 2rem; padding-bottom: 1rem; font-weight: 800; font-size: 1.75rem; }
+.modal-content h2 { margin-bottom: 1rem; padding-bottom: 0.5rem; font-weight: 800; font-size: 1.75rem; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes scaleUp { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }

@@ -56,6 +56,13 @@ Para rodar o projeto no seu ambiente de desenvolvimento, siga os passos abaixo:
     ```
 7.  **Acesse:** Abra o navegador e acesse `http://localhost:8000`.
 
+### 🧪 Testando as APIs
+Para testar o funcionamento da API de despesas:
+1. Registre ou acesse uma conta com o nome **`admin`** e o e-mail **`admin@mail.uft.edu.br`**.
+2. Na interface do sistema (dashboard), a opção de "Acesso à API" ficará visível no canto superior.
+3. Copie a chave gerada e utilize-a enviando no cabeçalho `X-API-KEY` de suas requisições para a rota `/?route=api_despesas`.
+4. Opcionalmente, pode testar através do navegador acessando diretamente `http://localhost:8000/?route=api_despesas`.
+
 ---
 
 ## 📅 Planejamento de Sprints

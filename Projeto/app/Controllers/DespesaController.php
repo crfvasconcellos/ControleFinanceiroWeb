@@ -33,7 +33,7 @@ class DespesaController {
         $usuarioModel = new Usuario();
         $usuarioDados = $usuarioModel->buscarPorId((string)$userId);
         $userApiKey = $usuarioDados['api_key'] ?? null;
-
+        $userEmail = $usuarioDados['email'] ?? '';
 
         $model = new Despesa($userId);
 
@@ -71,9 +71,10 @@ class DespesaController {
 
             if (empty($errors) && $action === 'salvar_transacao') {
                 $tipo = $_POST['tipo'] ?? 'saida';
-                $dataArr['nome'] = trim($_POST['nome'] ?? '');
-                $dataArr['descricao'] = trim($_POST['descricao'] ?? '');
+                $dataArr['nome'] = substr(trim($_POST['nome'] ?? ''), 0, 30);
+                $dataArr['descricao'] = substr(trim($_POST['descricao'] ?? ''), 0, 150);
                 $dataArr['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
+                if (is_numeric($dataArr['valor']) && (float)$dataArr['valor'] > 99999999.99) $dataArr['valor'] = '99999999.99';
                 $dataArr['data'] = trim($_POST['data'] ?? '');
                 $dataArr['icone'] = $_POST['icone'] ?? ($tipo === 'entrada' ? '💵' : '📄');
                 $dataArr['comprovante'] = $this->handleUpload();
@@ -83,7 +84,7 @@ class DespesaController {
                 }
 
                 if (!is_numeric($dataArr['valor']) || (float)$dataArr['valor'] <= 0) {
-                    $errors[] = 'valor inválido';
+                    $errors[] = 'O valor é inválido';
                 }
 
                 $date = \DateTime::createFromFormat('Y-m-d', $dataArr['data']);
@@ -105,6 +106,52 @@ class DespesaController {
                     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                     header('Location: index.php?route=dashboard#');
                     exit;
+                }
+            }
+
+            if (empty($errors) && $action === 'editar_transacao') {
+                $id = $_POST['transacao_id'] ?? '';
+                $isSaldo = str_starts_with($id, 'saldo_');
+                $modelAtual = $isSaldo ? new Saldo($userId) : $model;
+                
+                $dataArr['nome'] = substr(trim($_POST['nome'] ?? ''), 0, 30);
+                $dataArr['descricao'] = substr(trim($_POST['descricao'] ?? ''), 0, 150);
+                $dataArr['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
+                if (is_numeric($dataArr['valor']) && (float)$dataArr['valor'] > 99999999.99) $dataArr['valor'] = '99999999.99';
+                $dataArr['data'] = trim($_POST['data'] ?? '');
+                $dataArr['icone'] = $_POST['icone'] ?? ($isSaldo ? '💵' : '📄');
+                
+                $novoComprovante = $this->handleUpload();
+                if ($novoComprovante !== null) {
+                    $dataArr['comprovante'] = $novoComprovante;
+                }
+
+                if ($dataArr['nome'] === '') {
+                    $errors[] = 'informe um título válido';
+                }
+
+                if (!is_numeric($dataArr['valor']) || (float)$dataArr['valor'] <= 0) {
+                    $errors[] = 'O valor é inválido';
+                }
+
+                $date = \DateTime::createFromFormat('Y-m-d', $dataArr['data']);
+                $dateErrors = \DateTime::getLastErrors();
+
+                if ($dataArr['data'] === '' || !$date || ($dateErrors && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))) {
+                    $errors[] = 'informe uma data válida';
+                } else {
+                    $dataArr['data'] = $date->format('Y-m-d');
+                }
+
+                if (empty($errors)) {
+                    $salvou = $isSaldo ? $modelAtual->editarSaldo($id, $dataArr) : $modelAtual->editarDespesa($id, $dataArr);
+                    if ($salvou) {
+                        $_SESSION['successMessage'] = 'transação editada com sucesso';
+                        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                        header('Location: index.php?route=dashboard#');
+                        exit;
+                    }
+                    $errors[] = 'não foi possível salvar as alterações';
                 }
             }
         }
@@ -211,9 +258,10 @@ class DespesaController {
             }
 
             if (empty($errors)) {
-                $data['nome'] = trim($_POST['nome'] ?? '');
-                $data['descricao'] = trim($_POST['descricao'] ?? '');
+                $data['nome'] = substr(trim($_POST['nome'] ?? ''), 0, 30);
+                $data['descricao'] = substr(trim($_POST['descricao'] ?? ''), 0, 150);
                 $data['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
+                if (is_numeric($data['valor']) && (float)$data['valor'] > 99999999.99) $data['valor'] = '99999999.99';
                 $data['data'] = trim($_POST['data'] ?? '');
                 $data['icone'] = $_POST['icone'] ?? ($isSaldo ? '💵' : '📄');
                 
@@ -323,54 +371,5 @@ class DespesaController {
         exit;
     }
 
-    public function exportarPdf() {
-        $despesas = $this->getDespesasFiltradas();
 
-        require_once __DIR__ . '/../Libraries/fpdf.php';
-
-        $pdf = new \FPDF();
-        $pdf->AddPage();
-        $pdf->SetFont('Arial', 'B', 16);
-        $pdf->Cell(190, 10, utf8_decode('Relatório de Despesas'), 0, 1, 'C');
-        $pdf->Ln(10);
-
-        $pdf->SetFillColor(59, 130, 246);
-        $pdf->SetTextColor(255);
-        $pdf->SetDrawColor(30, 64, 175);
-        $pdf->SetLineWidth(.3);
-        $pdf->SetFont('Arial', 'B', 12);
-
-        $w = array(40, 80, 40, 30);
-        $header = array('Data', 'Nome', 'Prioridade', 'Valor (R$)');
-        for($i=0;$i<count($header);$i++) {
-            $pdf->Cell($w[$i], 7, utf8_decode($header[$i]), 1, 0, 'C', true);
-        }
-        $pdf->Ln();
-
-        $pdf->SetFillColor(248, 250, 252);
-        $pdf->SetTextColor(0);
-        $pdf->SetFont('Arial', '', 11);
-
-        $fill = false;
-        $total = 0;
-        foreach($despesas as $row) {
-            $pdf->Cell($w[0], 6, date('d/m/Y', strtotime($row['data'])), 'LR', 0, 'C', $fill);
-            $pdf->Cell($w[1], 6, utf8_decode($row['nome']), 'LR', 0, 'L', $fill);
-            $pdf->Cell($w[2], 6, utf8_decode(ucfirst($row['prioridade'])), 'LR', 0, 'C', $fill);
-            $pdf->Cell($w[3], 6, number_format($row['valor'], 2, ',', '.'), 'LR', 0, 'R', $fill);
-            $pdf->Ln();
-            $fill = !$fill;
-            $total += $row['valor'];
-        }
-        
-        $pdf->Cell(array_sum($w), 0, '', 'T');
-        $pdf->Ln();
-        
-        $pdf->SetFont('Arial', 'B', 12);
-        $pdf->Cell($w[0]+$w[1]+$w[2], 8, 'Total', 1, 0, 'R');
-        $pdf->Cell($w[3], 8, number_format($total, 2, ',', '.'), 1, 0, 'R');
-
-        $pdf->Output('D', 'despesas_' . date('Y-m-d_H-i') . '.pdf');
-        exit;
-    }
 }

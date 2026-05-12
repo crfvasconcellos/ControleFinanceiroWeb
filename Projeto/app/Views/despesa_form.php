@@ -153,7 +153,6 @@ $temDadosGrafico = max($valores) > 0;
                 <div style="display:flex; align-items: center; gap:0.8rem;">
                     <img src="assets/img/logo.png" alt="Logo" style="width: 40px; height: 40px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" draggable="false" ondragstart="return false" onselectstart="return false">
                     <span class="top-bar__name">Olá, <?= htmlspecialchars($userNome) ?></span>
-                    <a href="#modalApiKey" class="btn-api-access" title="Minha API Key"></a>
                 </div>
                 <a href="index.php?route=logout" class="btn btn-outline btn-sm">Sair</a>
             </div>
@@ -270,11 +269,7 @@ $temDadosGrafico = max($valores) > 0;
                     <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
                 </form>
 
-                <?php if (!empty($errors)): ?>
-                    <div class="alert alert-error">
-                        <ul><?php foreach ($errors as $e): ?><li><?= htmlspecialchars($e) ?></li><?php endforeach; ?></ul>
-                    </div>
-                <?php endif; ?>
+
 
                 <div class="expense-list">
                     <?php if (empty($despesasFiltradas)): ?>
@@ -310,7 +305,7 @@ $temDadosGrafico = max($valores) > 0;
                                     <div class="expense-item__value">R$ <?= number_format($despesa['valor'], 2, ',', '.') ?></div>
                                 <?php endif; ?>
                                 <div class="expense-actions-btns">
-                                    <a href="editar.php?id=<?= urlencode($despesa['id']) ?>" class="btn-icon" title="Editar">✏️</a>
+                                    <a href="#modalEditar_<?= htmlspecialchars($despesa['id']) ?>" class="btn-icon" title="Editar">✏️</a>
                                     <a href="#confirmarExcluir_<?= htmlspecialchars($despesa['id']) ?>" class="btn-icon danger" title="Excluir">🗑️</a>
                                 </div>
                             </div>
@@ -321,31 +316,7 @@ $temDadosGrafico = max($valores) > 0;
         </div>
     </main>
 
-<div id="modalApiKey" class="modal-overlay">
-    <div class="modal-content" style="max-width: 450px;">
-        <a href="#!" class="modal-close">✕</a>
-        <h2>Acesso à API</h2>
-        <p style="color: var(--color-text-light); font-size: 0.9rem; margin-bottom: 1.5rem;">
-            Use esta chave no header <strong>X-API-KEY</strong> para autenticar suas requisições.
-        </p>
-        
-        <div style="background: var(--color-background); padding: 1rem; border-radius: 8px; border: 1px dashed var(--color-border); word-break: break-all; font-family: monospace; font-size: 0.95rem; color: var(--color-primary); min-height: 1.2rem;">
-            <?php 
-                if (!empty($userApiKey)) {
-                    echo htmlspecialchars($userApiKey);
-                } else {
-                    echo "<span style='color: var(--color-danger); opacity: 0.5;'>Chave não encontrada</span>";
-                }
-            ?>
-        </div>
 
-        <button 
-            onclick="const key = '<?= $userApiKey ?? '' ?>'; if(key) { navigator.clipboard.writeText(key).then(() => alert('Chave copiada!')); } else { alert('Nenhuma chave para copiar'); }" 
-            class="btn btn-outline btn-block mt-4">
-            Copiar Chave
-        </button>
-    </div>
-</div>
 
     <div id="modalNovaDespesa" class="modal-overlay">
         <div class="modal-content">
@@ -357,17 +328,17 @@ $temDadosGrafico = max($valores) > 0;
                 <input type="hidden" name="tipo" value="saida">
                 
                 <div class="form-floating">
-                    <input id="new_nome" name="nome" type="text" required placeholder="Ex: Mercado">
+                    <input id="new_nome" name="nome" type="text" required placeholder="Ex: Mercado" maxlength="30">
                     <label for="new_nome">Título / Nome</label>
                 </div>
 
                 <div class="form-floating">
-                    <input id="new_descricao" name="descricao" type="text" placeholder="Ex: Compras do mês">
+                    <input id="new_descricao" name="descricao" type="text" placeholder="Ex: Compras do mês" maxlength="150">
                     <label for="new_descricao">Descrição (opcional)</label>
                 </div>
                 
                 <div class="form-floating">
-                    <input id="new_valor" name="valor" type="text" required placeholder="Ex: 89.90">
+                    <input id="new_valor" name="valor" type="text" required placeholder="Ex: 89.90" maxlength="11">
                     <label for="new_valor">Valor (R$)</label>
                 </div>
                 
@@ -412,17 +383,17 @@ $temDadosGrafico = max($valores) > 0;
                 <input type="hidden" name="tipo" value="entrada">
                 
                 <div class="form-floating">
-                    <input id="saldo_nome" name="nome" type="text" required placeholder="Ex: Salário">
+                    <input id="saldo_nome" name="nome" type="text" required placeholder="Ex: Salário" maxlength="30">
                     <label for="saldo_nome">Título / Nome</label>
                 </div>
 
                 <div class="form-floating">
-                    <input id="saldo_descricao" name="descricao" type="text" placeholder="Ex: Salário de Janeiro">
+                    <input id="saldo_descricao" name="descricao" type="text" placeholder="Ex: Salário de Janeiro" maxlength="150">
                     <label for="saldo_descricao">Descrição (opcional)</label>
                 </div>
                 
                 <div class="form-floating">
-                    <input id="saldo_valor" name="valor" type="text" required placeholder="Ex: 1500.00">
+                    <input id="saldo_valor" name="valor" type="text" required placeholder="Ex: 1500.00" maxlength="11">
                     <label for="saldo_valor">Valor (R$)</label>
                 </div>
                 
@@ -501,6 +472,89 @@ $temDadosGrafico = max($valores) > 0;
             </div>
         </div>
     <?php endforeach; ?>
+
+    <!-- Modais de Edição de Transação -->
+    <?php foreach ($despesasFiltradas as $despesa): ?>
+        <div id="modalEditar_<?= htmlspecialchars($despesa['id']) ?>" class="modal-overlay">
+            <div class="modal-content">
+                <a href="#!" class="modal-close">✕</a>
+                <h2>Editar Transação</h2>
+                <form method="post" enctype="multipart/form-data" style="margin-top:1rem;">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                    <input type="hidden" name="action" value="editar_transacao">
+                    <input type="hidden" name="transacao_id" value="<?= htmlspecialchars($despesa['id']) ?>">
+                    
+                    <div class="form-floating">
+                        <input id="edit_nome_<?= htmlspecialchars($despesa['id']) ?>" name="nome" type="text" required value="<?= htmlspecialchars($despesa['nome']) ?>" placeholder="Ex: Mercado" maxlength="30">
+                        <label for="edit_nome_<?= htmlspecialchars($despesa['id']) ?>">Título / Nome</label>
+                    </div>
+
+                    <div class="form-floating">
+                        <input id="edit_descricao_<?= htmlspecialchars($despesa['id']) ?>" name="descricao" type="text" value="<?= htmlspecialchars($despesa['descricao'] ?? '') ?>" placeholder="Ex: Detalhes da compra" maxlength="150">
+                        <label for="edit_descricao_<?= htmlspecialchars($despesa['id']) ?>">Descrição (opcional)</label>
+                    </div>
+                    
+                    <div class="form-floating">
+                        <input id="edit_valor_<?= htmlspecialchars($despesa['id']) ?>" name="valor" type="text" required value="<?= htmlspecialchars($despesa['valor']) ?>" placeholder="Ex: 89.90" maxlength="11">
+                        <label for="edit_valor_<?= htmlspecialchars($despesa['id']) ?>">Valor (R$)</label>
+                    </div>
+                    
+                    <div class="form-floating">
+                        <input id="edit_data_<?= htmlspecialchars($despesa['id']) ?>" name="data" type="date" required value="<?= htmlspecialchars(substr($despesa['data'], 0, 10)) ?>">
+                        <label for="edit_data_<?= htmlspecialchars($despesa['id']) ?>">Data da Transação</label>
+                    </div>
+
+                    <div class="form-floating" style="margin-top: 1rem;">
+                        <select id="edit_icone_<?= htmlspecialchars($despesa['id']) ?>" name="icone" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text);">
+                            <option value="<?= htmlspecialchars($despesa['icone'] ?? '') ?>" selected>Símbolo Atual: <?= htmlspecialchars($despesa['icone'] ?? '') ?></option>
+                            <option value="📄">📄 Documento (Padrão)</option>
+                            <option value="💵">💵 Dinheiro</option>
+                            <option value="🛒">🛒 Mercado / Comida</option>
+                            <option value="⚡">⚡ Energia / Luz</option>
+                            <option value="💧">💧 Água</option>
+                            <option value="📶">📶 Internet / Telefone</option>
+                            <option value="🚗">🚗 Transporte / Gasolina</option>
+                            <option value="💊">💊 Saúde / Farmácia</option>
+                            <option value="🍿">🍿 Lazer / Streaming</option>
+                            <option value="🏠">🏠 Moradia</option>
+                            <option value="🛍️">🛍️ Compras</option>
+                            <option value="💼">💼 Salário</option>
+                            <option value="📈">📈 Rendimento / Investimento</option>
+                            <option value="🎁">🎁 Presente</option>
+                            <option value="🏦">🏦 Transferência</option>
+                            <option value="🤑">🤑 Bônus</option>
+                        </select>
+                        <label for="edit_icone_<?= htmlspecialchars($despesa['id']) ?>" style="font-size: 0.8rem; color: var(--color-text-light); top: -20px; left: 0;">Alterar Símbolo (Ícone)</label>
+                    </div>
+
+                    <div class="form-floating" style="margin-top: 1rem;">
+                        <input id="edit_comprovante_<?= htmlspecialchars($despesa['id']) ?>" name="comprovante" type="file" accept=".pdf" style="padding-top: 1.5rem;">
+                        <label for="edit_comprovante_<?= htmlspecialchars($despesa['id']) ?>" style="top: -5px; font-size: 0.85rem;">Novo Comprovante (PDF opcional)</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block mt-4" style="padding: 1rem; font-size:1.05rem;">Salvar Alterações</button>
+                </form>
+            </div>
+        </div>
+    <?php endforeach; ?>
+
+    <?php if (!empty($errors)): ?>
+        <div id="modalErros" class="modal-overlay" style="display: flex; z-index: 1000;">
+            <div class="modal-content" style="max-width: 420px; text-align: center;">
+                <a href="index.php?route=dashboard" class="modal-close">✕</a>
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                <h2 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Aviso</h2>
+                <div style="color: var(--color-text-light); margin-bottom: 2rem;">
+                    <?php foreach ($errors as $e): ?>
+                        <p style="margin-bottom: 0.5rem;"><strong><?= htmlspecialchars($e) ?></strong></p>
+                    <?php endforeach; ?>
+                </div>
+                <div style="display: flex; justify-content: center;">
+                    <a href="index.php?route=dashboard" class="btn btn-primary" style="padding-left: 3rem; padding-right: 3rem;">Entendido</a>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
 
 </body>
 </html>
