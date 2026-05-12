@@ -57,8 +57,6 @@ Para rodar o projeto no seu ambiente de desenvolvimento, siga os passos abaixo:
 7.  **Acesse:** Abra o navegador e acesse `http://localhost:8000`.
 
 ### 🧪 Testando as APIs
-A interface da API Key estava anteriormente exposta a todos os usuários devido a um erro de desenvolvimento. Para evitar problemas de segurança e quebras de sistema, ela agora está restrita ao usuário administrador.
-
 Para testar o funcionamento da API de despesas:
 1. Registre ou acesse uma conta com o nome **`admin`** e o e-mail **`admin@mail.uft.edu.br`**.
 2. Na interface do sistema (dashboard), a opção de "Acesso à API" ficará visível no canto superior.
