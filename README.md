@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="BrasaControleFinanceiro1x1.png" alt="Logo Controle Financeiro" width="180" />
 
@@ -246,18 +246,45 @@ As estimativas seguem a **Sequência de Fibonacci** (1, 2, 3, 5, 8...).
 | US06 | Validar campos obrigatórios no cadastro | 3 | ✅ | Impedir salvamento com dados inválidos |
 | US07 | Implementar persistência em banco SQL | 8 | ✅ | CRUD completo em MySQL/MariaDB |
 | US08 | Listar histórico de despesas | 5 | ✅ | Histórico com itens ativos e excluídos |
-| US09 | Categorizar despesas para organização | 5 | 📋 | Criar e associar categorias aos registros |
+| US09 | Categorizar despesas para organização | 5 | ✅ | Criar e associar categorias aos registros |
 | US10 | Atualizar interface do sistema | 5 | ✅ | Interface modernizada e responsiva |
 | US11 | Adicionar entradas e saldo | 5 | ✅ | Formulários para valores positivos |
 | US12 | Indexar comprovante PDF | 3 | ✅ | Upload de `.pdf` como comprovante |
-| US13 | Filtrar despesas por categoria | 3 | 📋 | Selecionar categoria e filtrar registros |
-| US14 | Buscar despesas por nome | 2 | 📋 | Busca textual por título |
-| US15 | Exibir gastos por categoria | 5 | 📋 | Total acumulado por categoria |
-| US16 | Destacar maior despesa do período | 3 | 📋 | Identificação automática do maior gasto |
+| US13 | Filtrar despesas por categoria | 3 | ✅ | Selecionar categoria e filtrar registros |
+| US14 | Buscar despesas por nome | 2 | ✅ | Busca textual por título |
+| US15 | Exibir gastos por categoria | 5 | ✅ | Total acumulado por categoria |
+| US16 | Destacar maior despesa do período | 3 | ✅ | Identificação automática do maior gasto |
 | US17 | Despesas recorrentes (fixas) mensais | 5 | ✅ | Cadastro com dia de vencimento; geração automática; pausar/reativar |
 | US18 | Saldos recorrentes (fixos) mensais | 3 | ✅ | Cadastro de saldos fixos com geração automática mensal |
 
 > **Legenda:** ✅ Concluído · 📋 Planejado
+
+<p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
+
+---
+
+## 👤 User Stories
+
+| ID | User Story |
+|:---|:-----------|
+| **US01** | Eu como usuário gostaria de adicionar uma despesa para controlar melhor meus gastos. |
+| **US02** | Eu como usuário gostaria de visualizar minhas despesas no dashboard para acompanhar meu saldo diário. |
+| **US03** | Eu como usuário gostaria de poder excluir uma despesa lançada erroneamente para corrigir os totais. |
+| **US04** | Eu como usuário gostaria de ver o valor total das minhas despesas do período. |
+| **US05** | Eu como usuário gostaria de editar uma despesa em vez de excluí-la, para preencher pequenos erros. |
+| **US06** | Eu como usuário gostaria de ser validado nos campos obrigatórios de cadastro para evitar dados não inseridos. |
+| **US07** | Eu como usuário gostaria de persistir meus dados com maior segurança num banco de dados. |
+| **US08** | Eu como usuário gostaria de um histórico completo (lixeira) para saber quais gastos já excluí. |
+| **US09** | Eu como usuário gostaria de categorizar minhas despesas usando ícones para entender pra onde o dinheiro vai. |
+| **US10** | Eu como usuário gostaria de uma interface visualmente limpa e moderna para ser prático usar. |
+| **US11** | Eu como usuário gostaria de informar não só gastos, mas também minhas entradas para cálculo automático. |
+| **US12** | Eu como usuário gostaria de adicionar um comprovante PDF junto ao registo para referência futura. |
+| **US13** | Eu como usuário gostaria de poder filtrar o que aparece no dashboard pelo mês ou categoria. |
+| **US14** | Eu como usuário gostaria de usar uma barra de busca para encontrar transações pelo título delas rapidamente. |
+| **US15** | Eu como usuário gostaria de ver um gráfico com o total acumulado que exiba a minha relação de gastos. |
+| **US16** | Eu como usuário gostaria que as maiores despesas recebessem etiquetas de destaque automático. |
+| **US17** | Eu como usuário gostaria de poder registrar uma conta fixa para que o sistema a recrie todo mês. |
+| **US18** | Eu como usuário gostaria que saldos fixos como o salário também contassem sozinhos mensalmente. |
 
 <p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
 
