@@ -70,6 +70,7 @@ class Database {
                 nome VARCHAR(120) NOT NULL,
                 email VARCHAR(160) NOT NULL UNIQUE,
                 senha VARCHAR(255) NOT NULL,
+                api_key VARCHAR(64) UNIQUE,
                 criado_em DATETIME NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;'
         );
@@ -79,8 +80,12 @@ class Database {
                 id VARCHAR(64) PRIMARY KEY,
                 usuario_id VARCHAR(64) NOT NULL,
                 nome VARCHAR(140) NOT NULL,
+                descricao VARCHAR(200) DEFAULT NULL,
                 valor DECIMAL(10,2) NOT NULL,
                 data DATE NOT NULL,
+                data_termino DATE DEFAULT NULL,
+                comprovante VARCHAR(255) DEFAULT NULL,
+                icone VARCHAR(10) DEFAULT \'📄\',
                 criado_em DATETIME NOT NULL,
                 deletado_em DATETIME DEFAULT NULL,
                 CONSTRAINT fk_despesas_usuario
@@ -90,6 +95,84 @@ class Database {
                 INDEX idx_despesas_soft_delete (usuario_id, deletado_em)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;'
         );
+
+        $connection->exec(
+            'CREATE TABLE IF NOT EXISTS saldos (
+                id VARCHAR(64) PRIMARY KEY,
+                usuario_id VARCHAR(64) NOT NULL,
+                nome VARCHAR(140) NOT NULL,
+                descricao VARCHAR(200) DEFAULT NULL,
+                valor DECIMAL(10,2) NOT NULL,
+                data DATE NOT NULL,
+                data_termino DATE DEFAULT NULL,
+                comprovante VARCHAR(255) DEFAULT NULL,
+                icone VARCHAR(10) DEFAULT \'💵\',
+                criado_em DATETIME NOT NULL,
+                deletado_em DATETIME DEFAULT NULL,
+                CONSTRAINT fk_saldos_usuario
+                    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+                    ON DELETE CASCADE,
+                INDEX idx_saldos_usuario (usuario_id),
+                INDEX idx_saldos_soft_delete (usuario_id, deletado_em)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;'
+        );
+
+        // Tabela de despesas recorrentes (templates mensais)
+        $connection->exec(
+            'CREATE TABLE IF NOT EXISTS despesas_recorrentes (
+                id VARCHAR(64) PRIMARY KEY,
+                usuario_id VARCHAR(64) NOT NULL,
+                nome VARCHAR(140) NOT NULL,
+                descricao VARCHAR(200) DEFAULT NULL,
+                valor DECIMAL(10,2) NOT NULL,
+                dia_vencimento INT NOT NULL DEFAULT 1,
+                icone VARCHAR(10) DEFAULT \'🔄\',
+                data_inicio DATE DEFAULT NULL,
+                ativo TINYINT(1) DEFAULT 1,
+                criado_em DATETIME NOT NULL,
+                CONSTRAINT fk_recorrentes_usuario
+                    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+                    ON DELETE CASCADE,
+                INDEX idx_recorrentes_usuario (usuario_id),
+                INDEX idx_recorrentes_ativo (usuario_id, ativo)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;'
+        );
+
+        // Adiciona coluna recorrente_id na tabela despesas (se não existir)
+        $cols = $connection->query('SHOW COLUMNS FROM despesas LIKE \'recorrente_id\'')->fetchAll();
+        if (empty($cols)) {
+            $connection->exec(
+                'ALTER TABLE despesas ADD COLUMN recorrente_id VARCHAR(64) DEFAULT NULL AFTER icone'
+            );
+        }
+
+        // Adiciona coluna data_inicio na tabela despesas_recorrentes (se não existir)
+        $cols2 = $connection->query('SHOW COLUMNS FROM despesas_recorrentes LIKE \'data_inicio\'')->fetchAll();
+        if (empty($cols2)) {
+            $connection->exec(
+                'ALTER TABLE despesas_recorrentes ADD COLUMN data_inicio DATE DEFAULT NULL AFTER icone'
+            );
+            // Preenche data_inicio com criado_em para registros existentes
+            $connection->exec(
+                'UPDATE despesas_recorrentes SET data_inicio = DATE(criado_em) WHERE data_inicio IS NULL'
+            );
+        }
+
+        // Adiciona coluna tipo na tabela despesas_recorrentes (saida ou entrada)
+        $cols3 = $connection->query('SHOW COLUMNS FROM despesas_recorrentes LIKE \'tipo\'')->fetchAll();
+        if (empty($cols3)) {
+            $connection->exec(
+                'ALTER TABLE despesas_recorrentes ADD COLUMN tipo VARCHAR(10) DEFAULT \'saida\' AFTER icone'
+            );
+        }
+
+        // Adiciona coluna recorrente_id na tabela saldos (para saldos gerados por recorrentes)
+        $cols4 = $connection->query('SHOW COLUMNS FROM saldos LIKE \'recorrente_id\'')->fetchAll();
+        if (empty($cols4)) {
+            $connection->exec(
+                'ALTER TABLE saldos ADD COLUMN recorrente_id VARCHAR(64) DEFAULT NULL AFTER icone'
+            );
+        }
     }
 
     private static function loadLocalEnv(): void {

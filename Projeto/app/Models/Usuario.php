@@ -16,7 +16,7 @@ class Usuario {
      * Busca todos os usuários cadastrados.
      */
     public function buscarTodos(): array {
-        $stmt = $this->connection->query('SELECT id, nome, email, criado_em FROM usuarios ORDER BY criado_em DESC');
+        $stmt = $this->connection->query('SELECT id, nome, email, api_key, criado_em FROM usuarios ORDER BY criado_em DESC');
         return $stmt->fetchAll();
     }
 
@@ -24,7 +24,7 @@ class Usuario {
      * Busca um usuário pelo ID.
      */
     public function buscarPorId(string $id): ?array {
-        $stmt = $this->connection->prepare('SELECT id, nome, email, criado_em FROM usuarios WHERE id = :id LIMIT 1');
+        $stmt = $this->connection->prepare('SELECT id, nome, email, api_key, criado_em FROM usuarios WHERE id = :id LIMIT 1');
         $stmt->execute(['id' => $id]);
         $usuario = $stmt->fetch();
 
@@ -49,12 +49,13 @@ class Usuario {
             'nome'      => $nome,
             'email'     => $emailNormalizado,
             'senha'     => password_hash($senha, PASSWORD_BCRYPT),
+            'api_key'   => bin2hex(random_bytes(32)),
             'criado_em' => date('Y-m-d H:i:s'),
         ];
 
         $stmt = $this->connection->prepare(
-            'INSERT INTO usuarios (id, nome, email, senha, criado_em)
-             VALUES (:id, :nome, :email, :senha, :criado_em)'
+            'INSERT INTO usuarios (id, nome, email, senha, api_key, criado_em)
+             VALUES (:id, :nome, :email, :senha, :api_key, :criado_em)'
         );
 
         $stmt->execute($novoUsuario);
@@ -68,7 +69,7 @@ class Usuario {
      */
     public function autenticar(string $email, string $senha): ?array {
         $stmt = $this->connection->prepare(
-            'SELECT id, nome, email, senha FROM usuarios WHERE email = :email LIMIT 1'
+            'SELECT id, nome, email, senha, api_key FROM usuarios WHERE email = :email LIMIT 1'
         );
         $stmt->execute([
             'email' => strtolower(trim($email)),
@@ -84,9 +85,18 @@ class Usuario {
         }
 
         return [
-            'id'    => $usuario['id'],
-            'nome'  => $usuario['nome'],
-            'email' => $usuario['email'],
+            'id'      => $usuario['id'],
+            'nome'    => $usuario['nome'],
+            'email'   => $usuario['email'],
+            'api_key' => $usuario['api_key']
         ];
+    }
+    /**
+     * Verifica se um usuário existe pelo ID.
+     */
+    public function existePorId(string $id): bool {
+        $stmt = $this->connection->prepare('SELECT 1 FROM usuarios WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $id]);
+        return (bool) $stmt->fetch();
     }
 }

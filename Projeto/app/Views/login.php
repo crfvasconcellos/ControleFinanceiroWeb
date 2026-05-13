@@ -4,15 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle Financeiro - Login</title>
+    <link rel="icon" href="assets/img/logo.png" type="image/png">
     <link rel="stylesheet" href="assets/style.css">
 </head>
-<body>
-    <main class="container">
-        <section class="card auth-card">
+<body class="body-auth">
+    <div class="auth-card-wrapper">
+        <div class="auth-card">
             <div class="auth-header">
-                <div class="auth-icon">💰</div>
+                <div class="auth-icon">
+                    <img src="assets/img/logo.png" alt="Logo Controle Financeiro" class="auth-logo" draggable="false" style="width: 50px;">
+                </div>
                 <h1>Controle Financeiro</h1>
-                <p class="subtitle">Acesse sua conta para gerenciar suas despesas</p>
+                <p>Acesse sua conta para gerenciar despesas</p>
             </div>
 
             <?php if (!empty($errors)): ?>
@@ -34,34 +37,23 @@
             <form method="post" novalidate>
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
 
-                <label for="email">E-mail</label>
-                <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    autocomplete="email"
-                    value="<?= htmlspecialchars($data['email'] ?? '') ?>"
-                    placeholder="seu@email.com"
-                >
+                <div class="form-floating">
+                    <input id="email" name="email" type="email" required autocomplete="email" value="<?= htmlspecialchars($data['email'] ?? '') ?>" placeholder="E-mail">
+                    <label for="email">E-mail</label>
+                </div>
 
-                <label for="senha">Senha</label>
-                <input
-                    id="senha"
-                    name="senha"
-                    type="password"
-                    required
-                    autocomplete="current-password"
-                    placeholder="••••••••"
-                >
+                <div class="form-floating">
+                    <input id="senha" name="senha" type="password" required autocomplete="current-password" placeholder="Senha">
+                    <label for="senha">Senha</label>
+                </div>
 
-                <button type="submit" id="btnLogin">Entrar</button>
+                <button type="submit" class="btn btn-primary btn-block mt-4" style="padding: 1.25rem; font-size: 1.1rem; border-radius: var(--radius-md);">Entrar no Sistema</button>
             </form>
 
-            <div class="auth-footer">
-                <p>Não tem uma conta? <a href="index.php?route=registro">Cadastre-se</a></p>
+            <div class="text-center mt-4 text-sm" style="padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05);">
+                Não tem uma conta? <a href="index.php?route=registro" class="font-bold">Cadastre-se</a>
             </div>
-        </section>
-    </main>
+        </div>
+    </div>
 </body>
 </html>

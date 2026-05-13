@@ -30,3 +30,5 @@ node_modules/
 phpunit.result.cache
 # "database" files
 Projeto/data/
+Projeto/public/uploads/*
+!Projeto/public/uploads/.gitkeep

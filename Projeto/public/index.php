@@ -4,9 +4,12 @@
 require_once __DIR__ . '/../app/Config/Database.php';
 require_once __DIR__ . '/../app/Models/Despesa.php';
 require_once __DIR__ . '/../app/Models/Usuario.php';
+require_once __DIR__ . '/../app/Models/Saldo.php';
+require_once __DIR__ . '/../app/Models/DespesaRecorrente.php';
 require_once __DIR__ . '/../app/Controllers/DespesaController.php';
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
-require_once __DIR__ . '/../app/Middleware/Auth.php';
+require_once __DIR__ . '/../app/Middleware/Auth.php';require_once __DIR__ . '/../app/Controllers/ApiController.php';
+
 
 use App\Controllers\DespesaController;
 use App\Controllers\AuthController;
@@ -29,6 +32,15 @@ switch ($route) {
         $auth = new AuthController();
         $auth->logout();
         break;
+
+    case 'exportar_csv':
+        $app = new DespesaController();
+        $app->exportarCsv();
+        break;
+
+    case 'api_despesas':
+    (new \App\Controllers\ApiController())->despesas();
+    break;
 
     case 'dashboard':
     default:
