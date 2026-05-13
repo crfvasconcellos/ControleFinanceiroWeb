@@ -412,3 +412,46 @@ select.filter-btn:focus { outline: none; border-color: var(--color-primary); box
     color: var(--color-primary);
     border-color: var(--color-primary);
 }
+
+/* ==========================================
+   TIPO TOGGLE (CSS-Only Radio Toggle)
+   ========================================== */
+/* When "saida" (despesa) is checked */
+input[name="tipo_recorrente"][value="saida"]:checked ~ .tipo-toggle--despesa {
+    background: var(--color-danger) !important;
+    color: white !important;
+}
+input[name="tipo_recorrente"][value="saida"]:checked ~ .tipo-toggle--despesa + label .tipo-toggle--saldo {
+    background: var(--color-surface-hover) !important;
+    color: var(--color-text-light) !important;
+}
+
+/* Default state: use the :checked sibling logic */
+input[name="tipo_recorrente"][value="saida"]:checked + .tipo-toggle--despesa {
+    background: var(--color-danger) !important;
+    color: white !important;
+}
+input[name="tipo_recorrente"][value="entrada"]:checked + .tipo-toggle--saldo {
+    background: var(--color-success) !important;
+    color: white !important;
+}
+
+/* When radio is not checked, show inactive state */
+input[name="tipo_recorrente"]:not(:checked) + .tipo-toggle--despesa {
+    background: var(--color-surface-hover) !important;
+    color: var(--color-text-light) !important;
+}
+input[name="tipo_recorrente"]:not(:checked) + .tipo-toggle--saldo {
+    background: var(--color-surface-hover) !important;
+    color: var(--color-text-light) !important;
+}
+
+/* Hover effect on toggle labels */
+input[name="tipo_recorrente"]:not(:checked) + .tipo-toggle--despesa:hover {
+    background: var(--color-danger-bg) !important;
+    color: var(--color-danger) !important;
+}
+input[name="tipo_recorrente"]:not(:checked) + .tipo-toggle--saldo:hover {
+    background: var(--color-success-bg) !important;
+    color: var(--color-success) !important;
+}

@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS despesas (
     data_termino DATE DEFAULT NULL,
     comprovante VARCHAR(255) DEFAULT NULL,
     icone VARCHAR(10) DEFAULT '📄',
+    recorrente_id VARCHAR(64) DEFAULT NULL,
     criado_em DATETIME NOT NULL,
     deletado_em DATETIME DEFAULT NULL,
     
@@ -38,6 +39,7 @@ CREATE TABLE IF NOT EXISTS saldos (
     data_termino DATE DEFAULT NULL,
     comprovante VARCHAR(255) DEFAULT NULL,
     icone VARCHAR(10) DEFAULT '💵',
+    recorrente_id VARCHAR(64) DEFAULT NULL,
     criado_em DATETIME NOT NULL,
     deletado_em DATETIME DEFAULT NULL,
 
@@ -47,4 +49,25 @@ CREATE TABLE IF NOT EXISTS saldos (
 
     INDEX idx_saldos_usuario (usuario_id),
     INDEX idx_saldos_soft_delete (usuario_id, deletado_em)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS despesas_recorrentes (
+    id VARCHAR(64) PRIMARY KEY,
+    usuario_id VARCHAR(64) NOT NULL,
+    nome VARCHAR(140) NOT NULL,
+    descricao VARCHAR(200) DEFAULT NULL,
+    valor DECIMAL(10,2) NOT NULL,
+    dia_vencimento INT NOT NULL DEFAULT 1,
+    icone VARCHAR(10) DEFAULT '🔄',
+    tipo VARCHAR(10) DEFAULT 'saida',
+    data_inicio DATE DEFAULT NULL,
+    ativo TINYINT(1) DEFAULT 1,
+    criado_em DATETIME NOT NULL,
+
+    CONSTRAINT fk_recorrentes_usuario
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        ON DELETE CASCADE,
+
+    INDEX idx_recorrentes_usuario (usuario_id),
+    INDEX idx_recorrentes_ativo (usuario_id, ativo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
