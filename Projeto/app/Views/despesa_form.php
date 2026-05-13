@@ -11,6 +11,7 @@ $mesFiltro = $_GET['mes'] ?? date('Y-m');
 $prioridadeFiltro = $_GET['prioridade'] ?? 'todas';
 $tipoFiltro = $_GET['tipo'] ?? 'todas';
 $categoriaFiltro = $_GET['categoria'] ?? 'todas';
+$buscaFiltro = strtolower(trim($_GET['busca'] ?? ''));
 
 function getIconForExpense($name) {
     $n = strtolower($name);
@@ -40,6 +41,8 @@ foreach ($todasTransacoes as $transacao) {
         if ($mesFiltro < $mesDespesa || $mesFiltro > $mesTermino) continue;
     }
     if ($tipoFiltro !== 'todas' && $transacao['tipo'] !== $tipoFiltro) continue;
+
+    if ($buscaFiltro !== '' && !str_contains(strtolower($transacao['nome']), $buscaFiltro)) continue;
 
     $prioridade = 'baixa';
     if ($transacao['tipo'] === 'entrada') {
@@ -276,10 +279,17 @@ $temDadosGrafico = max($valores) > 0;
                     </div>
                 </div>
 
-                <form method="GET" action="index.php" class="filter-bar mb-4">
+                <form method="GET" action="index.php" style="display: flex; flex-direction: column; gap: 1rem;" class="mb-4">
                     <input type="hidden" name="route" value="dashboard">
-                    <div class="filter-select-wrapper">
-                        <select name="mes" class="filter-btn">
+                    
+                    <!-- Barra de Pesquisa -->
+                    <div style="display: flex; width: 100%;">
+                        <input type="text" name="busca" placeholder="🔍 Buscar por nome da transação..." value="<?= htmlspecialchars($_GET['busca'] ?? '') ?>" style="flex: 1; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); font-family: inherit; font-size: 0.95rem;">
+                    </div>
+
+                    <div class="filter-bar">
+                        <div class="filter-select-wrapper">
+                            <select name="mes" class="filter-btn">
                             <option value="todos" <?= $mesFiltro === 'todos' ? 'selected' : '' ?>>Todos os Meses</option>
                             <?php 
                             $filterBaseDate = new DateTime('first day of this month');
@@ -325,6 +335,7 @@ $temDadosGrafico = max($valores) > 0;
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+                    </div>
                 </form>
 
 
@@ -391,7 +402,7 @@ $temDadosGrafico = max($valores) > 0;
                 <input type="hidden" name="tipo" value="saida">
                 
                 <div class="form-floating">
-                    <input id="new_nome" name="nome" type="text" required placeholder="Ex: Mercado" maxlength="30">
+                    <input id="new_nome" name="nome" type="text" required placeholder="Ex: Mercado" maxlength="40">
                     <label for="new_nome">Título / Nome</label>
                 </div>
 
@@ -401,7 +412,7 @@ $temDadosGrafico = max($valores) > 0;
                 </div>
                 
                 <div class="form-floating">
-                    <input id="new_valor" name="valor" type="text" required placeholder="Ex: 89.90" maxlength="11">
+                    <input id="new_valor" name="valor" type="text" required placeholder="Ex: 89.90" maxlength="10">
                     <label for="new_valor">Valor (R$)</label>
                 </div>
                 
@@ -454,7 +465,7 @@ $temDadosGrafico = max($valores) > 0;
                 <input type="hidden" name="tipo" value="entrada">
                 
                 <div class="form-floating">
-                    <input id="saldo_nome" name="nome" type="text" required placeholder="Ex: Salário" maxlength="30">
+                    <input id="saldo_nome" name="nome" type="text" required placeholder="Ex: Salário" maxlength="40">
                     <label for="saldo_nome">Título / Nome</label>
                 </div>
 
@@ -464,7 +475,7 @@ $temDadosGrafico = max($valores) > 0;
                 </div>
                 
                 <div class="form-floating">
-                    <input id="saldo_valor" name="valor" type="text" required placeholder="Ex: 1500.00" maxlength="11">
+                    <input id="saldo_valor" name="valor" type="text" required placeholder="Ex: 1500.00" maxlength="10">
                     <label for="saldo_valor">Valor (R$)</label>
                 </div>
                 
@@ -670,17 +681,17 @@ $temDadosGrafico = max($valores) > 0;
                 </div>
 
                 <div class="form-floating">
-                    <input id="rec_nome" name="nome" type="text" required placeholder="Ex: Aluguel">
+                    <input id="rec_nome" name="nome" type="text" required placeholder="Ex: Aluguel" maxlength="40">
                     <label for="rec_nome">Título / Nome</label>
                 </div>
 
                 <div class="form-floating">
-                    <input id="rec_descricao" name="descricao" type="text" placeholder="Ex: Aluguel do apartamento">
+                    <input id="rec_descricao" name="descricao" type="text" placeholder="Ex: Aluguel do apartamento" maxlength="150">
                     <label for="rec_descricao">Descrição (opcional)</label>
                 </div>
 
                 <div class="form-floating">
-                    <input id="rec_valor" name="valor" type="text" required placeholder="Ex: 1200.00">
+                    <input id="rec_valor" name="valor" type="text" required placeholder="Ex: 1200.00" maxlength="10">
                     <label for="rec_valor">Valor Mensal (R$)</label>
                 </div>
 
@@ -741,7 +752,7 @@ $temDadosGrafico = max($valores) > 0;
                     <input type="hidden" name="transacao_id" value="<?= htmlspecialchars($despesa['id']) ?>">
                     
                     <div class="form-floating">
-                        <input id="edit_nome_<?= htmlspecialchars($despesa['id']) ?>" name="nome" type="text" required value="<?= htmlspecialchars($despesa['nome']) ?>" placeholder="Ex: Mercado" maxlength="30">
+                        <input id="edit_nome_<?= htmlspecialchars($despesa['id']) ?>" name="nome" type="text" required value="<?= htmlspecialchars($despesa['nome']) ?>" placeholder="Ex: Mercado" maxlength="40">
                         <label for="edit_nome_<?= htmlspecialchars($despesa['id']) ?>">Título / Nome</label>
                     </div>
 
@@ -751,7 +762,7 @@ $temDadosGrafico = max($valores) > 0;
                     </div>
                     
                     <div class="form-floating">
-                        <input id="edit_valor_<?= htmlspecialchars($despesa['id']) ?>" name="valor" type="text" required value="<?= htmlspecialchars($despesa['valor']) ?>" placeholder="Ex: 89.90" maxlength="11">
+                        <input id="edit_valor_<?= htmlspecialchars($despesa['id']) ?>" name="valor" type="text" required value="<?= htmlspecialchars($despesa['valor']) ?>" placeholder="Ex: 89.90" maxlength="10">
                         <label for="edit_valor_<?= htmlspecialchars($despesa['id']) ?>">Valor (R$)</label>
                     </div>
                     
