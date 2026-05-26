@@ -115,7 +115,7 @@ class DespesaRecorrente {
     }
 
     /**
-     * Remove permanentemente uma despesa recorrente.
+     * Remove permanentemente uma despesa recorrente (mantém as transações geradas).
      */
     public function remover(string $id): bool {
         if ($this->userId === null) return false;
@@ -125,6 +125,51 @@ class DespesaRecorrente {
              WHERE id = :id AND usuario_id = :usuario_id'
         );
         return $stmt->execute(['id' => $id, 'usuario_id' => $this->userId]);
+    }
+
+    /**
+     * Remove permanentemente uma despesa recorrente E apaga (soft-delete) 
+     * todas as transações geradas por ela nos meses anteriores.
+     * Retorna o número de transações apagadas.
+     */
+    public function removerComHistorico(string $id): int {
+        if ($this->userId === null) return 0;
+
+        // Busca o recorrente para saber o tipo
+        $rec = $this->buscarPorId($id);
+        if (!$rec) return 0;
+
+        $agora = date('Y-m-d H:i:s');
+        $apagadas = 0;
+
+        // Soft-delete nas despesas geradas por este recorrente
+        $stmt = $this->connection->prepare(
+            'UPDATE despesas SET deletado_em = :agora
+             WHERE recorrente_id = :recorrente_id AND usuario_id = :usuario_id AND deletado_em IS NULL'
+        );
+        $stmt->execute([
+            'agora' => $agora,
+            'recorrente_id' => $id,
+            'usuario_id' => $this->userId,
+        ]);
+        $apagadas += $stmt->rowCount();
+
+        // Soft-delete nos saldos gerados por este recorrente
+        $stmt2 = $this->connection->prepare(
+            'UPDATE saldos SET deletado_em = :agora
+             WHERE recorrente_id = :recorrente_id AND usuario_id = :usuario_id AND deletado_em IS NULL'
+        );
+        $stmt2->execute([
+            'agora' => $agora,
+            'recorrente_id' => $id,
+            'usuario_id' => $this->userId,
+        ]);
+        $apagadas += $stmt2->rowCount();
+
+        // Remove o template recorrente
+        $this->remover($id);
+
+        return $apagadas;
     }
 
     /**

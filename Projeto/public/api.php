@@ -487,14 +487,29 @@ switch ($route) {
             }
 
             $model = new \App\Models\DespesaRecorrente($usuario['id']);
-            $resultado = $model->remover($body['id']);
+            $apagarHistorico = !empty($body['apagar_historico']);
 
-            if ($resultado) {
-                http_response_code(200);
-                echo json_encode(['mensagem' => 'Registro fixo removido permanentemente']);
+            if ($apagarHistorico) {
+                $qtd = $model->removerComHistorico($body['id']);
+                if ($qtd >= 0) {
+                    http_response_code(200);
+                    echo json_encode([
+                        'mensagem' => 'Registro fixo removido junto com todas as transações geradas',
+                        'transacoes_removidas' => $qtd
+                    ]);
+                } else {
+                    http_response_code(404);
+                    echo json_encode(['erro' => 'Registro fixo não encontrado']);
+                }
             } else {
-                http_response_code(404);
-                echo json_encode(['erro' => 'Registro fixo não encontrado']);
+                $resultado = $model->remover($body['id']);
+                if ($resultado) {
+                    http_response_code(200);
+                    echo json_encode(['mensagem' => 'Registro fixo removido (transações mantidas no histórico)']);
+                } else {
+                    http_response_code(404);
+                    echo json_encode(['erro' => 'Registro fixo não encontrado']);
+                }
             }
         } else {
             http_response_code(405);
