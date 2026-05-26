@@ -128,6 +128,53 @@ class DespesaRecorrente {
     }
 
     /**
+     * Busca uma despesa recorrente pelo ID.
+     */
+    public function buscarPorId(string $id): ?array {
+        if ($this->userId === null) return null;
+
+        $stmt = $this->connection->prepare(
+            'SELECT id, nome, descricao, valor, dia_vencimento, icone, tipo, data_inicio, ativo, criado_em
+             FROM despesas_recorrentes
+             WHERE id = :id AND usuario_id = :usuario_id'
+        );
+        $stmt->execute(['id' => $id, 'usuario_id' => $this->userId]);
+        $result = $stmt->fetch();
+
+        if ($result) {
+            $result['valor'] = (float) $result['valor'];
+            $result['tipo'] = $result['tipo'] ?? 'saida';
+            return $result;
+        }
+        return null;
+    }
+
+    /**
+     * Edita uma despesa recorrente existente.
+     */
+    public function editar(string $id, array $dados): bool {
+        if ($this->userId === null) return false;
+
+        $stmt = $this->connection->prepare(
+            'UPDATE despesas_recorrentes
+             SET nome = :nome, descricao = :descricao, valor = :valor,
+                 dia_vencimento = :dia_vencimento, icone = :icone, tipo = :tipo
+             WHERE id = :id AND usuario_id = :usuario_id'
+        );
+
+        return $stmt->execute([
+            'nome' => $dados['nome'],
+            'descricao' => $dados['descricao'] ?? null,
+            'valor' => (float) $dados['valor'],
+            'dia_vencimento' => (int) $dados['dia_vencimento'],
+            'icone' => $dados['icone'] ?? '🔄',
+            'tipo' => ($dados['tipo'] ?? 'saida') === 'entrada' ? 'entrada' : 'saida',
+            'id' => $id,
+            'usuario_id' => $this->userId,
+        ]);
+    }
+
+    /**
      * Processa as despesas/saldos recorrentes ativas.
      * Gera despesas (tipo=saida) ou saldos (tipo=entrada) desde a data_inicio até o mês atual.
      * Se o usuário excluiu uma instância de um mês, ela NÃO será regenerada.

@@ -324,7 +324,171 @@ curl -X DELETE -H "X-API-KEY: sua_chave_api" \
 ```json
 {
   "erro": "Rota não encontrada",
-  "hint": "Use: despesas, saldo, transacoes, despesas.criar, saldo.criar, transacao.editar, transacao.deletar"
+  "hint": "Use: despesas, saldo, transacoes, despesas.criar, saldo.criar, transacao.editar, transacao.deletar, fixos, fixos.criar, fixos.editar, fixos.desativar, fixos.reativar, fixos.deletar"
+}
+```
+
+---
+
+## Endpoints de Registros Fixos (Recorrentes)
+
+### 8. Listar Fixos
+**GET** `/api.php?route=fixos`
+
+Lista todos os registros fixos (recorrentes) do usuário. Aceita filtro opcional.
+
+**Parâmetros de Query:**
+- `filtro` (opcional): `todas` (padrão), `ativas` ou `inativas`
+
+**Exemplo:**
+```bash
+curl -H "X-API-KEY: sua_chave_api" \
+  "http://localhost:8000/api.php?route=fixos&filtro=ativas"
+```
+
+**Resposta (200):**
+```json
+{
+  "data": [
+    {
+      "id": "rec_abc123",
+      "nome": "Aluguel",
+      "descricao": "Apt centro",
+      "valor": 1500,
+      "dia_vencimento": 10,
+      "icone": "🏠",
+      "tipo": "saida",
+      "data_inicio": "2026-01-10",
+      "ativo": 1,
+      "criado_em": "2026-01-10 10:30:00"
+    }
+  ]
+}
+```
+
+---
+
+### 9. Criar Fixo
+**POST** `/api.php?route=fixos.criar`
+
+Cria um novo registro fixo (recorrente). Gera automaticamente as transações pendentes.
+
+**Body (JSON):**
+```json
+{
+  "nome": "Aluguel",
+  "descricao": "Apt centro",
+  "valor": 1500,
+  "dia_vencimento": 10,
+  "icone": "🏠",
+  "tipo": "saida",
+  "data_inicio": "2026-01-10"
+}
+```
+
+**Campos:**
+- `nome` (obrigatório): Título (máx 30 chars)
+- `descricao` (opcional): Descrição (máx 150 chars)
+- `valor` (obrigatório): Valor positivo
+- `dia_vencimento` (obrigatório): Dia do mês (1-31)
+- `icone` (opcional): Emoji (padrão: 🔄)
+- `tipo` (opcional): `saida` (padrão) ou `entrada`
+- `data_inicio` (opcional): Data de início no formato YYYY-MM-DD (padrão: data atual)
+
+**Resposta (201):**
+```json
+{
+  "mensagem": "Registro fixo criado com sucesso"
+}
+```
+
+---
+
+### 10. Editar Fixo
+**PUT** `/api.php?route=fixos.editar`
+
+Edita um registro fixo existente. Apenas os campos enviados serão atualizados.
+
+**Body (JSON):**
+```json
+{
+  "id": "rec_abc123",
+  "nome": "Aluguel Novo",
+  "valor": 1600
+}
+```
+
+**Campos:**
+- `id` (obrigatório): ID do registro fixo
+- Outros campos são opcionais (nome, descricao, valor, dia_vencimento, icone, tipo)
+
+**Resposta (200):**
+```json
+{
+  "mensagem": "Registro fixo atualizado com sucesso"
+}
+```
+
+---
+
+### 11. Desativar (Pausar) Fixo
+**PUT** `/api.php?route=fixos.desativar`
+
+Pausa um registro fixo. Novas transações não serão geradas enquanto estiver pausado.
+
+**Body (JSON):**
+```json
+{
+  "id": "rec_abc123"
+}
+```
+
+**Resposta (200):**
+```json
+{
+  "mensagem": "Registro fixo desativado com sucesso"
+}
+```
+
+---
+
+### 12. Reativar Fixo
+**PUT** `/api.php?route=fixos.reativar`
+
+Reativa um registro fixo pausado. Gera automaticamente as transações pendentes.
+
+**Body (JSON):**
+```json
+{
+  "id": "rec_abc123"
+}
+```
+
+**Resposta (200):**
+```json
+{
+  "mensagem": "Registro fixo reativado com sucesso"
+}
+```
+
+---
+
+### 13. Remover Fixo
+**DELETE** `/api.php?route=fixos.deletar`
+
+Remove permanentemente um registro fixo. As transações já geradas não são afetadas.
+
+**Body (JSON):**
+```json
+{
+  "id": "rec_abc123"
+}
+```
+
+**Resposta (200):**
+```json
+{
+  "mensagem": "Registro fixo removido permanentemente"
 }
 ```
 

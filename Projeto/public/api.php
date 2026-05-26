@@ -5,6 +5,7 @@ require_once __DIR__ . '/../app/Config/Database.php';
 require_once __DIR__ . '/../app/Models/Usuario.php';
 require_once __DIR__ . '/../app/Models/Despesa.php';
 require_once __DIR__ . '/../app/Models/Saldo.php';
+require_once __DIR__ . '/../app/Models/DespesaRecorrente.php';
 
 header('Content-Type: application/json');
 
@@ -298,8 +299,211 @@ switch ($route) {
         }
         break;
 
+    // ========== FIXOS (Recorrentes) ==========
+
+    // GET listar fixos
+    case 'fixos':
+        if ($method === 'GET') {
+            $model = new \App\Models\DespesaRecorrente($usuario['id']);
+            $filtro = $_GET['filtro'] ?? 'todas'; // todas, ativas, inativas
+            if ($filtro === 'ativas') {
+                $fixos = $model->listarAtivas();
+            } else {
+                $fixos = $model->listarTodas();
+                if ($filtro === 'inativas') {
+                    $fixos = array_values(array_filter($fixos, fn($f) => !$f['ativo']));
+                }
+            }
+            http_response_code(200);
+            echo json_encode(['data' => $fixos]);
+        } else {
+            http_response_code(405);
+            echo json_encode(['erro' => 'Método não permitido']);
+        }
+        break;
+
+    // POST criar fixo
+    case 'fixos.criar':
+        if ($method === 'POST') {
+            $body = json_decode(file_get_contents('php://input'), true);
+
+            $errors = [];
+            if (empty($body['nome'])) $errors[] = 'Nome é obrigatório';
+            if (empty($body['valor']) || !is_numeric($body['valor']) || (float)$body['valor'] <= 0) $errors[] = 'Valor inválido';
+            if (empty($body['dia_vencimento']) || (int)$body['dia_vencimento'] < 1 || (int)$body['dia_vencimento'] > 31) $errors[] = 'Dia de vencimento inválido (1-31)';
+
+            if (!empty($errors)) {
+                http_response_code(400);
+                echo json_encode(['erro' => 'Validação falhou', 'detalhes' => $errors]);
+                exit;
+            }
+
+            $model = new \App\Models\DespesaRecorrente($usuario['id']);
+            $resultado = $model->criar([
+                'nome' => substr(trim($body['nome']), 0, 30),
+                'descricao' => substr(trim($body['descricao'] ?? ''), 0, 150),
+                'valor' => (float)$body['valor'],
+                'dia_vencimento' => (int)$body['dia_vencimento'],
+                'icone' => $body['icone'] ?? '🔄',
+                'tipo' => ($body['tipo'] ?? 'saida') === 'entrada' ? 'entrada' : 'saida',
+                'data_inicio' => $body['data_inicio'] ?? date('Y-m-d'),
+            ]);
+
+            if ($resultado) {
+                // Processa pendentes para gerar transações imediatamente
+                $model->processarPendentes();
+                http_response_code(201);
+                echo json_encode(['mensagem' => 'Registro fixo criado com sucesso']);
+            } else {
+                http_response_code(500);
+                echo json_encode(['erro' => 'Erro ao criar registro fixo']);
+            }
+        } else {
+            http_response_code(405);
+            echo json_encode(['erro' => 'Método não permitido']);
+        }
+        break;
+
+    // PUT editar fixo
+    case 'fixos.editar':
+        if ($method === 'PUT') {
+            $body = json_decode(file_get_contents('php://input'), true);
+
+            if (empty($body['id'])) {
+                http_response_code(400);
+                echo json_encode(['erro' => 'ID do registro fixo é obrigatório']);
+                exit;
+            }
+
+            $model = new \App\Models\DespesaRecorrente($usuario['id']);
+            $existente = $model->buscarPorId($body['id']);
+
+            if (!$existente) {
+                http_response_code(404);
+                echo json_encode(['erro' => 'Registro fixo não encontrado']);
+                exit;
+            }
+
+            $errors = [];
+            $nome = isset($body['nome']) ? substr(trim($body['nome']), 0, 30) : $existente['nome'];
+            if ($nome === '') $errors[] = 'Nome não pode estar vazio';
+            $valor = isset($body['valor']) ? $body['valor'] : $existente['valor'];
+            if (!is_numeric($valor) || (float)$valor <= 0) $errors[] = 'Valor inválido';
+            $dia = isset($body['dia_vencimento']) ? (int)$body['dia_vencimento'] : $existente['dia_vencimento'];
+            if ($dia < 1 || $dia > 31) $errors[] = 'Dia de vencimento inválido (1-31)';
+
+            if (!empty($errors)) {
+                http_response_code(400);
+                echo json_encode(['erro' => 'Validação falhou', 'detalhes' => $errors]);
+                exit;
+            }
+
+            $resultado = $model->editar($body['id'], [
+                'nome' => $nome,
+                'descricao' => isset($body['descricao']) ? substr(trim($body['descricao']), 0, 150) : ($existente['descricao'] ?? null),
+                'valor' => (float)$valor,
+                'dia_vencimento' => $dia,
+                'icone' => $body['icone'] ?? $existente['icone'],
+                'tipo' => isset($body['tipo']) ? $body['tipo'] : $existente['tipo'],
+            ]);
+
+            if ($resultado) {
+                http_response_code(200);
+                echo json_encode(['mensagem' => 'Registro fixo atualizado com sucesso']);
+            } else {
+                http_response_code(500);
+                echo json_encode(['erro' => 'Erro ao atualizar registro fixo']);
+            }
+        } else {
+            http_response_code(405);
+            echo json_encode(['erro' => 'Método não permitido']);
+        }
+        break;
+
+    // PUT desativar (pausar) fixo
+    case 'fixos.desativar':
+        if ($method === 'PUT') {
+            $body = json_decode(file_get_contents('php://input'), true);
+
+            if (empty($body['id'])) {
+                http_response_code(400);
+                echo json_encode(['erro' => 'ID do registro fixo é obrigatório']);
+                exit;
+            }
+
+            $model = new \App\Models\DespesaRecorrente($usuario['id']);
+            $resultado = $model->desativar($body['id']);
+
+            if ($resultado) {
+                http_response_code(200);
+                echo json_encode(['mensagem' => 'Registro fixo desativado com sucesso']);
+            } else {
+                http_response_code(404);
+                echo json_encode(['erro' => 'Registro fixo não encontrado']);
+            }
+        } else {
+            http_response_code(405);
+            echo json_encode(['erro' => 'Método não permitido']);
+        }
+        break;
+
+    // PUT reativar fixo
+    case 'fixos.reativar':
+        if ($method === 'PUT') {
+            $body = json_decode(file_get_contents('php://input'), true);
+
+            if (empty($body['id'])) {
+                http_response_code(400);
+                echo json_encode(['erro' => 'ID do registro fixo é obrigatório']);
+                exit;
+            }
+
+            $model = new \App\Models\DespesaRecorrente($usuario['id']);
+            $resultado = $model->reativar($body['id']);
+
+            if ($resultado) {
+                $model->processarPendentes();
+                http_response_code(200);
+                echo json_encode(['mensagem' => 'Registro fixo reativado com sucesso']);
+            } else {
+                http_response_code(404);
+                echo json_encode(['erro' => 'Registro fixo não encontrado']);
+            }
+        } else {
+            http_response_code(405);
+            echo json_encode(['erro' => 'Método não permitido']);
+        }
+        break;
+
+    // DELETE remover fixo
+    case 'fixos.deletar':
+        if ($method === 'DELETE') {
+            $body = json_decode(file_get_contents('php://input'), true);
+
+            if (empty($body['id'])) {
+                http_response_code(400);
+                echo json_encode(['erro' => 'ID do registro fixo é obrigatório']);
+                exit;
+            }
+
+            $model = new \App\Models\DespesaRecorrente($usuario['id']);
+            $resultado = $model->remover($body['id']);
+
+            if ($resultado) {
+                http_response_code(200);
+                echo json_encode(['mensagem' => 'Registro fixo removido permanentemente']);
+            } else {
+                http_response_code(404);
+                echo json_encode(['erro' => 'Registro fixo não encontrado']);
+            }
+        } else {
+            http_response_code(405);
+            echo json_encode(['erro' => 'Método não permitido']);
+        }
+        break;
+
     default:
         http_response_code(404);
-        echo json_encode(['erro' => 'Rota não encontrada', 'hint' => 'Use: despesas, saldo, transacoes, despesas.criar, saldo.criar, transacao.editar, transacao.deletar']);
+        echo json_encode(['erro' => 'Rota não encontrada', 'hint' => 'Use: despesas, saldo, transacoes, despesas.criar, saldo.criar, transacao.editar, transacao.deletar, fixos, fixos.criar, fixos.editar, fixos.desativar, fixos.reativar, fixos.deletar']);
         break;
 }
