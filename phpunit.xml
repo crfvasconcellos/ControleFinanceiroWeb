@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="tests/bootstrap.php"
+         colors="true"
+         verbose="true">
+    <testsuites>
+        <testsuite name="App Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">Projeto/app</directory>
+        </include>
+        <exclude>
+            <directory suffix=".php">Projeto/app/Views</directory>
+        </exclude>
+        <report>
+            <html outputDirectory="build/coverage" />
+        </report>
+    </coverage>
+</phpunit>
