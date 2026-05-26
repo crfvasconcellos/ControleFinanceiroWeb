@@ -1,6 +1,9 @@
 <?php
 // Carrega as dependências necessárias para os testes
 
+// Configura variáveis de ambiente para modo de teste
+putenv('DB_NAME=controle_financeiro_test');
+
 require_once __DIR__ . '/../Projeto/app/Config/Database.php';
 require_once __DIR__ . '/../Projeto/app/Models/Usuario.php';
 require_once __DIR__ . '/../Projeto/app/Models/Despesa.php';
