@@ -2,3 +2,11 @@
 Projeto/data/
 Projeto/public/uploads/*
 !Projeto/public/uploads/.gitkeep
+
+# Dependências do Composer
+/vendor/
+
+# Relatórios do PHPUnit
+/build/
+.phpunit.cache/
+
