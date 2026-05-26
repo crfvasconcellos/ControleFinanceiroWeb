@@ -215,8 +215,18 @@ class DespesaController {
             if (empty($errors) && $action === 'remover_recorrente') {
                 $recModel = new DespesaRecorrente($userId);
                 $recModel->remover(trim($_POST['recorrente_id'] ?? ''));
+                $_SESSION['successMessage'] = 'Registro fixo removido (transações mantidas)';
                 $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                 header('Location: index.php?route=dashboard#modalDespesasFixas');
+                exit;
+            }
+
+            if (empty($errors) && $action === 'remover_recorrente_completo') {
+                $recModel = new DespesaRecorrente($userId);
+                $qtd = $recModel->removerComHistorico(trim($_POST['recorrente_id'] ?? ''));
+                $_SESSION['successMessage'] = "Registro fixo removido junto com {$qtd} transação(ões) do histórico";
+                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                header('Location: index.php?route=dashboard#');
                 exit;
             }
         }
