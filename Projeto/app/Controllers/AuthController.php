@@ -13,9 +13,10 @@ class AuthController {
         exit;
     }
 
-    protected function renderView(string $path): void
+    protected function renderView(string $path, array $viewData = []): void
     {
-        require_once $path;
+        extract($viewData);
+        require $path;
     }
 
     /**
@@ -81,7 +82,12 @@ class AuthController {
             unset($_SESSION['successMessage']);
         }
 
-        $this->renderView(__DIR__ . '/../Views/login.php');
+        $this->renderView(__DIR__ . '/../Views/login.php', [
+            'errors' => $errors,
+            'successMessage' => $successMessage,
+            'data' => $data,
+            'csrfToken' => $csrfToken
+        ]);
     }
 
     /**
@@ -148,7 +154,11 @@ class AuthController {
             }
         }
 
-        $this->renderView(__DIR__ . '/../Views/registro.php');
+        $this->renderView(__DIR__ . '/../Views/registro.php', [
+            'errors' => $errors,
+            'data' => $data,
+            'csrfToken' => $csrfToken
+        ]);
     }
 
     /**

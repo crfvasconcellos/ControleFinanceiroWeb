@@ -75,7 +75,9 @@ class DespesaController {
                 $tipo = $_POST['tipo'] ?? 'saida';
                 $dataArr['nome'] = substr(trim($_POST['nome'] ?? ''), 0, 30);
                 $dataArr['descricao'] = substr(trim($_POST['descricao'] ?? ''), 0, 150);
-                $dataArr['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
+                $valorStr = trim($_POST['valor'] ?? '');
+                $valorStr = str_replace('.', '', $valorStr);
+                $dataArr['valor'] = str_replace(',', '.', $valorStr);
                 if (is_numeric($dataArr['valor']) && (float)$dataArr['valor'] > 99999999.99) $dataArr['valor'] = '99999999.99';
                 $dataArr['data'] = trim($_POST['data'] ?? '');
                 $dataArr['data_termino'] = trim($_POST['data_termino'] ?? '');
@@ -127,7 +129,9 @@ class DespesaController {
                 
                 $dataArr['nome'] = substr(trim($_POST['nome'] ?? ''), 0, 30);
                 $dataArr['descricao'] = substr(trim($_POST['descricao'] ?? ''), 0, 150);
-                $dataArr['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
+                $valorStr = trim($_POST['valor'] ?? '');
+                $valorStr = str_replace('.', '', $valorStr);
+                $dataArr['valor'] = str_replace(',', '.', $valorStr);
                 if (is_numeric($dataArr['valor']) && (float)$dataArr['valor'] > 99999999.99) $dataArr['valor'] = '99999999.99';
                 $dataArr['data'] = trim($_POST['data'] ?? '');
                 $dataArr['data_termino'] = trim($_POST['data_termino'] ?? '');
@@ -174,7 +178,7 @@ class DespesaController {
                 $recData = [
                     'nome' => trim($_POST['nome'] ?? ''),
                     'descricao' => trim($_POST['descricao'] ?? ''),
-                    'valor' => str_replace(',', '.', trim($_POST['valor'] ?? '')),
+                    'valor' => str_replace(',', '.', str_replace('.', '', trim($_POST['valor'] ?? ''))),
                     'dia_vencimento' => (int)($_POST['dia_vencimento'] ?? 1),
                     'icone' => $_POST['icone'] ?? '🔄',
                     'tipo' => ($_POST['tipo_recorrente'] ?? 'saida') === 'entrada' ? 'entrada' : 'saida',
@@ -232,12 +236,11 @@ class DespesaController {
             }
 
             if (empty($errors) && $action === 'atualizar_limite') {
-                $novoLimite = str_replace(',', '.', trim($_POST['limite_mensal'] ?? '0'));
+                $novoLimite = str_replace(',', '.', str_replace('.', '', trim($_POST['limite_mensal'] ?? '0')));
                 if (!is_numeric($novoLimite) || (float)$novoLimite < 0) {
                     $errors[] = 'O valor do limite deve ser numérico e maior ou igual a zero.';
                 } else {
                     $usuarioModel->atualizarLimite((string)$userId, (float)$novoLimite);
-                    $_SESSION['successMessage'] = 'Orçamento mensal atualizado com sucesso.';
                     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                     header('Location: index.php?route=dashboard#');
                     exit;
