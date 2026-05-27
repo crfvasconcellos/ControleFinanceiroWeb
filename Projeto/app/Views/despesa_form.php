@@ -211,12 +211,17 @@ $temDadosGrafico = max($valores) > 0;
         <section class="summary-row">
             <?php 
                 $corLimite = '';
+                $textoLimite = 'Não definido';
                 if ($limite_mensal > 0) {
-                    if ($totalMes > $limite_mensal) {
+                    $textoLimite = 'R$ ' . number_format($limite_mensal, 2, ',', '.');
+                    $porcentagem = $totalMes / $limite_mensal;
+                    if ($porcentagem >= 1) {
                         $corLimite = 'text-danger';
-                    } elseif ($totalMes > 0.8 * $limite_mensal) {
-                        $corLimite = 'text-warning'; // ou style color orange dependendo das classes disponíveis
+                    } elseif ($porcentagem >= 0.8) {
+                        $corLimite = 'text-warning';
                     }
+                } else {
+                    $textoLimite = 'R$ 0,00'; // ou "Não definido" conforme preferência
                 }
             ?>
             <div class="stat-card">
@@ -226,7 +231,7 @@ $temDadosGrafico = max($valores) > 0;
                 </div>
                 <div class="stat-card__label">Orçamento Mensal</div>
                 <div class="stat-card__value <?= $corLimite ?> " style="display:flex; align-items:center; gap:0.5rem;">
-                    R$ <?= number_format($limite_mensal, 2, ',', '.') ?>
+                    <?= $textoLimite ?>
                 </div>
             </div>
             <div class="stat-card">
