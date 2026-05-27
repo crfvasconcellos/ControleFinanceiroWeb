@@ -10,3 +10,5 @@ Projeto/public/uploads/*
 /build/
 .phpunit.cache/
 phpunit.phar
+.phpunit.result.cache
+
