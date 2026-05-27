@@ -703,7 +703,12 @@ $temDadosGrafico = max($valores) > 0;
                                             <button type="submit" class="btn-icon" title="Reativar" style="background: var(--color-success-bg); color: var(--color-success);">▶️</button>
                                         </form>
                                     <?php endif; ?>
-                                    <a href="#confirmarRemoverFixo_<?= htmlspecialchars($rec['id']) ?>" class="btn-icon danger" title="Remover">🗑️</a>
+                                    <form method="post" action="index.php?route=dashboard" style="margin:0;">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                                        <input type="hidden" name="action" value="remover_recorrente">
+                                        <input type="hidden" name="recorrente_id" value="<?= htmlspecialchars($rec['id']) ?>">
+                                        <button type="submit" class="btn-icon danger" title="Remover Permanentemente">🗑️</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -712,49 +717,6 @@ $temDadosGrafico = max($valores) > 0;
             </div>
         </div>
     </div>
-
-    <!-- Modais de confirmação de remoção de fixos -->
-    <?php if (!empty($despesasRecorrentes)): ?>
-        <?php foreach ($despesasRecorrentes as $rec): ?>
-            <div id="confirmarRemoverFixo_<?= htmlspecialchars($rec['id']) ?>" class="modal-overlay">
-                <div class="modal-content" style="max-width: 500px; text-align: center;">
-                    <a href="#modalDespesasFixas" class="modal-close">✕</a>
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
-                    <h2 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Remover Fixo</h2>
-                    <p style="color: var(--color-text-light); margin-bottom: 0.5rem;">
-                        Deseja remover "<strong><?= htmlspecialchars($rec['nome']) ?></strong>"?
-                    </p>
-                    <p style="color: var(--color-text-light); margin-bottom: 2rem; font-size: 0.9rem;">
-                        Escolha o que fazer com as transações já lançadas nos meses anteriores:
-                    </p>
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem; align-items: stretch;">
-                        <!-- Opção 1: Manter histórico -->
-                        <form method="post" action="index.php?route=dashboard" style="margin:0;">
-                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
-                            <input type="hidden" name="action" value="remover_recorrente">
-                            <input type="hidden" name="recorrente_id" value="<?= htmlspecialchars($rec['id']) ?>">
-                            <button type="submit" class="btn btn-primary btn-block" style="padding: 0.85rem; font-size: 0.95rem;">
-                                📋 Só parar de repetir<br>
-                                <small style="opacity: 0.8; font-weight: 400;">Mantém as transações já lançadas</small>
-                            </button>
-                        </form>
-                        <!-- Opção 2: Apagar tudo -->
-                        <form method="post" action="index.php?route=dashboard" style="margin:0;">
-                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
-                            <input type="hidden" name="action" value="remover_recorrente_completo">
-                            <input type="hidden" name="recorrente_id" value="<?= htmlspecialchars($rec['id']) ?>">
-                            <button type="submit" class="btn btn-danger btn-block" style="padding: 0.85rem; font-size: 0.95rem;">
-                                🗑️ Apagar tudo<br>
-                                <small style="opacity: 0.8; font-weight: 400;">Remove o fixo e todas as transações geradas</small>
-                            </button>
-                        </form>
-                        <!-- Cancelar -->
-                        <a href="#modalDespesasFixas" class="btn btn-outline" style="padding: 0.75rem;">Cancelar</a>
-                    </div>
-                </div>
-            </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
 
     <!-- Modal: Criar Novo Recorrente (Despesa ou Saldo) -->
     <div id="modalNovaRecorrente" class="modal-overlay">
