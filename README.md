@@ -274,8 +274,8 @@ As estimativas seguem a **Sequência de Fibonacci**.
 | US17 | Despesas recorrentes mensais | 5 | ✅ | Geração automática |
 | US18 | Saldos recorrentes mensais | 3 | ✅ | Entradas automáticas |
 | US19 | Remover gastos fixos do histórico | 3 | ✅ | Remover registros vinculados |
-| US20 | Implementar modo escuro | 5 | 📋 | Alternância de tema |
-| US21 | Exibir média de gastos mensais | 3 | 📋 | Média automática |
+| US20 | Implementar modo escuro | 5 | ✅ | Alternância de tema |
+| US21 | Exibir média de gastos mensais | 3 | ✅ | Média automática |
 
 > ✅ Concluído • 📋 Planejado
 

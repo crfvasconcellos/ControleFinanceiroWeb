@@ -186,6 +186,9 @@ $temDadosGrafico = max($valores) > 0;
     <title>Controle Financeiro - Dashboard</title>
     <link rel="icon" href="assets/img/logo.png" type="image/png">
     <link rel="stylesheet" href="assets/style.css">
+    <script>
+        (function(){var t=localStorage.getItem('cf-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
+    </script>
 </head>
 <body>
     <header class="top-bar">
@@ -209,31 +212,6 @@ $temDadosGrafico = max($valores) > 0;
         
         <!-- TOP ROW: Resumo Horizontal -->
         <section class="summary-row">
-            <?php 
-                $corLimite = '';
-                $textoLimite = 'Não definido';
-                if ($limite_mensal > 0) {
-                    $textoLimite = 'R$ ' . number_format($limite_mensal, 2, ',', '.');
-                    $porcentagem = $totalMes / $limite_mensal;
-                    if ($porcentagem >= 1) {
-                        $corLimite = 'text-danger';
-                    } elseif ($porcentagem >= 0.8) {
-                        $corLimite = 'text-warning';
-                    }
-                } else {
-                    $textoLimite = 'R$ 0,00'; // ou "Não definido" conforme preferência
-                }
-            ?>
-            <div class="stat-card">
-                <div class="stat-card__icon icon-blue" style="display:flex; justify-content:space-between; width:100%;">
-                    <span>📊</span>
-                    <a href="#modalEditarLimite" class="btn-icon" style="font-size: 0.9rem; padding: 0.2rem;" title="Editar Orçamento">✏️</a>
-                </div>
-                <div class="stat-card__label">Orçamento Mensal</div>
-                <div class="stat-card__value <?= $corLimite ?> " style="display:flex; align-items:center; gap:0.5rem;">
-                    <?= $textoLimite ?>
-                </div>
-            </div>
             <div class="stat-card">
                 <div class="stat-card__icon icon-blue">💰</div>
                 <div class="stat-card__label">Gastos no Período</div>
@@ -248,6 +226,11 @@ $temDadosGrafico = max($valores) > 0;
                 <div class="stat-card__icon icon-purple">📋</div>
                 <div class="stat-card__label">Transações</div>
                 <div class="stat-card__value"><?= count($despesasFiltradas) ?></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card__icon icon-amber">📊</div>
+                <div class="stat-card__label">Média Mensal de Gastos</div>
+                <div class="stat-card__value">R$ <?= number_format($mediaGastosMensais, 2, ',', '.') ?></div>
             </div>
         </section>
 
@@ -894,25 +877,30 @@ $temDadosGrafico = max($valores) > 0;
         </div>
     <?php endif; ?>
 
-    <!-- Modal Editar Limite Mensal -->
-    <div id="modalEditarLimite" class="modal-overlay">
-        <div class="modal-content">
-            <a href="#!" class="modal-close">✕</a>
-            <h2>Editar Orçamento Mensal</h2>
-            <form method="post" action="index.php?route=dashboard" style="margin-top:2rem;">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
-                <input type="hidden" name="action" value="atualizar_limite">
-                
-                <div class="form-floating">
-                    <input id="edit_limite" name="limite_mensal" type="text" required value="<?= $limite_mensal > 0 ? htmlspecialchars(number_format($limite_mensal, 2, ',', '')) : '' ?>" placeholder="Ex: 2500,00" maxlength="10">
-                    <label for="edit_limite">Novo Limite (R$)</label>
-                </div>
-                <p style="font-size: 0.85rem; color: var(--color-text-light); margin-top: -0.5rem; margin-bottom: 1.5rem;">Deixe vazio ou digite 0 para não definir um limite.</p>
 
-                <button type="submit" class="btn btn-primary btn-block" style="padding: 1rem; font-size:1.05rem;">Salvar Orçamento</button>
-            </form>
-        </div>
-    </div>
+
+    <!-- Dark Mode Toggle -->
+    <button class="theme-toggle" id="themeToggleBtn" title="Alternar Modo Escuro" aria-label="Alternar modo escuro">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+    </button>
+
+    <script>
+        (function() {
+            var btn = document.getElementById('themeToggleBtn');
+            btn.addEventListener('click', function() {
+                var html = document.documentElement;
+                var isDark = html.getAttribute('data-theme') === 'dark';
+                if (isDark) {
+                    html.removeAttribute('data-theme');
+                    localStorage.setItem('cf-theme', 'light');
+                } else {
+                    html.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('cf-theme', 'dark');
+                }
+            });
+        })();
+    </script>
 
 </body>
 </html>

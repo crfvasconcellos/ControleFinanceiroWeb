@@ -260,6 +260,9 @@ class DespesaController {
         // Calcula o total das despesas exibidas (preparado para filtros futuros)
         $totalDespesas = array_sum(array_column($listaDespesas, 'valor'));
 
+        // Média de gastos mensais (US21)
+        $mediaGastosMensais = $model->calcularMediaMensal();
+
         // Saldo do usuário
         $saldoModel = new Saldo($userId);
         $saldoTotalEntradas = $saldoModel->totalSaldo();
@@ -419,19 +422,33 @@ class DespesaController {
     }
 
 
-    private function getDespesasFiltradas() {
-        Auth::verificar();
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+    private function getDespesasFiltradas($userId, $mesFiltro, $prioridadeFiltro) {
+        // 1. Resgatar a API Key do usuário logado
+        $usuarioModel = new \App\Models\Usuario();
+        $usuarioDados = $usuarioModel->buscarPorId((string)$userId);
+        $apiKey = $usuarioDados['api_key'] ?? '';
+
+        // 2. Fazer a requisição HTTP para a API
+        $url = "http://localhost:8000/api.php?route=despesas";
+        $opcoes = [
+            "http" => [
+                "header" => "X-API-KEY: " . $apiKey . "\r\n",
+                "method" => "GET"
+            ]
+        ];
         
-        $userId = $_SESSION['user_id'];
-        $model = new Despesa($userId);
-        $listaDespesas = $model->buscarDespesas();
+        $contexto = stream_context_create($opcoes);
+        
+        // O '@' evita que o PHP lance um erro fatal na tela se a API estiver fora do ar
+        $resposta = @file_get_contents($url, false, $contexto);
+        
+        $listaDespesas = [];
+        if ($resposta) {
+            $json = json_decode($resposta, true);
+            $listaDespesas = $json['data'] ?? [];
+        }
 
-        $mesFiltro = $_GET['mes'] ?? date('Y-m');
-        $prioridadeFiltro = $_GET['prioridade'] ?? 'todas';
-
+        // 3. Aplicar a lógica de filtros na resposta da API
         $despesasFiltradas = [];
         foreach ($listaDespesas as $despesa) {
             $mesDespesa = substr($despesa['data'], 0, 7);
