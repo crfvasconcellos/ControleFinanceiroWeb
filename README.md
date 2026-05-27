@@ -22,6 +22,7 @@ Desenvolvido como parte da disciplina de Engenharia de Software — **Universida
 - [🏗️ Arquitetura do Sistema](#️-arquitetura-do-sistema-mvc)
 - [💾 Banco de Dados](#-banco-de-dados)
 - [🚀 Como Executar](#-como-executar-localmente)
+- [🧪 Testes Automatizados](#-testes-automatizados)
 - [🧪 API REST](#-api-rest)
 - [📦 Funcionalidades](#-funcionalidades)
 - [📅 Planejamento de Sprints](#-planejamento-de-sprints)
@@ -141,6 +142,104 @@ http://localhost:8000
 ```
 
 ---
+
+# 🧪 Testes Automatizados
+
+A suíte de testes usa **PHPUnit 9** com integração real ao banco de dados de teste.
+
+
+## 📋 Pré-requisitos
+
+| Requisito | Versão |
+|-----------|--------|
+| PHP | 8.0+ |
+| Extensão `pdo_mysql` | — |
+| Extensão `xml` | — |
+| Extensão `mbstring` | — |
+| MySQL/MariaDB | — |
+| Composer | — |
+
+
+## 🗄️ Configurar o Banco de Dados de Teste
+
+Os testes rodam em um banco separado (`controle_financeiro_test`) para nunca tocar nos dados reais.
+
+Acesse o MySQL e execute:
+
+```sql
+CREATE DATABASE IF NOT EXISTS controle_financeiro_test;
+GRANT ALL PRIVILEGES ON controle_financeiro_test.* TO 'controle_app'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+> As tabelas são criadas automaticamente pelo sistema de migrations ao rodar os testes pela primeira vez.
+
+
+## ▶️ Executar os Testes
+
+```bash
+./vendor/bin/phpunit
+```
+
+O arquivo `phpunit.xml` na raiz do projeto já configura tudo automaticamente: bootstrap, diretório de testes, cores e verbosidade.
+
+
+## 🔍 Filtros Úteis
+
+```bash
+# Rodar um arquivo específico
+./vendor/bin/phpunit tests/Controllers/AuthControllerTest.php
+
+# Rodar um método específico
+./vendor/bin/phpunit --filter testLoginGetExibeFormulario
+
+# Rodar só os testes de Controllers
+./vendor/bin/phpunit tests/Controllers/
+
+# Rodar só os testes de Models
+./vendor/bin/phpunit tests/Models/
+```
+
+---
+
+## 📊 Relatórios
+
+**Saída detalhada no terminal:**
+```bash
+./vendor/bin/phpunit --testdox
+```
+
+**Cobertura de código no terminal** (requer Xdebug):
+```bash
+./vendor/bin/phpunit --coverage-text
+```
+
+> Para relatórios de cobertura, instale o Xdebug: `sudo apt-get install php8.1-xdebug`
+
+---
+
+## 🗂️ Estrutura dos Testes
+
+```text
+tests/
+├── bootstrap.php               # Inicialização: autoload, banco de teste, sessão
+├── create_test_db.php          # Script auxiliar para criar o banco manualmente
+├── Controllers/
+│   ├── AuthControllerTest.php  # Login, registro, logout, CSRF
+│   ├── ApiControllerTest.php   # Autenticação por API key, transações, saldo
+│   └── DespesaControllerTest.php # Filtros de despesas
+└── Models/
+    ├── DespesaTest.php         # CRUD de despesas
+    ├── SaldoTest.php           # CRUD de saldos
+    └── UsuarioTest.php         # Registro e autenticação de usuários
+```
+
+---
+
+## ⚠️ Observações
+
+- Os testes de `Controllers` e `Models` usam o banco real — certifique-se de que o MySQL está rodando antes de executar.
+- Cada teste limpa seus próprios dados no `setUp` e `tearDown`, garantindo isolamento.O banco de produção (`controle_financeiro`) nunca é afetado pelos testes.
 
 # 🧪 API REST
 
@@ -274,8 +373,8 @@ As estimativas seguem a **Sequência de Fibonacci**.
 | US17 | Despesas recorrentes mensais | 5 | ✅ | Geração automática |
 | US18 | Saldos recorrentes mensais | 3 | ✅ | Entradas automáticas |
 | US19 | Remover gastos fixos do histórico | 3 | ✅ | Remover registros vinculados |
-| US20 | Implementar modo escuro | 5 | 📋 | Alternância de tema |
-| US21 | Exibir média de gastos mensais | 3 | 📋 | Média automática |
+| US20 | Implementar modo escuro | 5 | ✅ | Alternância de tema |
+| US21 | Exibir média de gastos mensais | 3 | ✅ | Média automática |
 
 > ✅ Concluído • 📋 Planejado
 
@@ -300,7 +399,20 @@ main
 
 ---
 
-# 🛠️ Tecnologias Utilizadas
+## 📋 Product Backlog: Controle Financeiro Pessoal
+
+| ID   | User Story | Story Points | Critérios de Aceitação |
+|------|-----------|--------------|------------------------|
+| US01 | Como usuário, quero adicionar uma despesa para controlar meus gastos | 5 | - Inserir nome da despesa<br>- Inserir valor (não pode ser negativo ou vazio)<br>- Inserir data<br>- Dados devem ser salvos corretamente |
+| US02 | Como usuário, quero visualizar minhas despesas para acompanhar meus gastos | 5 | - Exibir lista de despesas<br>- Mostrar nome, valor e data<br>- Atualizar automaticamente após novas inserções |
+| US03 | Como usuário, quero excluir uma despesa para corrigir erros | 3 | - Botão de exclusão disponível<br>- Remoção imediata da lista |
+| US04 | Como usuário, quero ver o total de gastos para entender quanto já gastei | 3 | - Cálculo automático do total<br>- Atualização ao adicionar ou remover despesas |
+| US05 | Como usuário, quero categorizar minhas despesas para organizar meus gastos | 5 | - Criar categorias (ex: alimentação, transporte)<br>- Associar categoria à despesa |
+| US06 | Como usuário, quero filtrar despesas por categoria para analisar meus gastos | 3 | - Selecionar categoria<br>- Exibir apenas despesas relacionadas |
+
+---
+
+## 🛠️ Tecnologias Utilizadas
 
 | Tecnologia | Uso |
 |-----------|-----|

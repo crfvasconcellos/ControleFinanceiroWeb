@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email VARCHAR(160) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     api_key VARCHAR(64) UNIQUE,
+    limite_mensal DECIMAL(10,2) DEFAULT 0,
     criado_em DATETIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

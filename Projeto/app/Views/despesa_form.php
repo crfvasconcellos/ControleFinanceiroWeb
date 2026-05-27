@@ -186,6 +186,9 @@ $temDadosGrafico = max($valores) > 0;
     <title>Controle Financeiro - Dashboard</title>
     <link rel="icon" href="assets/img/logo.png" type="image/png">
     <link rel="stylesheet" href="assets/style.css">
+    <script>
+        (function(){var t=localStorage.getItem('cf-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
+    </script>
 </head>
 <body>
     <header class="top-bar">
@@ -201,6 +204,7 @@ $temDadosGrafico = max($valores) > 0;
                 <a href="#modalNovaDespesa" class="btn btn-danger">Despesa</a>
                 <a href="#modalAdicionarSaldo" class="btn btn-success">Saldo</a>
                 <a href="#modalDespesasFixas" class="btn btn-outline btn-sm" title="Despesas Fixas">🔄 Fixas</a>
+                <a href="#modalOrcamento" class="btn btn-outline btn-sm" title="Definir Orçamento Mensal">🎯 Orçamento</a>
             </div>
         </div>
     </header>
@@ -224,7 +228,66 @@ $temDadosGrafico = max($valores) > 0;
                 <div class="stat-card__label">Transações</div>
                 <div class="stat-card__value"><?= count($despesasFiltradas) ?></div>
             </div>
+            <div class="stat-card">
+                <div class="stat-card__icon icon-amber">📊</div>
+                <div class="stat-card__label">Média Mensal de Gastos</div>
+                <div class="stat-card__value">R$ <?= number_format($mediaGastosMensais, 2, ',', '.') ?></div>
+            </div>
         </section>
+
+        <!-- ALERTS -->
+        <?php if (!empty($successMessage)): ?>
+            <div class="alert alert-success">
+                <span>✅</span> <?= htmlspecialchars($successMessage) ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (!empty($errors)): ?>
+            <div class="alert alert-error">
+                <span>⚠️</span>
+                <div>
+                    <?php foreach ($errors as $error): ?>
+                        <div><?= htmlspecialchars($error) ?></div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <!-- ORÇAMENTO MENSAL (US22) -->
+        <?php if($mesFiltro === date('Y-m') || $mesFiltro === 'todos'): ?>
+        <section class="budget-container">
+            <div class="budget-header">
+                <div class="budget-title">
+                    🎯 Orçamento Mensal
+                </div>
+                <div class="budget-amounts">
+                    R$ <?= number_format($totalMes, 2, ',', '.') ?> 
+                    <span style="font-weight: 400; margin: 0 0.3rem;">/</span> 
+                    <span><?= $limite_mensal > 0 ? 'R$ ' . number_format($limite_mensal, 2, ',', '.') : 'Não definido' ?></span>
+                </div>
+            </div>
+            
+            <?php if ($limite_mensal > 0): 
+                $percentual = ($totalMes / $limite_mensal) * 100;
+                $percentualStr = min(100, $percentual);
+                $fillClass = 'budget-fill--success';
+                if ($percentual > 75) $fillClass = 'budget-fill--warning';
+                if ($percentual > 95) $fillClass = 'budget-fill--danger';
+            ?>
+                <div class="budget-progress">
+                    <div class="budget-fill <?= $fillClass ?>" style="width: <?= $percentualStr ?>%;"></div>
+                </div>
+                <div style="text-align: right; margin-top: 0.5rem; font-size: 0.8rem; color: var(--color-text-light);">
+                    <?= number_format($percentual, 1, ',', '.') ?>% consumido
+                </div>
+            <?php else: ?>
+                <div class="budget-empty-state">
+                    <span class="budget-empty-text">Estabeleça um limite de gastos para acompanhar seu progresso mensal.</span>
+                    <a href="#modalOrcamento" class="btn btn-primary btn-sm">Definir Limite</a>
+                </div>
+            <?php endif; ?>
+        </section>
+        <?php endif; ?>
 
         <!-- MAIN GRID: Gráficos e Lista (Stack layout) -->
         <div class="grid" style="grid-template-columns: 1fr;">
@@ -831,6 +894,49 @@ $temDadosGrafico = max($valores) > 0;
         </div>
     <?php endif; ?>
 
+    <!-- Modal: Orçamento Mensal -->
+    <div id="modalOrcamento" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <a href="#!" class="modal-close">✕</a>
+            <h2>🎯 Orçamento Mensal</h2>
+            <p class="text-sm mb-4" style="color: var(--color-text-light);">Defina um limite de gastos para o mês e acompanhe o seu progresso financeiro de perto.</p>
+            <form method="post" action="index.php?route=dashboard" style="margin-top:1.5rem;">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                <input type="hidden" name="action" value="atualizar_limite">
+                
+                <div class="form-floating">
+                    <input id="limite_mensal_input" name="limite_mensal" type="text" required placeholder="Ex: 2500.00" value="<?= $limite_mensal > 0 ? number_format($limite_mensal, 2, ',', '') : '' ?>">
+                    <label for="limite_mensal_input">Limite Mensal de Gastos (R$)</label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block mt-4" style="padding: 1rem; font-size:1.05rem;">Salvar Orçamento</button>
+            </form>
+        </div>
+    </div>
+
+
+
+    <!-- Dark Mode Toggle -->
+    <button class="theme-toggle" id="themeToggleBtn" title="Alternar Modo Escuro" aria-label="Alternar modo escuro">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+    </button>
+
+    <script>
+        (function() {
+            var btn = document.getElementById('themeToggleBtn');
+            btn.addEventListener('click', function() {
+                var html = document.documentElement;
+                var isDark = html.getAttribute('data-theme') === 'dark';
+                if (isDark) {
+                    html.removeAttribute('data-theme');
+                    localStorage.setItem('cf-theme', 'light');
+                } else {
+                    html.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('cf-theme', 'dark');
+                }
+            });
+        })();
+    </script>
 
 </body>
 </html>
