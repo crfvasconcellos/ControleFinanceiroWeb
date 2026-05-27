@@ -115,7 +115,7 @@ class DespesaRecorrente {
     }
 
     /**
-     * Remove permanentemente uma despesa recorrente (mantém as transações geradas).
+     * Remove permanentemente uma despesa recorrente.
      */
     public function remover(string $id): bool {
         if ($this->userId === null) return false;
@@ -192,31 +192,6 @@ class DespesaRecorrente {
             return $result;
         }
         return null;
-    }
-
-    /**
-     * Edita uma despesa recorrente existente.
-     */
-    public function editar(string $id, array $dados): bool {
-        if ($this->userId === null) return false;
-
-        $stmt = $this->connection->prepare(
-            'UPDATE despesas_recorrentes
-             SET nome = :nome, descricao = :descricao, valor = :valor,
-                 dia_vencimento = :dia_vencimento, icone = :icone, tipo = :tipo
-             WHERE id = :id AND usuario_id = :usuario_id'
-        );
-
-        return $stmt->execute([
-            'nome' => $dados['nome'],
-            'descricao' => $dados['descricao'] ?? null,
-            'valor' => (float) $dados['valor'],
-            'dia_vencimento' => (int) $dados['dia_vencimento'],
-            'icone' => $dados['icone'] ?? '🔄',
-            'tipo' => ($dados['tipo'] ?? 'saida') === 'entrada' ? 'entrada' : 'saida',
-            'id' => $id,
-            'usuario_id' => $this->userId,
-        ]);
     }
 
     /**
