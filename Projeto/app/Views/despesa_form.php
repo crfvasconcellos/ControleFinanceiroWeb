@@ -209,6 +209,26 @@ $temDadosGrafico = max($valores) > 0;
         
         <!-- TOP ROW: Resumo Horizontal -->
         <section class="summary-row">
+            <?php 
+                $corLimite = '';
+                if ($limite_mensal > 0) {
+                    if ($totalMes > $limite_mensal) {
+                        $corLimite = 'text-danger';
+                    } elseif ($totalMes > 0.8 * $limite_mensal) {
+                        $corLimite = 'text-warning'; // ou style color orange dependendo das classes disponíveis
+                    }
+                }
+            ?>
+            <div class="stat-card">
+                <div class="stat-card__icon icon-blue" style="display:flex; justify-content:space-between; width:100%;">
+                    <span>📊</span>
+                    <a href="#modalEditarLimite" class="btn-icon" style="font-size: 0.9rem; padding: 0.2rem;" title="Editar Orçamento">✏️</a>
+                </div>
+                <div class="stat-card__label">Orçamento Mensal</div>
+                <div class="stat-card__value <?= $corLimite ?> " style="display:flex; align-items:center; gap:0.5rem;">
+                    R$ <?= number_format($limite_mensal, 2, ',', '.') ?>
+                </div>
+            </div>
             <div class="stat-card">
                 <div class="stat-card__icon icon-blue">💰</div>
                 <div class="stat-card__label">Gastos no Período</div>
@@ -869,6 +889,25 @@ $temDadosGrafico = max($valores) > 0;
         </div>
     <?php endif; ?>
 
+    <!-- Modal Editar Limite Mensal -->
+    <div id="modalEditarLimite" class="modal-overlay">
+        <div class="modal-content">
+            <a href="#!" class="modal-close">✕</a>
+            <h2>Editar Orçamento Mensal</h2>
+            <form method="post" action="index.php?route=dashboard" style="margin-top:2rem;">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                <input type="hidden" name="action" value="atualizar_limite">
+                
+                <div class="form-floating">
+                    <input id="edit_limite" name="limite_mensal" type="text" required value="<?= $limite_mensal > 0 ? htmlspecialchars(number_format($limite_mensal, 2, ',', '')) : '' ?>" placeholder="Ex: 2500,00" maxlength="10">
+                    <label for="edit_limite">Novo Limite (R$)</label>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--color-text-light); margin-top: -0.5rem; margin-bottom: 1.5rem;">Deixe vazio ou digite 0 para não definir um limite.</p>
+
+                <button type="submit" class="btn btn-primary btn-block" style="padding: 1rem; font-size:1.05rem;">Salvar Orçamento</button>
+            </form>
+        </div>
+    </div>
 
 </body>
 </html>
