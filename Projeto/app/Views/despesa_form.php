@@ -186,6 +186,9 @@ $temDadosGrafico = max($valores) > 0;
     <title>Controle Financeiro - Dashboard</title>
     <link rel="icon" href="assets/img/logo.png" type="image/png">
     <link rel="stylesheet" href="assets/style.css">
+    <script>
+        (function(){var t=localStorage.getItem('cf-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
+    </script>
 </head>
 <body>
     <header class="top-bar">
@@ -870,5 +873,29 @@ $temDadosGrafico = max($valores) > 0;
     <?php endif; ?>
 
 
+
+    <!-- Dark Mode Toggle -->
+    <button class="theme-toggle" id="themeToggleBtn" title="Alternar Modo Escuro" aria-label="Alternar modo escuro">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+    </button>
+
+    <script>
+        (function() {
+            var btn = document.getElementById('themeToggleBtn');
+            btn.addEventListener('click', function() {
+                var html = document.documentElement;
+                var isDark = html.getAttribute('data-theme') === 'dark';
+                if (isDark) {
+                    html.removeAttribute('data-theme');
+                    localStorage.setItem('cf-theme', 'light');
+                } else {
+                    html.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('cf-theme', 'dark');
+                }
+            });
+        })();
+    </script>
+
 </body>
-</html>
+</html>
