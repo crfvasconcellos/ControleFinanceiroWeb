@@ -14,14 +14,20 @@ class ApiController {
         // curl ou fetch AJAX → retorna JSON
         if (!empty($_POST['api_key']) || $this->isCurl()) {
             [$code, $payload] = $this->buscarDados($apiKey);
-            http_response_code($code);
-            header('Content-Type: application/json');
-            echo json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-            exit;
+            $this->sendResponse($code, $payload);
+            return;
         }
 
         // Browser → renderiza página de teste
         require_once __DIR__ . '/../Views/api_despesas.php';
+    }
+
+    protected function sendResponse(int $code, array $payload): void
+    {
+        http_response_code($code);
+        header('Content-Type: application/json');
+        echo json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        exit;
     }
 
     private function buscarDados(string $apiKey): array {
@@ -59,6 +65,7 @@ class ApiController {
     }
 
     private function isCurl(): bool {
-    return !empty($_SERVER['HTTP_X_API_KEY']);
+        return isset($_SERVER['HTTP_X_API_KEY'])
+            || !empty($_POST['api_key']);
     }
 }

@@ -103,6 +103,35 @@ class Despesa {
         ]);
     }
 
+    /**
+     * Calcula a média de gastos mensais do usuário.
+     * Agrupa despesas por mês (YYYY-MM) e retorna a média dos totais mensais.
+     */
+    public function calcularMediaMensal(): float {
+        if ($this->userId === null) return 0.0;
+
+        $stmt = $this->connection->prepare(
+            'SELECT DATE_FORMAT(data, "%Y-%m") AS mes, SUM(valor) AS total_mes
+             FROM despesas
+             WHERE usuario_id = :usuario_id 
+             AND deletado_em IS NULL
+             GROUP BY DATE_FORMAT(data, "%Y-%m")
+             ORDER BY mes'
+        );
+
+        $stmt->execute(['usuario_id' => $this->userId]);
+        $resultados = $stmt->fetchAll();
+
+        if (empty($resultados)) return 0.0;
+
+        $somaTotal = 0.0;
+        foreach ($resultados as $row) {
+            $somaTotal += (float) $row['total_mes'];
+        }
+
+        return $somaTotal / count($resultados);
+    }
+
     public function editarDespesa(string $id, array $dados): bool {
         if ($this->userId === null) return false;
 

@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <img src="BrasaControleFinanceiro1x1.png" alt="Logo Controle Financeiro" width="180" />
 
@@ -16,25 +16,24 @@ Desenvolvido como parte da disciplina de Engenharia de Software — **Universida
 
 ---
 
-## 📑 Sumário
+# 📑 Sumário
 
-| # | Seção |
-|:-:|:------|
-| 1 | [👥 Integrantes](#-integrantes) |
-| 2 | [🏗️ Arquitetura do Sistema](#%EF%B8%8F-arquitetura-do-sistema-mvc) |
-| 3 | [💾 Banco de Dados](#-banco-de-dados) |
-| 4 | [🚀 Como Executar](#-como-executar-localmente) |
-| 5 | [🧪 Testando as APIs](#-testando-as-apis) |
-| 6 | [📦 Funcionalidades](#-funcionalidades) |
-| 7 | [📅 Sprints e Backlog](#-planejamento-de-sprints) |
-| 8 | [📊 Backlog do Produto](#-backlog-do-produto) |
-| 9 | [🌿 GitFlow](#-gestão-de-versões-gitflow) |
-| 10 | [🛠️ Tecnologias](#%EF%B8%8F-tecnologias-utilizadas) |
-| 11 | [📝 Licença](#-licença) |
+- [👥 Integrantes](#-integrantes)
+- [🏗️ Arquitetura do Sistema](#️-arquitetura-do-sistema-mvc)
+- [💾 Banco de Dados](#-banco-de-dados)
+- [🚀 Como Executar](#-como-executar-localmente)
+- [🧪 Testes Automatizados](#-testes-automatizados)
+- [🧪 API REST](#-api-rest)
+- [📦 Funcionalidades](#-funcionalidades)
+- [📅 Planejamento de Sprints](#-planejamento-de-sprints)
+- [📊 Backlog do Produto](#-backlog-do-produto)
+- [🌿 GitFlow](#-gestão-de-versões-gitflow)
+- [🛠️ Tecnologias](#️-tecnologias-utilizadas)
+- [📝 Licença](#-licença)
 
 ---
 
-## 👥 Integrantes
+# 👥 Integrantes
 
 | Nome |
 |------|
@@ -46,165 +45,275 @@ Desenvolvido como parte da disciplina de Engenharia de Software — **Universida
 
 **Professor Orientador:** Edeilson Milhomem da Silva
 
-<p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
-
 ---
 
-## 🏗️ Arquitetura do Sistema (MVC)
+# 🏗️ Arquitetura do Sistema (MVC)
 
-A aplicação segue o padrão **MVC** (Model-View-Controller):
+A aplicação segue o padrão **MVC (Model-View-Controller)**.
 
-```
+```text
 Projeto/
 ├── app/
-│   ├── Config/          # Conexão com banco e migrations
-│   ├── Controllers/     # Lógica de requisições (DespesaController, AuthController, ApiController)
-│   ├── Middleware/       # Autenticação de rotas
-│   ├── Models/           # Regras de negócio (Despesa, Saldo, DespesaRecorrente, Usuario)
-│   └── Views/            # Interface HTML/PHP
+│   ├── Config/
+│   ├── Controllers/
+│   ├── Middleware/
+│   ├── Models/
+│   └── Views/
 ├── database/
-│   └── schema.sql       # Schema completo do banco
+│   └── schema.sql
 ├── public/
-│   ├── assets/          # CSS e imagens
-│   ├── uploads/         # Comprovantes PDF
-│   └── index.php        # Ponto de entrada (front controller)
-└── src/                 # Autoloader
+│   ├── assets/
+│   ├── uploads/
+│   └── index.php
+└── src/
 ```
 
 | Camada | Pasta | Responsabilidade |
 |--------|-------|------------------|
-| **Model** | `app/Models` | Persistência, validação e lógica de negócio |
-| **View** | `app/Views` | Interface do usuário (PHP/HTML/CSS) |
-| **Controller** | `app/Controllers` | Processamento de requisições e orquestração |
-
-<p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
+| **Model** | `app/Models` | Persistência e regras de negócio |
+| **View** | `app/Views` | Interface do usuário |
+| **Controller** | `app/Controllers` | Processamento das requisições |
 
 ---
 
-## 💾 Banco de Dados
+# 💾 Banco de Dados
 
-O sistema utiliza **MySQL/MariaDB** com queries parametrizadas (PDO) e isolamento por usuário.
+O sistema utiliza **MySQL/MariaDB** com queries parametrizadas via **PDO**.
 
-**Variáveis de ambiente:**
+## Variáveis de Ambiente
 
-| Variável | Padrão |
-|----------|--------|
+| Variável | Valor Padrão |
+|----------|---------------|
 | `DB_HOST` | `127.0.0.1` |
 | `DB_PORT` | `3306` |
 | `DB_NAME` | `controle_financeiro` |
 | `DB_USER` | `controle_app` |
 | `DB_PASS` | `ControleApp@2026!` |
 
-> **Schema:** [`Projeto/database/schema.sql`](Projeto/database/schema.sql)
-
-**Tabelas:**
+## Estrutura Principal
 
 | Tabela | Função |
 |--------|--------|
-| `usuarios` | Contas de usuário com autenticação bcrypt |
-| `despesas` | Registros de saídas (gastos) |
-| `saldos` | Registros de entradas (receitas) |
-| `despesas_recorrentes` | Templates de despesas/saldos fixos mensais |
-
-<p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
+| `usuarios` | Contas de usuário |
+| `despesas` | Registro de gastos |
+| `saldos` | Registro de entradas |
+| `despesas_recorrentes` | Gastos e saldos fixos |
 
 ---
 
-## 🚀 Como Executar Localmente
+# 🚀 Como Executar Localmente
 
-### Pré-requisitos
-- **PHP 8.0+** com extensão `pdo_mysql`
-- **MySQL** ou **MariaDB**
+## Pré-requisitos
 
-### Passo a passo
+- PHP 8.0+
+- MySQL ou MariaDB
+- Extensão `pdo_mysql`
 
-**1. Clone o repositório**
+## 1. Clone o Repositório
+
 ```bash
 git clone [url-do-repositorio]
 cd ControleFinanceiroWeb
 ```
 
-**2. Crie o banco de dados e usuário**
+## 2. Crie o Banco de Dados
+
 ```bash
 mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS controle_financeiro CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root -p -e "CREATE USER IF NOT EXISTS 'controle_app'@'localhost' IDENTIFIED BY 'ControleApp@2026!'; GRANT ALL PRIVILEGES ON controle_financeiro.* TO 'controle_app'@'localhost'; FLUSH PRIVILEGES;"
 ```
 
-**3. Importe o schema**
+## 3. Importe o Schema
+
 ```bash
 mysql -u root -p controle_financeiro < Projeto/database/schema.sql
 ```
 
-**4. (Opcional) Configure variáveis de ambiente**
+## 4. Inicie o Servidor
 
-Crie um arquivo `.env` na raiz do projeto ou defina as variáveis no sistema.
-
-**5. Inicie o servidor**
 ```bash
 cd Projeto/public
 php -S localhost:8000
 ```
 
-**6. Acesse:** [`http://localhost:8000`](http://localhost:8000)
+## 5. Acesse
 
-<p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
-
----
-
-## 🧪 Testando as APIs
-
-1. Registre uma conta com o nome **`admin`** e e-mail **`admin@mail.uft.edu.br`**
-2. No dashboard, a opção **"Acesso à API"** ficará visível
-3. Copie a chave gerada e envie no header `X-API-KEY`
-4. Endpoint: `GET /?route=api_despesas`
-
-> 📄 Documentação completa da API: [`API_DOCS.md`](API_DOCS.md)
-
-<p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
+```txt
+http://localhost:8000
+```
 
 ---
 
-## 📦 Funcionalidades
+# 🧪 Testes Automatizados
 
-### 💳 Transações
-- Adicionar, editar e excluir **despesas** e **saldos**
-- Campos: nome, descrição, valor, data, data de término (recorrência), ícone e comprovante PDF
-- Exclusão lógica (lixeira) com histórico completo
+A suíte de testes usa **PHPUnit 9** com integração real ao banco de dados de teste.
 
-### 📊 Dashboard
-- Resumo financeiro: gastos no período, saldo disponível, total de transações
-- Gráfico SVG dinâmico: gastos mensais (modo "Todos") ou gastos diários (modo mês)
-- Filtros: mês, faixa de valor, tipo (entrada/saída) e categoria
 
-### 🔄 Recorrentes Fixos
-- Cadastro de **despesas fixas** e **saldos fixos** mensais
-- Seletor visual de tipo: 📉 Despesa Fixa ou 📈 Saldo Fixo
-- Geração automática de registros a cada mês
-- Controle de ativação: pausar, reativar ou remover permanentemente
-- Suporte a data de início para geração retroativa
+## 📋 Pré-requisitos
 
-### 🔐 Autenticação
-- Registro e login com senha criptografada (bcrypt)
-- Sessões PHP com proteção CSRF
-- Isolamento total de dados por usuário
+| Requisito | Versão |
+|-----------|--------|
+| PHP | 8.0+ |
+| Extensão `pdo_mysql` | — |
+| Extensão `xml` | — |
+| Extensão `mbstring` | — |
+| MySQL/MariaDB | — |
+| Composer | — |
 
-### 🌐 API REST
-- Endpoint protegido por API Key (`X-API-KEY`)
-- Acesso restrito a contas admin
 
-<p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
+## 🗄️ Configurar o Banco de Dados de Teste
+
+Os testes rodam em um banco separado (`controle_financeiro_test`) para nunca tocar nos dados reais.
+
+Acesse o MySQL e execute:
+
+```sql
+CREATE DATABASE IF NOT EXISTS controle_financeiro_test;
+GRANT ALL PRIVILEGES ON controle_financeiro_test.* TO 'controle_app'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+> As tabelas são criadas automaticamente pelo sistema de migrations ao rodar os testes pela primeira vez.
+
+
+## ▶️ Executar os Testes
+
+```bash
+./vendor/bin/phpunit
+```
+
+O arquivo `phpunit.xml` na raiz do projeto já configura tudo automaticamente: bootstrap, diretório de testes, cores e verbosidade.
+
+
+## 🔍 Filtros Úteis
+
+```bash
+# Rodar um arquivo específico
+./vendor/bin/phpunit tests/Controllers/AuthControllerTest.php
+
+# Rodar um método específico
+./vendor/bin/phpunit --filter testLoginGetExibeFormulario
+
+# Rodar só os testes de Controllers
+./vendor/bin/phpunit tests/Controllers/
+
+# Rodar só os testes de Models
+./vendor/bin/phpunit tests/Models/
+```
 
 ---
 
-## 📅 Planejamento de Sprints
+## 📊 Relatórios
 
-### Sprint 1 — Gerenciamento de Dados
+**Saída detalhada no terminal:**
+```bash
+./vendor/bin/phpunit --testdox
+```
+
+**Cobertura de código no terminal** (requer Xdebug):
+```bash
+./vendor/bin/phpunit --coverage-text
+```
+
+> Para relatórios de cobertura, instale o Xdebug: `sudo apt-get install php8.1-xdebug`
+
+---
+
+## 🗂️ Estrutura dos Testes
+
+```text
+tests/
+├── bootstrap.php               # Inicialização: autoload, banco de teste, sessão
+├── create_test_db.php          # Script auxiliar para criar o banco manualmente
+├── Controllers/
+│   ├── AuthControllerTest.php  # Login, registro, logout, CSRF
+│   ├── ApiControllerTest.php   # Autenticação por API key, transações, saldo
+│   └── DespesaControllerTest.php # Filtros de despesas
+└── Models/
+    ├── DespesaTest.php         # CRUD de despesas
+    ├── SaldoTest.php           # CRUD de saldos
+    └── UsuarioTest.php         # Registro e autenticação de usuários
+```
+
+---
+
+## ⚠️ Observações
+
+- Os testes de `Controllers` e `Models` usam o banco real — certifique-se de que o MySQL está rodando antes de executar.
+- Cada teste limpa seus próprios dados no `setUp` e `tearDown`, garantindo isolamento.O banco de produção (`controle_financeiro`) nunca é afetado pelos testes.
+
+# 🧪 API REST
+
+A aplicação possui uma API protegida por chave de autenticação.
+
+## Como Utilizar
+
+1. Crie uma conta admin
+2. Gere a API Key no dashboard
+3. Envie no header:
+
+```http
+X-API-KEY: sua-chave
+```
+
+## Endpoint
+
+```http
+GET /?route=api_despesas
+```
+
+📄 Documentação completa em:
+
+```txt
+API_DOCS.md
+```
+
+---
+
+# 📦 Funcionalidades
+
+## 💳 Transações
+
+- Adicionar, editar e excluir despesas
+- Adicionar saldos e entradas
+- Upload de comprovantes PDF
+- Histórico de transações
+- Exclusão lógica com lixeira
+
+## 📊 Dashboard
+
+- Resumo financeiro
+- Gastos mensais
+- Filtros por categoria
+- Busca por nome
+- Destaque de maior despesa
+
+## 🔄 Recorrentes
+
+- Despesas fixas mensais
+- Saldos fixos mensais
+- Geração automática
+- Pausar e reativar recorrências
+
+## 🔐 Autenticação
+
+- Login e registro
+- Senhas criptografadas com bcrypt
+- Sessões PHP
+- Proteção CSRF
+
+---
+
+# 📅 Planejamento de Sprints
+
+## Sprint 1 — Gerenciamento de Dados
+
 > Criação da base utilizável do sistema.
 
 - **US01** – Adicionar Despesa
 - **US02** – Listar Despesas
 
-### Sprint 2 — Registro e Visualização
+## Sprint 2 — Registro e Visualização
+
 > Controle e correção de informações.
 
 - **US03** – Remover Despesa
@@ -214,7 +323,8 @@ php -S localhost:8000
 - **US07** – Implementar Banco de Dados SQL
 - **US08** – Listar Histórico de Despesas
 
-### Sprint 3 — Organização e Análise
+## Sprint 3 — Organização e Análise
+
 > Experiência do usuário e suporte à tomada de decisão.
 
 - **US09** – Categorizar Despesas
@@ -228,86 +338,64 @@ php -S localhost:8000
 - **US17** – Despesas Recorrentes (Fixas)
 - **US18** – Saldos Recorrentes (Fixos)
 
-<p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
+## Sprint 4 — Melhorias e Relatórios
+
+> Recursos de usabilidade e análise financeira.
+
+- **US19** – Remover Gastos Fixos do Histórico ao Excluir
+- **US20** – Implementar Modo Escuro na Interface
+- **US21** – Exibir Média de Gastos Mensais
 
 ---
 
-## 📊 Backlog do Produto
+# 📊 Backlog do Produto
 
-As estimativas seguem a **Sequência de Fibonacci** (1, 2, 3, 5, 8...).
+As estimativas seguem a **Sequência de Fibonacci**.
 
 | ID | User Story | Pts | Status | Critérios de Aceitação |
 |:---|:-----------|:---:|:------:|:-----------------------|
-| US01 | Adicionar despesa para controlar gastos | 5 | ✅ | Validar nome, valor positivo e data; salvar no BD |
+| US01 | Adicionar despesa para controlar gastos | 5 | ✅ | Validar nome, valor positivo e data |
 | US02 | Visualizar despesas para acompanhar gastos | 5 | ✅ | Lista atualizada com nome, valor e data |
-| US03 | Excluir despesa para corrigir erros | 3 | ✅ | Botão de remoção e atualização imediata |
-| US04 | Ver total de gastos para entender despesas | 3 | ✅ | Cálculo automático do somatório |
-| US05 | Editar despesa para corrigir informações | 5 | ✅ | Alteração de nome, valor e data |
-| US06 | Validar campos obrigatórios no cadastro | 3 | ✅ | Impedir salvamento com dados inválidos |
-| US07 | Implementar persistência em banco SQL | 8 | ✅ | CRUD completo em MySQL/MariaDB |
-| US08 | Listar histórico de despesas | 5 | ✅ | Histórico com itens ativos e excluídos |
-| US09 | Categorizar despesas para organização | 5 | ✅ | Criar e associar categorias aos registros |
-| US10 | Atualizar interface do sistema | 5 | ✅ | Interface modernizada e responsiva |
-| US11 | Adicionar entradas e saldo | 5 | ✅ | Formulários para valores positivos |
-| US12 | Indexar comprovante PDF | 3 | ✅ | Upload de `.pdf` como comprovante |
-| US13 | Filtrar despesas por categoria | 3 | ✅ | Selecionar categoria e filtrar registros |
-| US14 | Buscar despesas por nome | 2 | ✅ | Busca textual por título |
-| US15 | Exibir gastos por categoria | 5 | ✅ | Total acumulado por categoria |
-| US16 | Destacar maior despesa do período | 3 | ✅ | Identificação automática do maior gasto |
-| US17 | Despesas recorrentes (fixas) mensais | 5 | ✅ | Cadastro com dia de vencimento; geração automática; pausar/reativar |
-| US18 | Saldos recorrentes (fixos) mensais | 3 | ✅ | Cadastro de saldos fixos com geração automática mensal |
+| US03 | Excluir despesa para corrigir erros | 3 | ✅ | Remoção imediata da lista |
+| US04 | Ver total de gastos | 3 | ✅ | Somatório automático |
+| US05 | Editar despesa | 5 | ✅ | Alteração de nome, valor e data |
+| US06 | Validar campos obrigatórios | 3 | ✅ | Impedir dados inválidos |
+| US07 | Persistência em banco SQL | 8 | ✅ | CRUD completo |
+| US08 | Listar histórico de despesas | 5 | ✅ | Histórico funcional |
+| US09 | Categorizar despesas | 5 | ✅ | Associação de categorias |
+| US10 | Atualizar interface | 5 | ✅ | Interface responsiva |
+| US11 | Adicionar saldo | 5 | ✅ | Cadastro de entradas |
+| US12 | Indexar comprovante PDF | 3 | ✅ | Upload funcional |
+| US13 | Filtrar despesas | 3 | ✅ | Filtro por categoria |
+| US14 | Buscar despesas por nome | 2 | ✅ | Busca textual |
+| US15 | Exibir gastos por categoria | 5 | ✅ | Totais agrupados |
+| US16 | Destacar maior despesa | 3 | ✅ | Identificação automática |
+| US17 | Despesas recorrentes mensais | 5 | ✅ | Geração automática |
+| US18 | Saldos recorrentes mensais | 3 | ✅ | Entradas automáticas |
+| US19 | Remover gastos fixos do histórico | 3 | ✅ | Remover registros vinculados |
+| US20 | Implementar modo escuro | 5 | ✅ | Alternância de tema |
+| US21 | Exibir média de gastos mensais | 3 | ✅ | Média automática |
 
-> **Legenda:** ✅ Concluído · 📋 Planejado
-
-<p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
-
----
-
-## 👤 User Stories
-
-| ID | User Story |
-|:---|:-----------|
-| **US01** | Eu como usuário gostaria de adicionar uma despesa para controlar melhor meus gastos. |
-| **US02** | Eu como usuário gostaria de visualizar minhas despesas no dashboard para acompanhar meu saldo diário. |
-| **US03** | Eu como usuário gostaria de poder excluir uma despesa lançada erroneamente para corrigir os totais. |
-| **US04** | Eu como usuário gostaria de ver o valor total das minhas despesas do período. |
-| **US05** | Eu como usuário gostaria de editar uma despesa em vez de excluí-la, para preencher pequenos erros. |
-| **US06** | Eu como usuário gostaria de ser validado nos campos obrigatórios de cadastro para evitar dados não inseridos. |
-| **US07** | Eu como usuário gostaria de persistir meus dados com maior segurança num banco de dados. |
-| **US08** | Eu como usuário gostaria de um histórico completo (lixeira) para saber quais gastos já excluí. |
-| **US09** | Eu como usuário gostaria de categorizar minhas despesas usando ícones para entender pra onde o dinheiro vai. |
-| **US10** | Eu como usuário gostaria de uma interface visualmente limpa e moderna para ser prático usar. |
-| **US11** | Eu como usuário gostaria de informar não só gastos, mas também minhas entradas para cálculo automático. |
-| **US12** | Eu como usuário gostaria de adicionar um comprovante PDF junto ao registo para referência futura. |
-| **US13** | Eu como usuário gostaria de poder filtrar o que aparece no dashboard pelo mês ou categoria. |
-| **US14** | Eu como usuário gostaria de usar uma barra de busca para encontrar transações pelo título delas rapidamente. |
-| **US15** | Eu como usuário gostaria de ver um gráfico com o total acumulado que exiba a minha relação de gastos. |
-| **US16** | Eu como usuário gostaria que as maiores despesas recebessem etiquetas de destaque automático. |
-| **US17** | Eu como usuário gostaria de poder registrar uma conta fixa para que o sistema a recrie todo mês. |
-| **US18** | Eu como usuário gostaria que saldos fixos como o salário também contassem sozinhos mensalmente. |
-
-<p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
+> ✅ Concluído • 📋 Planejado
 
 ---
 
-## 🌿 Gestão de Versões (GitFlow)
+# 🌿 Gestão de Versões (GitFlow)
 
-```
-main ─────────────────────────── produção estável
-  └── develop ────────────────── integração
-        ├── feature/US01 ─────── adicionar despesa
-        ├── feature/US11 ─────── saldo
-        ├── feature/US17 ─────── despesas recorrentes
-        └── feature/US18 ─────── saldos recorrentes
+```text
+main
+ └── develop
+      ├── feature/US01
+      ├── feature/US11
+      ├── feature/US17
+      └── feature/US18
 ```
 
 | Branch | Finalidade |
-|--------|-----------|
-| `main` | Código estável, pronto para produção |
-| `develop` | Integração de novas funcionalidades |
-| `feature/*` | Desenvolvimento de User Stories específicas |
-
-<p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
+|--------|-------------|
+| `main` | Produção |
+| `develop` | Integração |
+| `feature/*` | Desenvolvimento de funcionalidades |
 
 ---
 
@@ -328,19 +416,18 @@ main ─────────────────────────
 
 | Tecnologia | Uso |
 |-----------|-----|
-| **PHP 8.x** | Backend nativo (sem frameworks) |
-| **HTML5 + CSS3** | Interface (design system próprio com Inter font) |
-| **MySQL/MariaDB** | Persistência (PDO com prepared statements) |
-| **SVG** | Gráficos dinâmicos no dashboard |
-| **CSS Modals** | Modais e interações sem JavaScript |
-
-<p align="right"><a href="#-sumário">⬆ voltar ao topo</a></p>
+| PHP 8.x | Backend |
+| HTML5 + CSS3 | Interface |
+| MySQL/MariaDB | Banco de dados |
+| SVG | Gráficos |
+| PDO | Persistência |
+| CSS Modals | Componentes visuais |
 
 ---
 
-## 📝 Licença
+# 📝 Licença
 
-Este projeto foi desenvolvido exclusivamente para fins acadêmicos na **Universidade Federal do Tocantins (UFT)**.
+Projeto desenvolvido exclusivamente para fins acadêmicos na **Universidade Federal do Tocantins (UFT)**.
 
 <div align="center">
 

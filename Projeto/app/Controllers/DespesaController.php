@@ -35,6 +35,7 @@ class DespesaController {
         $usuarioDados = $usuarioModel->buscarPorId((string)$userId);
         $userApiKey = $usuarioDados['api_key'] ?? null;
         $userEmail = $usuarioDados['email'] ?? '';
+        $limite_mensal = (float)($usuarioDados['limite_mensal'] ?? 0);
 
         $model = new Despesa($userId);
 
@@ -74,7 +75,9 @@ class DespesaController {
                 $tipo = $_POST['tipo'] ?? 'saida';
                 $dataArr['nome'] = substr(trim($_POST['nome'] ?? ''), 0, 30);
                 $dataArr['descricao'] = substr(trim($_POST['descricao'] ?? ''), 0, 150);
-                $dataArr['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
+                $valorStr = trim($_POST['valor'] ?? '');
+                $valorStr = str_replace('.', '', $valorStr);
+                $dataArr['valor'] = str_replace(',', '.', $valorStr);
                 if (is_numeric($dataArr['valor']) && (float)$dataArr['valor'] > 99999999.99) $dataArr['valor'] = '99999999.99';
                 $dataArr['data'] = trim($_POST['data'] ?? '');
                 $dataArr['data_termino'] = trim($_POST['data_termino'] ?? '');
@@ -126,7 +129,9 @@ class DespesaController {
                 
                 $dataArr['nome'] = substr(trim($_POST['nome'] ?? ''), 0, 30);
                 $dataArr['descricao'] = substr(trim($_POST['descricao'] ?? ''), 0, 150);
-                $dataArr['valor'] = str_replace(',', '.', trim($_POST['valor'] ?? ''));
+                $valorStr = trim($_POST['valor'] ?? '');
+                $valorStr = str_replace('.', '', $valorStr);
+                $dataArr['valor'] = str_replace(',', '.', $valorStr);
                 if (is_numeric($dataArr['valor']) && (float)$dataArr['valor'] > 99999999.99) $dataArr['valor'] = '99999999.99';
                 $dataArr['data'] = trim($_POST['data'] ?? '');
                 $dataArr['data_termino'] = trim($_POST['data_termino'] ?? '');
@@ -173,7 +178,7 @@ class DespesaController {
                 $recData = [
                     'nome' => trim($_POST['nome'] ?? ''),
                     'descricao' => trim($_POST['descricao'] ?? ''),
-                    'valor' => str_replace(',', '.', trim($_POST['valor'] ?? '')),
+                    'valor' => str_replace(',', '.', str_replace('.', '', trim($_POST['valor'] ?? ''))),
                     'dia_vencimento' => (int)($_POST['dia_vencimento'] ?? 1),
                     'icone' => $_POST['icone'] ?? '🔄',
                     'tipo' => ($_POST['tipo_recorrente'] ?? 'saida') === 'entrada' ? 'entrada' : 'saida',
@@ -215,9 +220,31 @@ class DespesaController {
             if (empty($errors) && $action === 'remover_recorrente') {
                 $recModel = new DespesaRecorrente($userId);
                 $recModel->remover(trim($_POST['recorrente_id'] ?? ''));
+                $_SESSION['successMessage'] = 'Registro fixo removido (transações mantidas)';
                 $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                 header('Location: index.php?route=dashboard#modalDespesasFixas');
                 exit;
+            }
+
+            if (empty($errors) && $action === 'remover_recorrente_completo') {
+                $recModel = new DespesaRecorrente($userId);
+                $qtd = $recModel->removerComHistorico(trim($_POST['recorrente_id'] ?? ''));
+                $_SESSION['successMessage'] = "Registro fixo removido junto com {$qtd} transação(ões) do histórico";
+                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                header('Location: index.php?route=dashboard#');
+                exit;
+            }
+
+            if (empty($errors) && $action === 'atualizar_limite') {
+                $novoLimite = str_replace(',', '.', str_replace('.', '', trim($_POST['limite_mensal'] ?? '0')));
+                if (!is_numeric($novoLimite) || (float)$novoLimite < 0) {
+                    $errors[] = 'O valor do limite deve ser numérico e maior ou igual a zero.';
+                } else {
+                    $usuarioModel->atualizarLimite((string)$userId, (float)$novoLimite);
+                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                    header('Location: index.php?route=dashboard#');
+                    exit;
+                }
             }
         }
 
@@ -235,6 +262,9 @@ class DespesaController {
 
         // Calcula o total das despesas exibidas (preparado para filtros futuros)
         $totalDespesas = array_sum(array_column($listaDespesas, 'valor'));
+
+        // Média de gastos mensais (US21)
+        $mediaGastosMensais = $model->calcularMediaMensal();
 
         // Saldo do usuário
         $saldoModel = new Saldo($userId);
@@ -395,19 +425,33 @@ class DespesaController {
     }
 
 
-    private function getDespesasFiltradas() {
-        Auth::verificar();
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+    private function getDespesasFiltradas($userId, $mesFiltro, $prioridadeFiltro) {
+        // 1. Resgatar a API Key do usuário logado
+        $usuarioModel = new \App\Models\Usuario();
+        $usuarioDados = $usuarioModel->buscarPorId((string)$userId);
+        $apiKey = $usuarioDados['api_key'] ?? '';
+
+        // 2. Fazer a requisição HTTP para a API
+        $url = "http://localhost:8000/api.php?route=despesas";
+        $opcoes = [
+            "http" => [
+                "header" => "X-API-KEY: " . $apiKey . "\r\n",
+                "method" => "GET"
+            ]
+        ];
         
-        $userId = $_SESSION['user_id'];
-        $model = new Despesa($userId);
-        $listaDespesas = $model->buscarDespesas();
+        $contexto = stream_context_create($opcoes);
+        
+        // O '@' evita que o PHP lance um erro fatal na tela se a API estiver fora do ar
+        $resposta = @file_get_contents($url, false, $contexto);
+        
+        $listaDespesas = [];
+        if ($resposta) {
+            $json = json_decode($resposta, true);
+            $listaDespesas = $json['data'] ?? [];
+        }
 
-        $mesFiltro = $_GET['mes'] ?? date('Y-m');
-        $prioridadeFiltro = $_GET['prioridade'] ?? 'todas';
-
+        // 3. Aplicar a lógica de filtros na resposta da API
         $despesasFiltradas = [];
         foreach ($listaDespesas as $despesa) {
             $mesDespesa = substr($despesa['data'], 0, 7);
