@@ -22,6 +22,7 @@ Desenvolvido como parte da disciplina de Engenharia de Software — **Universida
 - [🏗️ Arquitetura do Sistema](#️-arquitetura-do-sistema-mvc)
 - [💾 Banco de Dados](#-banco-de-dados)
 - [🚀 Como Executar](#-como-executar-localmente)
+- [🧪 Testes Automatizados](#-testes-automatizados)
 - [🧪 API REST](#-api-rest)
 - [📦 Funcionalidades](#-funcionalidades)
 - [📅 Planejamento de Sprints](#-planejamento-de-sprints)
@@ -141,6 +142,104 @@ http://localhost:8000
 ```
 
 ---
+
+# 🧪 Testes Automatizados
+
+A suíte de testes usa **PHPUnit 9** com integração real ao banco de dados de teste.
+
+
+## 📋 Pré-requisitos
+
+| Requisito | Versão |
+|-----------|--------|
+| PHP | 8.0+ |
+| Extensão `pdo_mysql` | — |
+| Extensão `xml` | — |
+| Extensão `mbstring` | — |
+| MySQL/MariaDB | — |
+| Composer | — |
+
+
+## 🗄️ Configurar o Banco de Dados de Teste
+
+Os testes rodam em um banco separado (`controle_financeiro_test`) para nunca tocar nos dados reais.
+
+Acesse o MySQL e execute:
+
+```sql
+CREATE DATABASE IF NOT EXISTS controle_financeiro_test;
+GRANT ALL PRIVILEGES ON controle_financeiro_test.* TO 'controle_app'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+> As tabelas são criadas automaticamente pelo sistema de migrations ao rodar os testes pela primeira vez.
+
+
+## ▶️ Executar os Testes
+
+```bash
+./vendor/bin/phpunit
+```
+
+O arquivo `phpunit.xml` na raiz do projeto já configura tudo automaticamente: bootstrap, diretório de testes, cores e verbosidade.
+
+
+## 🔍 Filtros Úteis
+
+```bash
+# Rodar um arquivo específico
+./vendor/bin/phpunit tests/Controllers/AuthControllerTest.php
+
+# Rodar um método específico
+./vendor/bin/phpunit --filter testLoginGetExibeFormulario
+
+# Rodar só os testes de Controllers
+./vendor/bin/phpunit tests/Controllers/
+
+# Rodar só os testes de Models
+./vendor/bin/phpunit tests/Models/
+```
+
+---
+
+## 📊 Relatórios
+
+**Saída detalhada no terminal:**
+```bash
+./vendor/bin/phpunit --testdox
+```
+
+**Cobertura de código no terminal** (requer Xdebug):
+```bash
+./vendor/bin/phpunit --coverage-text
+```
+
+> Para relatórios de cobertura, instale o Xdebug: `sudo apt-get install php8.1-xdebug`
+
+---
+
+## 🗂️ Estrutura dos Testes
+
+```text
+tests/
+├── bootstrap.php               # Inicialização: autoload, banco de teste, sessão
+├── create_test_db.php          # Script auxiliar para criar o banco manualmente
+├── Controllers/
+│   ├── AuthControllerTest.php  # Login, registro, logout, CSRF
+│   ├── ApiControllerTest.php   # Autenticação por API key, transações, saldo
+│   └── DespesaControllerTest.php # Filtros de despesas
+└── Models/
+    ├── DespesaTest.php         # CRUD de despesas
+    ├── SaldoTest.php           # CRUD de saldos
+    └── UsuarioTest.php         # Registro e autenticação de usuários
+```
+
+---
+
+## ⚠️ Observações
+
+- Os testes de `Controllers` e `Models` usam o banco real — certifique-se de que o MySQL está rodando antes de executar.
+- Cada teste limpa seus próprios dados no `setUp` e `tearDown`, garantindo isolamento.O banco de produção (`controle_financeiro`) nunca é afetado pelos testes.
 
 # 🧪 API REST
 
