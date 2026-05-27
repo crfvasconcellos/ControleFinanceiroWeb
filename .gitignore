@@ -9,4 +9,4 @@ Projeto/public/uploads/*
 # Relatórios do PHPUnit
 /build/
 .phpunit.cache/
-
+phpunit.phar
