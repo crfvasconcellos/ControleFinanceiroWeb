@@ -345,7 +345,7 @@ API_DOCS.md
 - **US19** – Remover Gastos Fixos do Histórico ao Excluir
 - **US20** – Implementar Modo Escuro na Interface
 - **US21** – Exibir Média de Gastos Mensais
-
+- **US22** - Limite de Gastos Mensais
 ---
 
 # 📊 Backlog do Produto
@@ -375,7 +375,7 @@ As estimativas seguem a **Sequência de Fibonacci**.
 | US19 | Remover gastos fixos do histórico | 3 | ✅ | Remover registros vinculados |
 | US20 | Implementar modo escuro | 5 | ✅ | Alternância de tema |
 | US21 | Exibir média de gastos mensais | 3 | ✅ | Média automática |
-
+| US22 | Limite de gastos mensais | 3 | ✅ | Fedbeek visual |
 > ✅ Concluído • 📋 Planejado
 
 ---
