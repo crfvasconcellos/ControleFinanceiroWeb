@@ -224,6 +224,11 @@ $temDadosGrafico = max($valores) > 0;
                 <div class="stat-card__label">Transações</div>
                 <div class="stat-card__value"><?= count($despesasFiltradas) ?></div>
             </div>
+            <div class="stat-card">
+                <div class="stat-card__icon icon-amber">📊</div>
+                <div class="stat-card__label">Média Mensal de Gastos</div>
+                <div class="stat-card__value">R$ <?= number_format($mediaGastosMensais, 2, ',', '.') ?></div>
+            </div>
         </section>
 
         <!-- MAIN GRID: Gráficos e Lista (Stack layout) -->

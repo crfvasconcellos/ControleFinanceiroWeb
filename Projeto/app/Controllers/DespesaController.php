@@ -246,6 +246,9 @@ class DespesaController {
         // Calcula o total das despesas exibidas (preparado para filtros futuros)
         $totalDespesas = array_sum(array_column($listaDespesas, 'valor'));
 
+        // Média de gastos mensais (US21)
+        $mediaGastosMensais = $model->calcularMediaMensal();
+
         // Saldo do usuário
         $saldoModel = new Saldo($userId);
         $saldoTotalEntradas = $saldoModel->totalSaldo();
