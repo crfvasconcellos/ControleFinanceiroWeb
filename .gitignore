@@ -12,3 +12,4 @@ Projeto/public/uploads/*
 phpunit.phar
 .phpunit.result.cache
 
+.env

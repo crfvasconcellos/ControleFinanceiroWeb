@@ -633,3 +633,77 @@ input[name="tipo_recorrente"]:not(:checked) + .tipo-toggle--saldo:hover {
     background: var(--color-success-bg) !important;
     color: var(--color-success) !important;
 }
+
+/* ==========================================
+   BUDGET PROGRESS (US22)
+   ========================================== */
+.budget-container {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+.budget-container:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary-light);
+}
+
+.budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.budget-title {
+    font-weight: 700;
+    color: var(--color-secondary);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.budget-amounts {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-text-light);
+}
+
+.budget-amounts span {
+    color: var(--color-secondary);
+    font-weight: 800;
+}
+
+.budget-progress {
+    height: 12px;
+    background: var(--color-surface-hover);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--color-border);
+}
+
+.budget-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.budget-fill--success { background: var(--color-success); }
+.budget-fill--warning { background: var(--color-warning); }
+.budget-fill--danger { background: var(--color-danger); }
+
+.budget-empty-state {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+.budget-empty-text {
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+}
