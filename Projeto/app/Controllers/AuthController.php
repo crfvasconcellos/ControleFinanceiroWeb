@@ -7,6 +7,17 @@ use App\Middleware\Auth;
 
 class AuthController {
 
+    protected function redirect(string $url): void
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    protected function renderView(string $path): void
+    {
+        require_once $path;
+    }
+
     /**
      * Exibe e processa o formulário de login.
      */
@@ -49,7 +60,6 @@ class AuthController {
                     $usuario = $model->autenticar($data['email'], $senha);
 
                     if ($usuario) {
-                        // Regenera sessão por segurança
                         session_regenerate_id(true);
                         $_SESSION['user_id'] = $usuario['id'];
                         $_SESSION['user_nome'] = $usuario['nome'];
@@ -57,8 +67,8 @@ class AuthController {
                         $_SESSION['user_api_key'] = $usuario['api_key'] ?? ''; 
                         unset($_SESSION['csrf_token']);
 
-                        header('Location: index.php?route=dashboard');
-                        exit;
+                        $this->redirect('index.php?route=dashboard');
+                        return;
                     } else {
                         $errors[] = 'E-mail ou senha incorretos.';
                     }
@@ -66,13 +76,12 @@ class AuthController {
             }
         }
 
-        // Mensagem de sucesso vinda do registro
         if (!empty($_SESSION['successMessage'])) {
             $successMessage = $_SESSION['successMessage'];
             unset($_SESSION['successMessage']);
         }
 
-        require_once __DIR__ . '/../Views/login.php';
+        $this->renderView(__DIR__ . '/../Views/login.php');
     }
 
     /**
@@ -130,8 +139,8 @@ class AuthController {
                     if ($usuario) {
                         $_SESSION['successMessage'] = 'Conta criada com sucesso! Faça login.';
                         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                        header('Location: index.php?route=login');
-                        exit;
+                        $this->redirect('index.php?route=login');
+                        return;
                     } else {
                         $errors[] = 'Este e-mail já está cadastrado.';
                     }
@@ -139,7 +148,7 @@ class AuthController {
             }
         }
 
-        require_once __DIR__ . '/../Views/registro.php';
+        $this->renderView(__DIR__ . '/../Views/registro.php');
     }
 
     /**
@@ -163,7 +172,6 @@ class AuthController {
 
         session_destroy();
 
-        header('Location: index.php?route=login');
-        exit;
+        $this->redirect('index.php?route=login');
     }
 }
