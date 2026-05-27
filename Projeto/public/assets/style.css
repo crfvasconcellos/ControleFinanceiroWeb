@@ -205,6 +205,7 @@ a:hover { color: var(--color-primary-hover); }
 
 .text-center { text-align: center; }
 .text-danger { color: var(--color-danger); }
+.text-warning { color: var(--color-warning); }
 .text-success { color: var(--color-success); }
 .text-sm { font-size: 0.875rem; }
 .text-xs { font-size: 0.75rem; }

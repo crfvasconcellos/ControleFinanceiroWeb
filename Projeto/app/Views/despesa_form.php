@@ -903,4 +903,4 @@ $temDadosGrafico = max($valores) > 0;
     </script>
 
 </body>
-</html>
+</html>

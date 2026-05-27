@@ -35,6 +35,7 @@ class DespesaController {
         $usuarioDados = $usuarioModel->buscarPorId((string)$userId);
         $userApiKey = $usuarioDados['api_key'] ?? null;
         $userEmail = $usuarioDados['email'] ?? '';
+        $limite_mensal = (float)($usuarioDados['limite_mensal'] ?? 0);
 
         $model = new Despesa($userId);
 
@@ -228,6 +229,19 @@ class DespesaController {
                 $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                 header('Location: index.php?route=dashboard#');
                 exit;
+            }
+
+            if (empty($errors) && $action === 'atualizar_limite') {
+                $novoLimite = str_replace(',', '.', trim($_POST['limite_mensal'] ?? '0'));
+                if (!is_numeric($novoLimite) || (float)$novoLimite < 0) {
+                    $errors[] = 'O valor do limite deve ser numérico e maior ou igual a zero.';
+                } else {
+                    $usuarioModel->atualizarLimite((string)$userId, (float)$novoLimite);
+                    $_SESSION['successMessage'] = 'Orçamento mensal atualizado com sucesso.';
+                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                    header('Location: index.php?route=dashboard#');
+                    exit;
+                }
             }
         }
 

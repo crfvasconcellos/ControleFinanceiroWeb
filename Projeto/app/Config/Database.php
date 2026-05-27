@@ -71,9 +71,18 @@ class Database {
                 email VARCHAR(160) NOT NULL UNIQUE,
                 senha VARCHAR(255) NOT NULL,
                 api_key VARCHAR(64) UNIQUE,
+                limite_mensal DECIMAL(10,2) DEFAULT 0,
                 criado_em DATETIME NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;'
         );
+
+        // Adiciona coluna limite_mensal na tabela usuarios (se não existir)
+        $colsUsr = $connection->query('SHOW COLUMNS FROM usuarios LIKE \'limite_mensal\'')->fetchAll();
+        if (empty($colsUsr)) {
+            $connection->exec(
+                'ALTER TABLE usuarios ADD COLUMN limite_mensal DECIMAL(10,2) DEFAULT 0 AFTER api_key'
+            );
+        }
 
         $connection->exec(
             'CREATE TABLE IF NOT EXISTS despesas (

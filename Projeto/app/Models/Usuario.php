@@ -24,11 +24,22 @@ class Usuario {
      * Busca um usuário pelo ID.
      */
     public function buscarPorId(string $id): ?array {
-        $stmt = $this->connection->prepare('SELECT id, nome, email, api_key, criado_em FROM usuarios WHERE id = :id LIMIT 1');
+        $stmt = $this->connection->prepare('SELECT id, nome, email, api_key, criado_em, limite_mensal FROM usuarios WHERE id = :id LIMIT 1');
         $stmt->execute(['id' => $id]);
         $usuario = $stmt->fetch();
 
         return $usuario ?: null;
+    }
+
+    /**
+     * Atualiza o limite mensal de gastos do usuário.
+     */
+    public function atualizarLimite(string $id, float $valor): bool {
+        $stmt = $this->connection->prepare('UPDATE usuarios SET limite_mensal = :valor WHERE id = :id');
+        return $stmt->execute([
+            'valor' => $valor,
+            'id' => $id
+        ]);
     }
 
     /**
