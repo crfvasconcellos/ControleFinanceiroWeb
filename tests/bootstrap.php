@@ -1,4 +1,6 @@
 <?php
+ob_start();
+
 // Carrega as dependências necessárias para os testes
 
 // Configura variáveis de ambiente para modo de teste
