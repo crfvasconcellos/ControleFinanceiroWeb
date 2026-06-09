@@ -253,6 +253,33 @@ $temDadosGrafico = max($valores) > 0;
             </div>
         <?php endif; ?>
 
+        <!-- BUDGET ALERTS (US24) -->
+        <?php if ($limite_mensal > 0): 
+            $percentual = ($totalMes / $limite_mensal) * 100;
+            if ($percentual >= 100): ?>
+                <div class="alert alert-error">
+                    <span>🚨</span>
+                    <div>
+                        <strong>Limite Excedido!</strong> Você ultrapassou seu limite de orçamento mensal de <strong>R$ <?= number_format($limite_mensal, 2, ',', '.') ?></strong> (Consumo total: <strong><?= number_format($percentual, 1, ',', '.') ?>%</strong>).
+                    </div>
+                </div>
+            <?php elseif ($percentual >= 95): ?>
+                <div class="alert alert-warning">
+                    <span>⚠️</span>
+                    <div>
+                        <strong>Orçamento Crítico!</strong> Você atingiu <strong><?= number_format($percentual, 1, ',', '.') ?>%</strong> do seu limite de orçamento mensal (R$ <?= number_format($limite_mensal, 2, ',', '.') ?>). Cuidado para não estourar!
+                    </div>
+                </div>
+            <?php elseif ($percentual >= 75): ?>
+                <div class="alert alert-warning">
+                    <span>💡</span>
+                    <div>
+                        <strong>Aproximação de Limite!</strong> Você atingiu <strong><?= number_format($percentual, 1, ',', '.') ?>%</strong> do seu limite de orçamento mensal (R$ <?= number_format($limite_mensal, 2, ',', '.') ?>).
+                    </div>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+
         <!-- ORÇAMENTO MENSAL (US22) -->
         <?php if($mesFiltro === date('Y-m') || $mesFiltro === 'todos'): ?>
         <section class="budget-container">
@@ -271,8 +298,8 @@ $temDadosGrafico = max($valores) > 0;
                 $percentual = ($totalMes / $limite_mensal) * 100;
                 $percentualStr = min(100, $percentual);
                 $fillClass = 'budget-fill--success';
-                if ($percentual > 75) $fillClass = 'budget-fill--warning';
-                if ($percentual > 95) $fillClass = 'budget-fill--danger';
+                if ($percentual >= 75) $fillClass = 'budget-fill--warning';
+                if ($percentual >= 95) $fillClass = 'budget-fill--danger';
             ?>
                 <div class="budget-progress">
                     <div class="budget-fill <?= $fillClass ?>" style="width: <?= $percentualStr ?>%;"></div>
