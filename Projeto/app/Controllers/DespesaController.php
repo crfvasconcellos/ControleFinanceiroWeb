@@ -425,68 +425,121 @@ class DespesaController {
     }
 
 
-    private function getDespesasFiltradas($userId, $mesFiltro, $prioridadeFiltro) {
-        // 1. Resgatar a API Key do usuário logado
-        $usuarioModel = new \App\Models\Usuario();
-        $usuarioDados = $usuarioModel->buscarPorId((string)$userId);
-        $apiKey = $usuarioDados['api_key'] ?? '';
+    public function exportarCsv() {
+        // Verificar autenticação
+        Auth::verificar();
 
-        // 2. Fazer a requisição HTTP para a API
-        $url = "http://localhost:8000/api.php?route=despesas";
-        $opcoes = [
-            "http" => [
-                "header" => "X-API-KEY: " . $apiKey . "\r\n",
-                "method" => "GET"
-            ]
-        ];
-        
-        $contexto = stream_context_create($opcoes);
-        
-        // O '@' evita que o PHP lance um erro fatal na tela se a API estiver fora do ar
-        $resposta = @file_get_contents($url, false, $contexto);
-        
-        $listaDespesas = [];
-        if ($resposta) {
-            $json = json_decode($resposta, true);
-            $listaDespesas = $json['data'] ?? [];
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
 
-        // 3. Aplicar a lógica de filtros na resposta da API
-        $despesasFiltradas = [];
-        foreach ($listaDespesas as $despesa) {
-            $mesDespesa = substr($despesa['data'], 0, 7);
-            if ($mesFiltro !== 'todos' && $mesDespesa !== $mesFiltro) continue;
+        $userId = $_SESSION['user_id'];
+
+        // Ler filtros da query string (mesmos do dashboard)
+        $mesFiltro = $_GET['mes'] ?? date('Y-m');
+        $prioridadeFiltro = $_GET['prioridade'] ?? 'todas';
+        $tipoFiltro = $_GET['tipo'] ?? 'todas';
+        $categoriaFiltro = $_GET['categoria'] ?? 'todas';
+        $buscaFiltro = strtolower(trim($_GET['busca'] ?? ''));
+
+        // Buscar despesas e saldos diretamente dos models
+        $model = new Despesa($userId);
+        $saldoModel = new Saldo($userId);
+
+        $listaDespesas = $model->buscarDespesas();
+        $historicoSaldo = $saldoModel->buscarHistorico();
+
+        // Montar lista unificada de transações (mesmo formato do dashboard)
+        $todasTransacoes = [];
+        foreach ($listaDespesas as $d) {
+            $d['tipo'] = 'saida';
+            $todasTransacoes[] = $d;
+        }
+        foreach ($historicoSaldo as $s) {
+            $todasTransacoes[] = [
+                'id' => $s['id'],
+                'nome' => $s['nome'],
+                'descricao' => $s['descricao'],
+                'valor' => $s['valor'],
+                'data' => $s['data'] ?? substr($s['criado_em'], 0, 10),
+                'data_termino' => $s['data_termino'] ?? null,
+                'comprovante' => $s['comprovante'],
+                'icone' => $s['icone'],
+                'criado_em' => $s['criado_em'],
+                'tipo' => 'entrada'
+            ];
+        }
+
+        // Ordenar por data decrescente
+        usort($todasTransacoes, function($a, $b) {
+            $dateA = $a['data'] . ' ' . (isset($a['criado_em']) ? substr($a['criado_em'], 11) : '00:00:00');
+            $dateB = $b['data'] . ' ' . (isset($b['criado_em']) ? substr($b['criado_em'], 11) : '00:00:00');
+            return strcmp($dateB, $dateA);
+        });
+
+        // Função auxiliar para ícone por nome
+        $getIcon = function($name) {
+            $n = strtolower($name);
+            if (str_contains($n, 'mercado') || str_contains($n, 'comida') || str_contains($n, 'restaurante')) return '🛒';
+            if (str_contains($n, 'luz') || str_contains($n, 'energia')) return '⚡';
+            if (str_contains($n, 'água') || str_contains($n, 'agua')) return '💧';
+            if (str_contains($n, 'internet') || str_contains($n, 'celular') || str_contains($n, 'telefone')) return '📶';
+            if (str_contains($n, 'carro') || str_contains($n, 'gasolina') || str_contains($n, 'transporte')) return '🚗';
+            if (str_contains($n, 'farmácia') || str_contains($n, 'saúde') || str_contains($n, 'médico')) return '💊';
+            if (str_contains($n, 'lazer') || str_contains($n, 'cinema') || str_contains($n, 'streaming')) return '🍿';
+            return '📄';
+        };
+
+        // Aplicar filtros (mesma lógica do dashboard)
+        $transacoesFiltradas = [];
+        foreach ($todasTransacoes as $transacao) {
+            $mesDespesa = substr($transacao['data'], 0, 7);
+            $mesTermino = !empty($transacao['data_termino']) ? substr($transacao['data_termino'], 0, 7) : $mesDespesa;
+
+            if ($mesFiltro !== 'todos') {
+                if ($mesFiltro < $mesDespesa || $mesFiltro > $mesTermino) continue;
+            }
+            if ($tipoFiltro !== 'todas' && $transacao['tipo'] !== $tipoFiltro) continue;
+
+            if ($buscaFiltro !== '' && !str_contains(strtolower($transacao['nome']), $buscaFiltro)) continue;
 
             $prioridade = 'baixa';
-            if ($despesa['valor'] > 500) $prioridade = 'alta';
-            elseif ($despesa['valor'] > 100) $prioridade = 'media';
+            if ($transacao['tipo'] === 'entrada') {
+                $prioridade = 'entrada';
+                $icone = !empty($transacao['icone']) ? $transacao['icone'] : '💵';
+            } else {
+                if ($transacao['valor'] > 500) $prioridade = 'alta';
+                elseif ($transacao['valor'] > 100) $prioridade = 'media';
 
-            if ($prioridadeFiltro !== 'todas' && $prioridade !== $prioridadeFiltro) continue;
+                if ($prioridadeFiltro !== 'todas' && $prioridade !== $prioridadeFiltro) continue;
+                $icone = !empty($transacao['icone']) ? $transacao['icone'] : $getIcon($transacao['nome']);
+            }
 
-            $despesa['prioridade'] = $prioridade;
-            $despesasFiltradas[] = $despesa;
+            if ($categoriaFiltro !== 'todas' && $icone !== $categoriaFiltro) continue;
+
+            $transacao['prioridade'] = $prioridade;
+            $transacao['icone'] = $icone;
+            $transacoesFiltradas[] = $transacao;
         }
 
-        return $despesasFiltradas;
-    }
-
-    public function exportarCsv() {
-        $despesas = $this->getDespesasFiltradas();
-
+        // Gerar CSV
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=despesas_' . date('Y-m-d_H-i') . '.csv');
+        header('Content-Disposition: attachment; filename=transacoes_' . date('Y-m-d_H-i') . '.csv');
 
         $output = fopen('php://output', 'w');
-        fputs($output, "\xEF\xBB\xBF"); // BOM for excel
-        fputcsv($output, ['Data', 'Nome', 'Valor (R$)', 'Prioridade'], ';');
+        fputs($output, "\xEF\xBB\xBF"); // BOM para compatibilidade com Excel
+        fputcsv($output, ['Data', 'Tipo', 'Nome', 'Descrição', 'Valor (R$)', 'Categoria', 'Prioridade'], ';', '"', '\\');
 
-        foreach ($despesas as $d) {
+        foreach ($transacoesFiltradas as $t) {
             fputcsv($output, [
-                date('d/m/Y', strtotime($d['data'])),
-                $d['nome'],
-                number_format($d['valor'], 2, ',', '.'),
-                ucfirst($d['prioridade'])
-            ], ';');
+                date('d/m/Y', strtotime($t['data'])),
+                $t['tipo'] === 'entrada' ? 'Entrada' : 'Saída',
+                $t['nome'],
+                $t['descricao'] ?? '',
+                ($t['tipo'] === 'entrada' ? '+' : '-') . number_format($t['valor'], 2, ',', '.'),
+                $t['icone'],
+                ucfirst($t['prioridade'])
+            ], ';', '"', '\\');
         }
         fclose($output);
         exit;

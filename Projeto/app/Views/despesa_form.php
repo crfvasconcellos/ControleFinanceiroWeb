@@ -337,7 +337,18 @@ $temDadosGrafico = max($valores) > 0;
             <section class="card" style="align-self: start;">
                 <div class="flex justify-between items-center mb-4">
                     <h2>Transações</h2>
-                    <div style="display:flex; gap:0.5rem;">
+                <div style="display:flex; gap:0.5rem;">
+                        <?php
+                            $csvParams = http_build_query([
+                                'route' => 'exportar_csv',
+                                'mes' => $mesFiltro,
+                                'prioridade' => $prioridadeFiltro,
+                                'tipo' => $tipoFiltro,
+                                'categoria' => $categoriaFiltro,
+                                'busca' => $buscaFiltro,
+                            ]);
+                        ?>
+                        <a href="index.php?<?= htmlspecialchars($csvParams) ?>" class="btn btn-outline btn-sm" title="Exportar CSV" id="btnExportarCsv">📥 CSV</a>
                         <a href="#modalHistorico" class="btn btn-outline btn-sm" title="Lixeira">🗑️</a>
                     </div>
                 </div>

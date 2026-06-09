@@ -385,7 +385,7 @@ As estimativas seguem a **Sequência de Fibonacci**.
 | US19 | Remover gastos fixos do histórico | 3 | ✅ | Remover registros vinculados |
 | US20 | Implementar modo escuro | 5 | ✅ | Alternância de tema |
 | US21 | Exibir média de gastos mensais | 3 | ✅ | Média automática |
-| US22 | Exportar despesas em CSV para analisar em planilhas | 3 | 📋 | Download CSV com filtros aplicados |
+| US22 | Exportar despesas em CSV para analisar em planilhas | 3 | ✅ | Download CSV com filtros aplicados |
 | US23 | Editar perfil do usuário (nome e senha) | 5 | 📋 | Modal de perfil com validação de senha |
 | US24 | Alertas visuais de orçamento ao se aproximar do limite | 3 | 📋 | Notificação no dashboard a 75%, 95% e acima |
 | US25 | Comparativo de gastos entre mês atual e anterior | 5 | 📋 | Card com variação percentual e indicador visual |
