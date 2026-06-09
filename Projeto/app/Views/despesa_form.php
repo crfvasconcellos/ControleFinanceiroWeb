@@ -337,7 +337,7 @@ $temDadosGrafico = max($valores) > 0;
             <section class="card" style="align-self: start;">
                 <div class="flex justify-between items-center mb-4">
                     <h2>Transações</h2>
-                <div style="display:flex; gap:0.5rem;">
+                <div style="display:flex; gap:0.5rem; align-items: center;">
                         <?php
                             $csvParams = http_build_query([
                                 'route' => 'exportar_csv',
@@ -348,7 +348,8 @@ $temDadosGrafico = max($valores) > 0;
                                 'busca' => $buscaFiltro,
                             ]);
                         ?>
-                        <a href="index.php?<?= htmlspecialchars($csvParams) ?>" class="btn btn-outline btn-sm" title="Exportar CSV" id="btnExportarCsv">📥 CSV</a>
+                        <a href="index.php?<?= htmlspecialchars($csvParams) ?>" class="btn btn-outline btn-sm" title="Exportar transações como CSV" id="btnExportarCsv" style="font-size: 0.8rem; letter-spacing: 0.02em;">↓ Exportar .csv</a>
+                        <a href="#modalImportarCsv" class="btn btn-outline btn-sm" title="Importar transações de um CSV" id="btnImportarCsv" style="font-size: 0.8rem; letter-spacing: 0.02em;">↑ Importar .csv</a>
                         <a href="#modalHistorico" class="btn btn-outline btn-sm" title="Lixeira">🗑️</a>
                     </div>
                 </div>
@@ -963,6 +964,38 @@ $temDadosGrafico = max($valores) > 0;
     </div>
 
 
+    <!-- Modal: Importar CSV (US22) -->
+    <div id="modalImportarCsv" class="modal-overlay">
+        <div class="modal-content" style="max-width: 520px;">
+            <a href="#!" class="modal-close">✕</a>
+            <h2>📤 Importar Transações via CSV</h2>
+            <p class="text-sm mb-4" style="color: var(--color-text-light);">
+                Faça upload de um arquivo <strong>.csv</strong> com suas transações. O sistema cria automaticamente as despesas e entradas.
+            </p>
+
+            <div style="background: var(--color-surface-hover); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--color-text-light);">
+                <strong style="color: var(--color-text);">📋 Formato esperado (separador: ponto e vírgula)</strong>
+                <pre style="margin: 0.5rem 0 0; white-space: pre-wrap; font-family: monospace; font-size: 0.8rem; line-height: 1.5;">Data;Tipo;Nome;Descrição;Valor (R$)
+09/06/2026;Saída;Aluguel;Apto Centro;-1.500,00
+09/06/2026;Entrada;Salário;Empresa XYZ;+3.500,00</pre>
+                <div style="margin-top: 0.5rem; font-size: 0.78rem;">
+                    💡 <strong>Dica:</strong> Exporte primeiro para ter um modelo do formato ideal.
+                </div>
+            </div>
+
+            <form method="post" action="index.php?route=dashboard" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                <input type="hidden" name="action" value="importar_csv">
+
+                <div class="form-floating" style="margin-bottom: 1rem;">
+                    <input id="csv_file_input" name="csv_file" type="file" accept=".csv" required style="padding-top: 1.5rem;">
+                    <label for="csv_file_input" style="top: -5px; font-size: 0.85rem;">Arquivo CSV</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" style="padding: 1rem; font-size: 1.05rem;">📤 Importar Transações</button>
+            </form>
+        </div>
+    </div>
 
     <!-- Dark Mode Toggle -->
     <button class="theme-toggle" id="themeToggleBtn" title="Alternar Modo Escuro" aria-label="Alternar modo escuro">
