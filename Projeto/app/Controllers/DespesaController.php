@@ -71,6 +71,31 @@ class DespesaController {
                 }
             }
 
+            if (empty($errors) && $action === 'restaurar') {
+                $despesaId = trim($_POST['despesa_id'] ?? '');
+
+                if ($despesaId === '') {
+                    $errors[] = 'identificador da transação inválido';
+                } else {
+                    $restaurado = false;
+                    if (str_starts_with($despesaId, 'saldo_')) {
+                        $saldoModel = new Saldo($userId);
+                        $restaurado = $saldoModel->restaurarSaldo($despesaId);
+                    } else {
+                        $restaurado = $model->restaurarDespesa($despesaId);
+                    }
+
+                    if ($restaurado) {
+                        $_SESSION['successMessage'] = 'transação restaurada com sucesso';
+                        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                        header('Location: index.php?route=dashboard#modalHistorico');
+                        exit;
+                    } else {
+                        $errors[] = 'transação não encontrada para restauração';
+                    }
+                }
+            }
+
             if (empty($errors) && $action === 'salvar_transacao') {
                 $tipo = $_POST['tipo'] ?? 'saida';
                 $dataArr['nome'] = substr(trim($_POST['nome'] ?? ''), 0, 30);
