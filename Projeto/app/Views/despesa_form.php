@@ -642,6 +642,17 @@ $temDadosGrafico = max($valores) > 0;
                         <?php else: ?>
                             <div class="expense-item__value expense-item__value--expense">- R$ <?= number_format($h['valor'], 2, ',', '.') ?></div>
                         <?php endif; ?>
+                        
+                        <?php if($del): ?>
+                            <div class="expense-actions-btns" style="margin-left: 1rem;">
+                                <form method="post" action="index.php?route=dashboard" style="margin:0;">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                                    <input type="hidden" name="action" value="restaurar">
+                                    <input type="hidden" name="despesa_id" value="<?= htmlspecialchars($h['id']) ?>">
+                                    <button type="submit" class="btn-icon" title="Restaurar" style="background: var(--color-primary-transparent, rgba(14,165,233,0.1)); color: var(--color-primary); border: 1px solid var(--color-primary);">♻️</button>
+                                </form>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>

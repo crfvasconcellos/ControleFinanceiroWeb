@@ -103,6 +103,20 @@ class Despesa {
         ]);
     }
 
+    public function restaurarDespesa(string $id): bool {
+        if ($this->userId === null) return false;
+
+        $stmt = $this->connection->prepare(
+            'UPDATE despesas SET deletado_em = NULL 
+             WHERE id = :id AND usuario_id = :usuario_id'
+        );
+
+        return $stmt->execute([
+            'id' => $id,
+            'usuario_id' => $this->userId
+        ]);
+    }
+
     /**
      * Calcula a média de gastos mensais do usuário.
      * Agrupa despesas por mês (YYYY-MM) e retorna a média dos totais mensais.
