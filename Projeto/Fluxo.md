@@ -2,7 +2,7 @@
 
 > **Projeto:** ControleFinanceiroWeb
 > **Stack:** PHP 8.5 · MySQL 8.0 · HTML/CSS/JS
-> **Última atualização:** 29/04/2026
+> **Última atualização:** 15/06/2026
 
 ---
 
@@ -78,6 +78,7 @@ Projeto/
 | 15 | **Logout seguro** | Destrói sessão e cookie |
 | 16 | **CSS responsivo** | Layout adaptável para mobile e desktop |
 | 17 | **Header com avatar** | Mostra inicial do nome + botão sair |
+| 18 | **Comparativo Mês Atual vs Anterior (US25)** | Exibe gastos do mês atual vs anterior, diferença em valor e % |
 
 ---
 
@@ -91,10 +92,9 @@ Projeto/
 | 4 | **Página de perfil** | 🟡 Média | Editar nome, email, trocar senha |
 | 5 | **Recuperação de senha** | 🟡 Média | "Esqueci minha senha" por email |
 | 6 | **Receitas (entradas)** | 🟡 Média | Registrar salário/renda para calcular saldo |
-| 7 | **Orçamento mensal** | 🟡 Média | Definir limite mensal e alertar quando perto |
-| 8 | **Exportar dados** | 🟢 Baixa | Exportar despesas em CSV ou PDF |
-| 9 | **Busca de despesas** | 🟢 Baixa | Buscar por nome da despesa |
-| 10 | **Paginação** | 🟢 Baixa | Paginar lista quando tiver muitas despesas |
+| 7 | **Exportar dados** | 🟢 Baixa | Exportar despesas em CSV ou PDF |
+| 8 | **Busca de despesas** | 🟢 Baixa | Buscar por nome da despesa |
+| 9 | **Paginação** | 🟢 Baixa | Paginar lista quando tiver muitas despesas |
 
 ---
 
@@ -146,7 +146,7 @@ php -S localhost:8000
 
 ```mermaid
 pie title Status do Projeto
-    "Concluído" : 17
-    "A Fazer" : 10
+    "Concluído" : 18
+    "A Fazer" : 9
     "Ideias Futuras" : 10
 ```

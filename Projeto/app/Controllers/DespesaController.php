@@ -266,6 +266,9 @@ class DespesaController {
         // Média de gastos mensais (US21)
         $mediaGastosMensais = $model->calcularMediaMensal();
 
+    
+        $comparativoMeses = $model->obterComparativoMeses();
+
         // Saldo do usuário
         $saldoModel = new Saldo($userId);
         $saldoTotalEntradas = $saldoModel->totalSaldo();
