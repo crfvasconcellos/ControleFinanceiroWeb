@@ -317,9 +317,80 @@ $temDadosGrafico = max($valores) > 0;
         </section>
         <?php endif; ?>
 
-        <!-- MAIN GRID: Gráficos e Lista (Stack layout) -->
+        <?php if($mesFiltro === date('Y-m') || $mesFiltro === 'todos'): 
+            $comp = $comparativoMeses;
+            $mesAtualLabel = $mesesPt[substr($comp['mes_atual'], 5, 2)] . ' ' . substr($comp['mes_atual'], 0, 4);
+            $mesAnteriorLabel = $mesesPt[substr($comp['mes_anterior'], 5, 2)] . ' ' . substr($comp['mes_anterior'], 0, 4);
+        ?>
+        <section class="comparison-container">
+            <div class="comparison-header">
+                <div class="comparison-title">📊 Comparativo Mensal</div>
+                <div class="comparison-subtitle"><?= $mesAnteriorLabel ?> vs <?= $mesAtualLabel ?></div>
+            </div>
+            
+            <div class="comparison-grid">
+                <div class="comparison-card comparison-card--previous">
+                    <div class="comparison-label">Mês Anterior</div>
+                    <div class="comparison-value">R$ <?= number_format($comp['total_mes_anterior'], 2, ',', '.') ?></div>
+                    <div class="comparison-date"><?= $mesAnteriorLabel ?></div>
+                </div>
+
+                <div class="comparison-divider">
+                    <div class="comparison-arrow">→</div>
+                </div>
+
+                <div class="comparison-card comparison-card--current">
+                    <div class="comparison-label">Mês Atual</div>
+                    <div class="comparison-value">R$ <?= number_format($comp['total_mes_atual'], 2, ',', '.') ?></div>
+                    <div class="comparison-date"><?= $mesAtualLabel ?></div>
+                </div>
+            </div>
+
+            <div class="comparison-result <?= $comp['tendencia'] ?>">
+                <div class="comparison-result__icon">
+                    <?php if($comp['tendencia'] === 'aumento'): ?>
+                        📈
+                    <?php elseif($comp['tendencia'] === 'reducao'): ?>
+                        📉
+                    <?php else: ?>
+                        ➡️
+                    <?php endif; ?>
+                </div>
+                <div class="comparison-result__content">
+                    <div class="comparison-result__difference">
+                        <?php if($comp['diferenca'] > 0): ?>
+                            <span class="text-danger">+R$ <?= number_format($comp['diferenca'], 2, ',', '.') ?></span>
+                        <?php elseif($comp['diferenca'] < 0): ?>
+                            <span class="text-success">-R$ <?= number_format(abs($comp['diferenca']), 2, ',', '.') ?></span>
+                        <?php else: ?>
+                            <span>Sem alteração</span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="comparison-result__percentage">
+                        <?php if($comp['percentual'] > 0): ?>
+                            <span class="text-danger">↑ <?= number_format($comp['percentual'], 1, ',', '.') ?>%</span>
+                        <?php elseif($comp['percentual'] < 0): ?>
+                            <span class="text-success">↓ <?= number_format(abs($comp['percentual']), 1, ',', '.') ?>%</span>
+                        <?php else: ?>
+                            <span>0% de variação</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-insight">
+                <?php if($comp['tendencia'] === 'aumento'): ?>
+                    <div class="insight-warning">⚠️ Seus gastos aumentaram comparado ao mês anterior. Considere revisar sua rotina de gastos.</div>
+                <?php elseif($comp['tendencia'] === 'reducao'): ?>
+                    <div class="insight-success">✅ Parabéns! Você gastou menos que o mês anterior. Continue assim!</div>
+                <?php else: ?>
+                    <div class="insight-neutral">ℹ️ Seus gastos se mantiveram estáveis em relação ao mês anterior.</div>
+                <?php endif; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
         <div class="grid" style="grid-template-columns: 1fr;">
-            <!-- Topo: Gráficos -->
             <section>
                 
                 <div class="chart-container">
