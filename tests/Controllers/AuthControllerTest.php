@@ -14,7 +14,7 @@ namespace App\Controllers {
             $this->didRedirect  = true;
         }
 
-        protected function renderView(string $path): void
+        protected function renderView(string $path, array $viewData = []): void
         {
             $this->renderedView = basename($path);
         }

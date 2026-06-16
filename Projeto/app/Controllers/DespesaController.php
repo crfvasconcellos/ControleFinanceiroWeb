@@ -71,6 +71,31 @@ class DespesaController {
                 }
             }
 
+            if (empty($errors) && $action === 'restaurar') {
+                $despesaId = trim($_POST['despesa_id'] ?? '');
+
+                if ($despesaId === '') {
+                    $errors[] = 'identificador da transação inválido';
+                } else {
+                    $restaurado = false;
+                    if (str_starts_with($despesaId, 'saldo_')) {
+                        $saldoModel = new Saldo($userId);
+                        $restaurado = $saldoModel->restaurarSaldo($despesaId);
+                    } else {
+                        $restaurado = $model->restaurarDespesa($despesaId);
+                    }
+
+                    if ($restaurado) {
+                        $_SESSION['successMessage'] = 'transação restaurada com sucesso';
+                        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                        header('Location: index.php?route=dashboard#modalHistorico');
+                        exit;
+                    } else {
+                        $errors[] = 'transação não encontrada para restauração';
+                    }
+                }
+            }
+
             if (empty($errors) && $action === 'salvar_transacao') {
                 $tipo = $_POST['tipo'] ?? 'saida';
                 $dataArr['nome'] = substr(trim($_POST['nome'] ?? ''), 0, 30);
@@ -244,6 +269,189 @@ class DespesaController {
                     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                     header('Location: index.php?route=dashboard#');
                     exit;
+                }
+            }
+
+            // Editar Perfil: nome e senha (US23)
+            if (empty($errors) && $action === 'atualizar_perfil') {
+                $novoNome = trim($_POST['perfil_nome'] ?? '');
+                $senhaAtual = $_POST['perfil_senha_atual'] ?? '';
+                $novaSenha = $_POST['perfil_nova_senha'] ?? '';
+                $confirmarNovaSenha = $_POST['perfil_confirmar_senha'] ?? '';
+                $querTrocarSenha = $novaSenha !== '' || $confirmarNovaSenha !== '';
+
+                if ($novoNome === '') {
+                    $errors[] = 'Informe um nome válido.';
+                } elseif (mb_strlen($novoNome) > 120) {
+                    $errors[] = 'O nome deve ter no máximo 120 caracteres.';
+                }
+
+                if (empty($errors)) {
+                    $hashAtual = $usuarioModel->buscarSenhaHash((string)$userId);
+                    if ($senhaAtual === '' || !$hashAtual || !password_verify($senhaAtual, $hashAtual)) {
+                        $errors[] = 'Senha atual incorreta.';
+                    }
+                }
+
+                if (empty($errors) && $querTrocarSenha) {
+                    if (strlen($novaSenha) < 6) {
+                        $errors[] = 'A nova senha deve ter pelo menos 6 caracteres.';
+                    } elseif ($novaSenha !== $confirmarNovaSenha) {
+                        $errors[] = 'A confirmação da nova senha não coincide.';
+                    }
+                }
+
+                if (empty($errors)) {
+                    $usuarioModel->atualizarNome((string)$userId, $novoNome);
+                    if ($querTrocarSenha) {
+                        $usuarioModel->atualizarSenha((string)$userId, $novaSenha);
+                    }
+
+                    $_SESSION['user_nome'] = $novoNome;
+                    $_SESSION['successMessage'] = 'Perfil atualizado com sucesso.';
+                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                    header('Location: index.php?route=dashboard#');
+                    exit;
+                }
+            }
+
+            // Importação de CSV (US22)
+            if (empty($errors) && $action === 'importar_csv') {
+                if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
+                    $errors[] = 'Selecione um arquivo CSV válido.';
+                } else {
+                    $ext = strtolower(pathinfo($_FILES['csv_file']['name'], PATHINFO_EXTENSION));
+                    if ($ext !== 'csv') {
+                        $errors[] = 'O arquivo deve ter extensão .csv';
+                    } else {
+                        $conteudo = file_get_contents($_FILES['csv_file']['tmp_name']);
+                        // Remover BOM se presente
+                        $conteudo = preg_replace('/^\xEF\xBB\xBF/', '', $conteudo);
+                        $linhas = preg_split('/\r\n|\r|\n/', $conteudo);
+
+                        if (count($linhas) < 2) {
+                            $errors[] = 'O arquivo CSV está vazio ou só contém o cabeçalho.';
+                        } else {
+                            $header = str_getcsv(array_shift($linhas), ';');
+                            // Normalizar cabeçalho (trim + lowercase)
+                            $header = array_map(function($h) { return strtolower(trim($h)); }, $header);
+
+                            // Detectar colunas
+                            $colData = array_search('data', $header);
+                            $colTipo = array_search('tipo', $header);
+                            $colNome = array_search('nome', $header);
+                            $colDesc = false;
+                            foreach ($header as $i => $h) {
+                                if (str_contains($h, 'descri')) { $colDesc = $i; break; }
+                            }
+                            $colValor = false;
+                            foreach ($header as $i => $h) {
+                                if (str_contains($h, 'valor')) { $colValor = $i; break; }
+                            }
+                            $colCategoria = array_search('categoria', $header);
+
+                            if ($colData === false || $colNome === false || $colValor === false) {
+                                $errors[] = 'CSV inválido. Colunas obrigatórias: Data, Nome, Valor (R$).';
+                            } else {
+                                $importados = 0;
+                                $errosLinha = [];
+                                $saldoModel = new Saldo($userId);
+
+                                foreach ($linhas as $numLinha => $linha) {
+                                    $linha = trim($linha);
+                                    if ($linha === '') continue;
+
+                                    $campos = str_getcsv($linha, ';');
+                                    $nLinha = $numLinha + 2; // +1 header +1 zero-index
+
+                                    // Data: dd/mm/yyyy → yyyy-mm-dd
+                                    $dataRaw = trim($campos[$colData] ?? '');
+                                    $dataObj = \DateTime::createFromFormat('d/m/Y', $dataRaw);
+                                    if (!$dataObj) {
+                                        $dataObj = \DateTime::createFromFormat('Y-m-d', $dataRaw);
+                                    }
+                                    if (!$dataObj) {
+                                        $errosLinha[] = "Linha {$nLinha}: data inválida '{$dataRaw}'";
+                                        continue;
+                                    }
+                                    $dataFormatada = $dataObj->format('Y-m-d');
+
+                                    // Nome
+                                    $nome = substr(trim($campos[$colNome] ?? ''), 0, 30);
+                                    if ($nome === '') {
+                                        $errosLinha[] = "Linha {$nLinha}: nome vazio";
+                                        continue;
+                                    }
+
+                                    // Valor: remover sinal (+/-), pontos de milhar, trocar vírgula por ponto
+                                    $valorRaw = trim($campos[$colValor] ?? '');
+                                    $valorRaw = preg_replace('/^[+\-]\s*/', '', $valorRaw); // remover +/- do início
+                                    $valorRaw = str_replace('.', '', $valorRaw); // remover pontos de milhar
+                                    $valorRaw = str_replace(',', '.', $valorRaw); // vírgula → ponto decimal
+                                    if (!is_numeric($valorRaw) || (float)$valorRaw <= 0) {
+                                        $errosLinha[] = "Linha {$nLinha}: valor inválido";
+                                        continue;
+                                    }
+                                    $valor = (float)$valorRaw;
+
+                                    // Tipo: detectar se é entrada ou saída
+                                    $tipo = 'saida';
+                                    if ($colTipo !== false) {
+                                        $tipoRaw = strtolower(trim($campos[$colTipo] ?? ''));
+                                        if (str_contains($tipoRaw, 'entrada') || str_contains($tipoRaw, 'saldo') || str_contains($tipoRaw, 'renda')) {
+                                            $tipo = 'entrada';
+                                        }
+                                    }
+
+                                    // Descrição (opcional)
+                                    $descricao = ($colDesc !== false) ? substr(trim($campos[$colDesc] ?? ''), 0, 150) : null;
+                                    if ($descricao === '') $descricao = null;
+
+                                    // Ícone/Categoria (opcional)
+                                    $icone = null;
+                                    if ($colCategoria !== false) {
+                                        $iconeCandidato = trim($campos[$colCategoria] ?? '');
+                                        if (mb_strlen($iconeCandidato) <= 10 && $iconeCandidato !== '') {
+                                            $icone = $iconeCandidato;
+                                        }
+                                    }
+
+                                    // Salvar a transação
+                                    if ($tipo === 'entrada') {
+                                        $ok = $saldoModel->adicionarSaldo($valor, $nome, $dataFormatada, $descricao, null, $icone ?? '💵');
+                                    } else {
+                                        $ok = $model->salvarDespesa([
+                                            'nome' => $nome,
+                                            'descricao' => $descricao,
+                                            'valor' => $valor,
+                                            'data' => $dataFormatada,
+                                            'data_termino' => null,
+                                            'comprovante' => null,
+                                            'icone' => $icone ?? '📄',
+                                        ]);
+                                    }
+
+                                    if ($ok) $importados++;
+                                    else $errosLinha[] = "Linha {$nLinha}: erro ao salvar";
+                                }
+
+                                if ($importados > 0) {
+                                    $_SESSION['successMessage'] = "{$importados} transação(ões) importada(s) com sucesso!";
+                                    if (!empty($errosLinha)) {
+                                        $_SESSION['successMessage'] .= ' (' . count($errosLinha) . ' linha(s) com erro ignorada(s))';
+                                    }
+                                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                                    header('Location: index.php?route=dashboard#');
+                                    exit;
+                                } else {
+                                    $errors[] = 'Nenhuma transação importada.';
+                                    foreach (array_slice($errosLinha, 0, 5) as $e) {
+                                        $errors[] = $e;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -428,68 +636,121 @@ class DespesaController {
     }
 
 
-    private function getDespesasFiltradas($userId, $mesFiltro, $prioridadeFiltro) {
-        // 1. Resgatar a API Key do usuário logado
-        $usuarioModel = new \App\Models\Usuario();
-        $usuarioDados = $usuarioModel->buscarPorId((string)$userId);
-        $apiKey = $usuarioDados['api_key'] ?? '';
+    public function exportarCsv() {
+        // Verificar autenticação
+        Auth::verificar();
 
-        // 2. Fazer a requisição HTTP para a API
-        $url = "http://localhost:8000/api.php?route=despesas";
-        $opcoes = [
-            "http" => [
-                "header" => "X-API-KEY: " . $apiKey . "\r\n",
-                "method" => "GET"
-            ]
-        ];
-        
-        $contexto = stream_context_create($opcoes);
-        
-        // O '@' evita que o PHP lance um erro fatal na tela se a API estiver fora do ar
-        $resposta = @file_get_contents($url, false, $contexto);
-        
-        $listaDespesas = [];
-        if ($resposta) {
-            $json = json_decode($resposta, true);
-            $listaDespesas = $json['data'] ?? [];
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
 
-        // 3. Aplicar a lógica de filtros na resposta da API
-        $despesasFiltradas = [];
-        foreach ($listaDespesas as $despesa) {
-            $mesDespesa = substr($despesa['data'], 0, 7);
-            if ($mesFiltro !== 'todos' && $mesDespesa !== $mesFiltro) continue;
+        $userId = $_SESSION['user_id'];
+
+        // Ler filtros da query string (mesmos do dashboard)
+        $mesFiltro = $_GET['mes'] ?? date('Y-m');
+        $prioridadeFiltro = $_GET['prioridade'] ?? 'todas';
+        $tipoFiltro = $_GET['tipo'] ?? 'todas';
+        $categoriaFiltro = $_GET['categoria'] ?? 'todas';
+        $buscaFiltro = strtolower(trim($_GET['busca'] ?? ''));
+
+        // Buscar despesas e saldos diretamente dos models
+        $model = new Despesa($userId);
+        $saldoModel = new Saldo($userId);
+
+        $listaDespesas = $model->buscarDespesas();
+        $historicoSaldo = $saldoModel->buscarHistorico();
+
+        // Montar lista unificada de transações (mesmo formato do dashboard)
+        $todasTransacoes = [];
+        foreach ($listaDespesas as $d) {
+            $d['tipo'] = 'saida';
+            $todasTransacoes[] = $d;
+        }
+        foreach ($historicoSaldo as $s) {
+            $todasTransacoes[] = [
+                'id' => $s['id'],
+                'nome' => $s['nome'],
+                'descricao' => $s['descricao'],
+                'valor' => $s['valor'],
+                'data' => $s['data'] ?? substr($s['criado_em'], 0, 10),
+                'data_termino' => $s['data_termino'] ?? null,
+                'comprovante' => $s['comprovante'],
+                'icone' => $s['icone'],
+                'criado_em' => $s['criado_em'],
+                'tipo' => 'entrada'
+            ];
+        }
+
+        // Ordenar por data decrescente
+        usort($todasTransacoes, function($a, $b) {
+            $dateA = $a['data'] . ' ' . (isset($a['criado_em']) ? substr($a['criado_em'], 11) : '00:00:00');
+            $dateB = $b['data'] . ' ' . (isset($b['criado_em']) ? substr($b['criado_em'], 11) : '00:00:00');
+            return strcmp($dateB, $dateA);
+        });
+
+        // Função auxiliar para ícone por nome
+        $getIcon = function($name) {
+            $n = strtolower($name);
+            if (str_contains($n, 'mercado') || str_contains($n, 'comida') || str_contains($n, 'restaurante')) return '🛒';
+            if (str_contains($n, 'luz') || str_contains($n, 'energia')) return '⚡';
+            if (str_contains($n, 'água') || str_contains($n, 'agua')) return '💧';
+            if (str_contains($n, 'internet') || str_contains($n, 'celular') || str_contains($n, 'telefone')) return '📶';
+            if (str_contains($n, 'carro') || str_contains($n, 'gasolina') || str_contains($n, 'transporte')) return '🚗';
+            if (str_contains($n, 'farmácia') || str_contains($n, 'saúde') || str_contains($n, 'médico')) return '💊';
+            if (str_contains($n, 'lazer') || str_contains($n, 'cinema') || str_contains($n, 'streaming')) return '🍿';
+            return '📄';
+        };
+
+        // Aplicar filtros (mesma lógica do dashboard)
+        $transacoesFiltradas = [];
+        foreach ($todasTransacoes as $transacao) {
+            $mesDespesa = substr($transacao['data'], 0, 7);
+            $mesTermino = !empty($transacao['data_termino']) ? substr($transacao['data_termino'], 0, 7) : $mesDespesa;
+
+            if ($mesFiltro !== 'todos') {
+                if ($mesFiltro < $mesDespesa || $mesFiltro > $mesTermino) continue;
+            }
+            if ($tipoFiltro !== 'todas' && $transacao['tipo'] !== $tipoFiltro) continue;
+
+            if ($buscaFiltro !== '' && !str_contains(strtolower($transacao['nome']), $buscaFiltro)) continue;
 
             $prioridade = 'baixa';
-            if ($despesa['valor'] > 500) $prioridade = 'alta';
-            elseif ($despesa['valor'] > 100) $prioridade = 'media';
+            if ($transacao['tipo'] === 'entrada') {
+                $prioridade = 'entrada';
+                $icone = !empty($transacao['icone']) ? $transacao['icone'] : '💵';
+            } else {
+                if ($transacao['valor'] > 500) $prioridade = 'alta';
+                elseif ($transacao['valor'] > 100) $prioridade = 'media';
 
-            if ($prioridadeFiltro !== 'todas' && $prioridade !== $prioridadeFiltro) continue;
+                if ($prioridadeFiltro !== 'todas' && $prioridade !== $prioridadeFiltro) continue;
+                $icone = !empty($transacao['icone']) ? $transacao['icone'] : $getIcon($transacao['nome']);
+            }
 
-            $despesa['prioridade'] = $prioridade;
-            $despesasFiltradas[] = $despesa;
+            if ($categoriaFiltro !== 'todas' && $icone !== $categoriaFiltro) continue;
+
+            $transacao['prioridade'] = $prioridade;
+            $transacao['icone'] = $icone;
+            $transacoesFiltradas[] = $transacao;
         }
 
-        return $despesasFiltradas;
-    }
-
-    public function exportarCsv() {
-        $despesas = $this->getDespesasFiltradas();
-
+        // Gerar CSV
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=despesas_' . date('Y-m-d_H-i') . '.csv');
+        header('Content-Disposition: attachment; filename=transacoes_' . date('Y-m-d_H-i') . '.csv');
 
         $output = fopen('php://output', 'w');
-        fputs($output, "\xEF\xBB\xBF"); // BOM for excel
-        fputcsv($output, ['Data', 'Nome', 'Valor (R$)', 'Prioridade'], ';');
+        fputs($output, "\xEF\xBB\xBF"); // BOM para compatibilidade com Excel
+        fputcsv($output, ['Data', 'Tipo', 'Nome', 'Descrição', 'Valor (R$)', 'Categoria', 'Prioridade'], ';', '"', '\\');
 
-        foreach ($despesas as $d) {
+        foreach ($transacoesFiltradas as $t) {
             fputcsv($output, [
-                date('d/m/Y', strtotime($d['data'])),
-                $d['nome'],
-                number_format($d['valor'], 2, ',', '.'),
-                ucfirst($d['prioridade'])
-            ], ';');
+                date('d/m/Y', strtotime($t['data'])),
+                $t['tipo'] === 'entrada' ? 'Entrada' : 'Saída',
+                $t['nome'],
+                $t['descricao'] ?? '',
+                ($t['tipo'] === 'entrada' ? '+' : '-') . number_format($t['valor'], 2, ',', '.'),
+                $t['icone'],
+                ucfirst($t['prioridade'])
+            ], ';', '"', '\\');
         }
         fclose($output);
         exit;

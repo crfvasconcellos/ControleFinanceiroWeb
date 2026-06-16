@@ -128,6 +128,73 @@ class DespesaRecorrente {
     }
 
     /**
+     * Remove permanentemente uma despesa recorrente E apaga (soft-delete) 
+     * todas as transações geradas por ela nos meses anteriores.
+     * Retorna o número de transações apagadas.
+     */
+    public function removerComHistorico(string $id): int {
+        if ($this->userId === null) return 0;
+
+        // Busca o recorrente para saber o tipo
+        $rec = $this->buscarPorId($id);
+        if (!$rec) return 0;
+
+        $agora = date('Y-m-d H:i:s');
+        $apagadas = 0;
+
+        // Soft-delete nas despesas geradas por este recorrente
+        $stmt = $this->connection->prepare(
+            'UPDATE despesas SET deletado_em = :agora
+             WHERE recorrente_id = :recorrente_id AND usuario_id = :usuario_id AND deletado_em IS NULL'
+        );
+        $stmt->execute([
+            'agora' => $agora,
+            'recorrente_id' => $id,
+            'usuario_id' => $this->userId,
+        ]);
+        $apagadas += $stmt->rowCount();
+
+        // Soft-delete nos saldos gerados por este recorrente
+        $stmt2 = $this->connection->prepare(
+            'UPDATE saldos SET deletado_em = :agora
+             WHERE recorrente_id = :recorrente_id AND usuario_id = :usuario_id AND deletado_em IS NULL'
+        );
+        $stmt2->execute([
+            'agora' => $agora,
+            'recorrente_id' => $id,
+            'usuario_id' => $this->userId,
+        ]);
+        $apagadas += $stmt2->rowCount();
+
+        // Remove o template recorrente
+        $this->remover($id);
+
+        return $apagadas;
+    }
+
+    /**
+     * Busca uma despesa recorrente pelo ID.
+     */
+    public function buscarPorId(string $id): ?array {
+        if ($this->userId === null) return null;
+
+        $stmt = $this->connection->prepare(
+            'SELECT id, nome, descricao, valor, dia_vencimento, icone, tipo, data_inicio, ativo, criado_em
+             FROM despesas_recorrentes
+             WHERE id = :id AND usuario_id = :usuario_id'
+        );
+        $stmt->execute(['id' => $id, 'usuario_id' => $this->userId]);
+        $result = $stmt->fetch();
+
+        if ($result) {
+            $result['valor'] = (float) $result['valor'];
+            $result['tipo'] = $result['tipo'] ?? 'saida';
+            return $result;
+        }
+        return null;
+    }
+
+    /**
      * Processa as despesas/saldos recorrentes ativas.
      * Gera despesas (tipo=saida) ou saldos (tipo=entrada) desde a data_inicio até o mês atual.
      * Se o usuário excluiu uma instância de um mês, ela NÃO será regenerada.

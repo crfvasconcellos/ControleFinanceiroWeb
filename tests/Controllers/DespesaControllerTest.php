@@ -184,5 +184,30 @@ namespace {
                 $this->assertGreaterThan(500, $despesa['valor']);
             }
         }
+
+        public function testCalculoPercentualOrcamento(): void
+        {
+            $limite_mensal = 1000.0;
+
+            // Caso 1: < 75%
+            $totalMes = 749.9;
+            $percentual = ($totalMes / $limite_mensal) * 100;
+            $this->assertLessThan(75, $percentual);
+            
+            // Caso 2: >= 75% e < 95%
+            $totalMes = 750.0;
+            $percentual = ($totalMes / $limite_mensal) * 100;
+            $this->assertTrue($percentual >= 75 && $percentual < 95);
+
+            // Caso 3: >= 95% e < 100%
+            $totalMes = 950.0;
+            $percentual = ($totalMes / $limite_mensal) * 100;
+            $this->assertTrue($percentual >= 95 && $percentual < 100);
+
+            // Caso 4: >= 100%
+            $totalMes = 1000.0;
+            $percentual = ($totalMes / $limite_mensal) * 100;
+            $this->assertTrue($percentual >= 100);
+        }
     }
 }

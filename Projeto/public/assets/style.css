@@ -344,6 +344,7 @@ a:hover { color: var(--color-primary-hover); }
 .alert { padding: 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; font-size: 0.95rem; font-weight: 500; display: flex; align-items: flex-start; gap: 0.5rem; }
 .alert-error { background: var(--color-danger-bg); color: var(--color-danger); border: 1px solid rgba(239, 68, 68, 0.2); }
 .alert-success { background: var(--color-success-bg); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.2); }
+.alert-warning { background: var(--color-warning-bg); color: var(--color-warning); border: 1px solid rgba(245, 158, 11, 0.2); }
 .alert ul { margin-left: 1.5rem; }
 
 /* ==========================================
