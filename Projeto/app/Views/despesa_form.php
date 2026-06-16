@@ -205,6 +205,7 @@ $temDadosGrafico = max($valores) > 0;
                 <a href="#modalAdicionarSaldo" class="btn btn-success">Saldo</a>
                 <a href="#modalDespesasFixas" class="btn btn-outline btn-sm" title="Despesas Fixas">🔄 Fixas</a>
                 <a href="#modalOrcamento" class="btn btn-outline btn-sm" title="Definir Orçamento Mensal">🎯 Orçamento</a>
+                <a href="#modalPerfil" class="btn btn-outline btn-sm" title="Editar Perfil">👤 Perfil</a>
             </div>
         </div>
     </header>
@@ -1000,6 +1001,54 @@ $temDadosGrafico = max($valores) > 0;
             </form>
         </div>
     </div>
+
+    <!-- Modal: Editar Perfil (US23) -->
+    <div id="modalPerfil" class="modal-overlay">
+        <div class="modal-content" style="max-width: 440px;">
+            <a href="#!" class="modal-close">✕</a>
+            <h2>👤 Meu Perfil</h2>
+            <p class="text-sm mb-4" style="color: var(--color-text-light);">Atualize seu nome de exibição e, se quiser, defina uma nova senha. Por segurança, confirme sua senha atual para salvar.</p>
+
+            <form method="post" action="index.php?route=dashboard" style="margin-top:1.5rem;">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                <input type="hidden" name="action" value="atualizar_perfil">
+
+                <div class="form-floating">
+                    <input id="perfil_email_display" type="email" value="<?= htmlspecialchars($userEmail) ?>" placeholder="E-mail" disabled style="opacity:0.6; cursor: not-allowed;">
+                    <label for="perfil_email_display">E-mail (não editável)</label>
+                </div>
+
+                <div class="form-floating">
+                    <input id="perfil_nome" name="perfil_nome" type="text" required maxlength="120" placeholder="Seu nome" value="<?= htmlspecialchars($userNome) ?>">
+                    <label for="perfil_nome">Nome</label>
+                </div>
+
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--color-border);">
+
+                <p class="text-sm mb-4" style="color: var(--color-text-light);">Deixe os campos abaixo em branco para manter a senha atual.</p>
+
+                <div class="form-floating">
+                    <input id="perfil_nova_senha" name="perfil_nova_senha" type="password" autocomplete="new-password" placeholder="Nova senha (opcional)">
+                    <label for="perfil_nova_senha">Nova senha (opcional)</label>
+                </div>
+
+                <div class="form-floating">
+                    <input id="perfil_confirmar_senha" name="perfil_confirmar_senha" type="password" autocomplete="new-password" placeholder="Confirme a nova senha">
+                    <label for="perfil_confirmar_senha">Confirmar nova senha</label>
+                </div>
+
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--color-border);">
+
+                <div class="form-floating">
+                    <input id="perfil_senha_atual" name="perfil_senha_atual" type="password" required autocomplete="current-password" placeholder="Senha atual">
+                    <label for="perfil_senha_atual">Senha atual (obrigatória para salvar)</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block mt-4" style="padding: 1rem; font-size:1.05rem;">Salvar Perfil</button>
+            </form>
+        </div>
+    </div>
+
 
 
     <!-- Modal: Importar CSV (US22) -->
