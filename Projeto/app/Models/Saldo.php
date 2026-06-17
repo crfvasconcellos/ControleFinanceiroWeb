@@ -130,6 +130,20 @@ class Saldo {
         ]);
     }
 
+    public function restaurarSaldo(string $id): bool {
+        if ($this->userId === null) return false;
+
+        $stmt = $this->connection->prepare(
+            'UPDATE saldos SET deletado_em = NULL 
+             WHERE id = :id AND usuario_id = :usuario_id'
+        );
+
+        return $stmt->execute([
+            'id' => $id,
+            'usuario_id' => $this->userId
+        ]);
+    }
+
     public function buscarPorId(string $id): ?array {
         if ($this->userId === null) return null;
 

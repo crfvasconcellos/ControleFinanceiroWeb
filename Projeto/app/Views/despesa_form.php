@@ -205,6 +205,7 @@ $temDadosGrafico = max($valores) > 0;
                 <a href="#modalAdicionarSaldo" class="btn btn-success">Saldo</a>
                 <a href="#modalDespesasFixas" class="btn btn-outline btn-sm" title="Despesas Fixas">🔄 Fixas</a>
                 <a href="#modalOrcamento" class="btn btn-outline btn-sm" title="Definir Orçamento Mensal">🎯 Orçamento</a>
+                <a href="#modalPerfil" class="btn btn-outline btn-sm" title="Editar Perfil">👤 Perfil</a>
             </div>
         </div>
     </header>
@@ -316,9 +317,80 @@ $temDadosGrafico = max($valores) > 0;
         </section>
         <?php endif; ?>
 
-        <!-- MAIN GRID: Gráficos e Lista (Stack layout) -->
+        <?php if($mesFiltro === date('Y-m') || $mesFiltro === 'todos'): 
+            $comp = $comparativoMeses;
+            $mesAtualLabel = $mesesPt[substr($comp['mes_atual'], 5, 2)] . ' ' . substr($comp['mes_atual'], 0, 4);
+            $mesAnteriorLabel = $mesesPt[substr($comp['mes_anterior'], 5, 2)] . ' ' . substr($comp['mes_anterior'], 0, 4);
+        ?>
+        <section class="comparison-container">
+            <div class="comparison-header">
+                <div class="comparison-title">📊 Comparativo Mensal</div>
+                <div class="comparison-subtitle"><?= $mesAnteriorLabel ?> vs <?= $mesAtualLabel ?></div>
+            </div>
+            
+            <div class="comparison-grid">
+                <div class="comparison-card comparison-card--previous">
+                    <div class="comparison-label">Mês Anterior</div>
+                    <div class="comparison-value">R$ <?= number_format($comp['total_mes_anterior'], 2, ',', '.') ?></div>
+                    <div class="comparison-date"><?= $mesAnteriorLabel ?></div>
+                </div>
+
+                <div class="comparison-divider">
+                    <div class="comparison-arrow">→</div>
+                </div>
+
+                <div class="comparison-card comparison-card--current">
+                    <div class="comparison-label">Mês Atual</div>
+                    <div class="comparison-value">R$ <?= number_format($comp['total_mes_atual'], 2, ',', '.') ?></div>
+                    <div class="comparison-date"><?= $mesAtualLabel ?></div>
+                </div>
+            </div>
+
+            <div class="comparison-result <?= $comp['tendencia'] ?>">
+                <div class="comparison-result__icon">
+                    <?php if($comp['tendencia'] === 'aumento'): ?>
+                        📈
+                    <?php elseif($comp['tendencia'] === 'reducao'): ?>
+                        📉
+                    <?php else: ?>
+                        ➡️
+                    <?php endif; ?>
+                </div>
+                <div class="comparison-result__content">
+                    <div class="comparison-result__difference">
+                        <?php if($comp['diferenca'] > 0): ?>
+                            <span class="text-danger">+R$ <?= number_format($comp['diferenca'], 2, ',', '.') ?></span>
+                        <?php elseif($comp['diferenca'] < 0): ?>
+                            <span class="text-success">-R$ <?= number_format(abs($comp['diferenca']), 2, ',', '.') ?></span>
+                        <?php else: ?>
+                            <span>Sem alteração</span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="comparison-result__percentage">
+                        <?php if($comp['percentual'] > 0): ?>
+                            <span class="text-danger">↑ <?= number_format($comp['percentual'], 1, ',', '.') ?>%</span>
+                        <?php elseif($comp['percentual'] < 0): ?>
+                            <span class="text-success">↓ <?= number_format(abs($comp['percentual']), 1, ',', '.') ?>%</span>
+                        <?php else: ?>
+                            <span>0% de variação</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-insight">
+                <?php if($comp['tendencia'] === 'aumento'): ?>
+                    <div class="insight-warning">⚠️ Seus gastos aumentaram comparado ao mês anterior. Considere revisar sua rotina de gastos.</div>
+                <?php elseif($comp['tendencia'] === 'reducao'): ?>
+                    <div class="insight-success">✅ Parabéns! Você gastou menos que o mês anterior. Continue assim!</div>
+                <?php else: ?>
+                    <div class="insight-neutral">ℹ️ Seus gastos se mantiveram estáveis em relação ao mês anterior.</div>
+                <?php endif; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
         <div class="grid" style="grid-template-columns: 1fr;">
-            <!-- Topo: Gráficos -->
             <section>
                 
                 <div class="chart-container">
@@ -641,6 +713,17 @@ $temDadosGrafico = max($valores) > 0;
                             <div class="expense-item__value" style="color: var(--color-success);">+ R$ <?= number_format($h['valor'], 2, ',', '.') ?></div>
                         <?php else: ?>
                             <div class="expense-item__value expense-item__value--expense">- R$ <?= number_format($h['valor'], 2, ',', '.') ?></div>
+                        <?php endif; ?>
+                        
+                        <?php if($del): ?>
+                            <div class="expense-actions-btns" style="margin-left: 1rem;">
+                                <form method="post" action="index.php?route=dashboard" style="margin:0;">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                                    <input type="hidden" name="action" value="restaurar">
+                                    <input type="hidden" name="despesa_id" value="<?= htmlspecialchars($h['id']) ?>">
+                                    <button type="submit" class="btn-icon" title="Restaurar" style="background: var(--color-primary-transparent, rgba(14,165,233,0.1)); color: var(--color-primary); border: 1px solid var(--color-primary);">♻️</button>
+                                </form>
+                            </div>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
@@ -989,6 +1072,54 @@ $temDadosGrafico = max($valores) > 0;
             </form>
         </div>
     </div>
+
+    <!-- Modal: Editar Perfil (US23) -->
+    <div id="modalPerfil" class="modal-overlay">
+        <div class="modal-content" style="max-width: 440px;">
+            <a href="#!" class="modal-close">✕</a>
+            <h2>👤 Meu Perfil</h2>
+            <p class="text-sm mb-4" style="color: var(--color-text-light);">Atualize seu nome de exibição e, se quiser, defina uma nova senha. Por segurança, confirme sua senha atual para salvar.</p>
+
+            <form method="post" action="index.php?route=dashboard" style="margin-top:1.5rem;">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                <input type="hidden" name="action" value="atualizar_perfil">
+
+                <div class="form-floating">
+                    <input id="perfil_email_display" type="email" value="<?= htmlspecialchars($userEmail) ?>" placeholder="E-mail" disabled style="opacity:0.6; cursor: not-allowed;">
+                    <label for="perfil_email_display">E-mail (não editável)</label>
+                </div>
+
+                <div class="form-floating">
+                    <input id="perfil_nome" name="perfil_nome" type="text" required maxlength="120" placeholder="Seu nome" value="<?= htmlspecialchars($userNome) ?>">
+                    <label for="perfil_nome">Nome</label>
+                </div>
+
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--color-border);">
+
+                <p class="text-sm mb-4" style="color: var(--color-text-light);">Deixe os campos abaixo em branco para manter a senha atual.</p>
+
+                <div class="form-floating">
+                    <input id="perfil_nova_senha" name="perfil_nova_senha" type="password" autocomplete="new-password" placeholder="Nova senha (opcional)">
+                    <label for="perfil_nova_senha">Nova senha (opcional)</label>
+                </div>
+
+                <div class="form-floating">
+                    <input id="perfil_confirmar_senha" name="perfil_confirmar_senha" type="password" autocomplete="new-password" placeholder="Confirme a nova senha">
+                    <label for="perfil_confirmar_senha">Confirmar nova senha</label>
+                </div>
+
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--color-border);">
+
+                <div class="form-floating">
+                    <input id="perfil_senha_atual" name="perfil_senha_atual" type="password" required autocomplete="current-password" placeholder="Senha atual">
+                    <label for="perfil_senha_atual">Senha atual (obrigatória para salvar)</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block mt-4" style="padding: 1rem; font-size:1.05rem;">Salvar Perfil</button>
+            </form>
+        </div>
+    </div>
+
 
 
     <!-- Modal: Importar CSV (US22) -->

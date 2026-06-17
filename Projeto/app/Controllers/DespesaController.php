@@ -71,6 +71,31 @@ class DespesaController {
                 }
             }
 
+            if (empty($errors) && $action === 'restaurar') {
+                $despesaId = trim($_POST['despesa_id'] ?? '');
+
+                if ($despesaId === '') {
+                    $errors[] = 'identificador da transação inválido';
+                } else {
+                    $restaurado = false;
+                    if (str_starts_with($despesaId, 'saldo_')) {
+                        $saldoModel = new Saldo($userId);
+                        $restaurado = $saldoModel->restaurarSaldo($despesaId);
+                    } else {
+                        $restaurado = $model->restaurarDespesa($despesaId);
+                    }
+
+                    if ($restaurado) {
+                        $_SESSION['successMessage'] = 'transação restaurada com sucesso';
+                        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                        header('Location: index.php?route=dashboard#modalHistorico');
+                        exit;
+                    } else {
+                        $errors[] = 'transação não encontrada para restauração';
+                    }
+                }
+            }
+
             if (empty($errors) && $action === 'salvar_transacao') {
                 $tipo = $_POST['tipo'] ?? 'saida';
                 $dataArr['nome'] = substr(trim($_POST['nome'] ?? ''), 0, 30);
@@ -247,6 +272,49 @@ class DespesaController {
                 }
             }
 
+            // Editar Perfil: nome e senha (US23)
+            if (empty($errors) && $action === 'atualizar_perfil') {
+                $novoNome = trim($_POST['perfil_nome'] ?? '');
+                $senhaAtual = $_POST['perfil_senha_atual'] ?? '';
+                $novaSenha = $_POST['perfil_nova_senha'] ?? '';
+                $confirmarNovaSenha = $_POST['perfil_confirmar_senha'] ?? '';
+                $querTrocarSenha = $novaSenha !== '' || $confirmarNovaSenha !== '';
+
+                if ($novoNome === '') {
+                    $errors[] = 'Informe um nome válido.';
+                } elseif (mb_strlen($novoNome) > 120) {
+                    $errors[] = 'O nome deve ter no máximo 120 caracteres.';
+                }
+
+                if (empty($errors)) {
+                    $hashAtual = $usuarioModel->buscarSenhaHash((string)$userId);
+                    if ($senhaAtual === '' || !$hashAtual || !password_verify($senhaAtual, $hashAtual)) {
+                        $errors[] = 'Senha atual incorreta.';
+                    }
+                }
+
+                if (empty($errors) && $querTrocarSenha) {
+                    if (strlen($novaSenha) < 6) {
+                        $errors[] = 'A nova senha deve ter pelo menos 6 caracteres.';
+                    } elseif ($novaSenha !== $confirmarNovaSenha) {
+                        $errors[] = 'A confirmação da nova senha não coincide.';
+                    }
+                }
+
+                if (empty($errors)) {
+                    $usuarioModel->atualizarNome((string)$userId, $novoNome);
+                    if ($querTrocarSenha) {
+                        $usuarioModel->atualizarSenha((string)$userId, $novaSenha);
+                    }
+
+                    $_SESSION['user_nome'] = $novoNome;
+                    $_SESSION['successMessage'] = 'Perfil atualizado com sucesso.';
+                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                    header('Location: index.php?route=dashboard#');
+                    exit;
+                }
+            }
+
             // Importação de CSV (US22)
             if (empty($errors) && $action === 'importar_csv') {
                 if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
@@ -405,6 +473,9 @@ class DespesaController {
 
         // Média de gastos mensais (US21)
         $mediaGastosMensais = $model->calcularMediaMensal();
+
+    
+        $comparativoMeses = $model->obterComparativoMeses();
 
         // Saldo do usuário
         $saldoModel = new Saldo($userId);

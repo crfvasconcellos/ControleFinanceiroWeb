@@ -43,6 +43,39 @@ class Usuario {
     }
 
     /**
+     * Busca o hash da senha atual do usuário (uso interno para validação ao editar perfil).
+     */
+    public function buscarSenhaHash(string $id): ?string {
+        $stmt = $this->connection->prepare('SELECT senha FROM usuarios WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+
+        return $row['senha'] ?? null;
+    }
+
+    /**
+     * Atualiza o nome de exibição do usuário (US23).
+     */
+    public function atualizarNome(string $id, string $novoNome): bool {
+        $stmt = $this->connection->prepare('UPDATE usuarios SET nome = :nome WHERE id = :id');
+        return $stmt->execute([
+            'nome' => $novoNome,
+            'id' => $id
+        ]);
+    }
+
+    /**
+     * Atualiza a senha do usuário, já armazenando-a com hash bcrypt (US23).
+     */
+    public function atualizarSenha(string $id, string $novaSenha): bool {
+        $stmt = $this->connection->prepare('UPDATE usuarios SET senha = :senha WHERE id = :id');
+        return $stmt->execute([
+            'senha' => password_hash($novaSenha, PASSWORD_BCRYPT),
+            'id' => $id
+        ]);
+    }
+
+    /**
      * Registra um novo usuário com senha em hash bcrypt.
      * Retorna o array do usuário criado ou null se email já existir.
      */
