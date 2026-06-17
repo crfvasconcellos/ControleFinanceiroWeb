@@ -205,6 +205,7 @@ $temDadosGrafico = max($valores) > 0;
                 <a href="#modalAdicionarSaldo" class="btn btn-success">Saldo</a>
                 <a href="#modalDespesasFixas" class="btn btn-outline btn-sm" title="Despesas Fixas">🔄 Fixas</a>
                 <a href="#modalOrcamento" class="btn btn-outline btn-sm" title="Definir Orçamento Mensal">🎯 Orçamento</a>
+                <a href="#modalPerfil" class="btn btn-outline btn-sm" title="Editar Perfil">👤 Perfil</a>
             </div>
         </div>
     </header>
@@ -253,6 +254,33 @@ $temDadosGrafico = max($valores) > 0;
             </div>
         <?php endif; ?>
 
+        <!-- BUDGET ALERTS (US24) -->
+        <?php if ($limite_mensal > 0): 
+            $percentual = ($totalMes / $limite_mensal) * 100;
+            if ($percentual >= 100): ?>
+                <div class="alert alert-error">
+                    <span>🚨</span>
+                    <div>
+                        <strong>Limite Excedido!</strong> Você ultrapassou seu limite de orçamento mensal de <strong>R$ <?= number_format($limite_mensal, 2, ',', '.') ?></strong> (Consumo total: <strong><?= number_format($percentual, 1, ',', '.') ?>%</strong>).
+                    </div>
+                </div>
+            <?php elseif ($percentual >= 95): ?>
+                <div class="alert alert-warning">
+                    <span>⚠️</span>
+                    <div>
+                        <strong>Orçamento Crítico!</strong> Você atingiu <strong><?= number_format($percentual, 1, ',', '.') ?>%</strong> do seu limite de orçamento mensal (R$ <?= number_format($limite_mensal, 2, ',', '.') ?>). Cuidado para não estourar!
+                    </div>
+                </div>
+            <?php elseif ($percentual >= 75): ?>
+                <div class="alert alert-warning">
+                    <span>💡</span>
+                    <div>
+                        <strong>Aproximação de Limite!</strong> Você atingiu <strong><?= number_format($percentual, 1, ',', '.') ?>%</strong> do seu limite de orçamento mensal (R$ <?= number_format($limite_mensal, 2, ',', '.') ?>).
+                    </div>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+
         <!-- ORÇAMENTO MENSAL (US22) -->
         <?php if($mesFiltro === date('Y-m') || $mesFiltro === 'todos'): ?>
         <section class="budget-container">
@@ -271,8 +299,8 @@ $temDadosGrafico = max($valores) > 0;
                 $percentual = ($totalMes / $limite_mensal) * 100;
                 $percentualStr = min(100, $percentual);
                 $fillClass = 'budget-fill--success';
-                if ($percentual > 75) $fillClass = 'budget-fill--warning';
-                if ($percentual > 95) $fillClass = 'budget-fill--danger';
+                if ($percentual >= 75) $fillClass = 'budget-fill--warning';
+                if ($percentual >= 95) $fillClass = 'budget-fill--danger';
             ?>
                 <div class="budget-progress">
                     <div class="budget-fill <?= $fillClass ?>" style="width: <?= $percentualStr ?>%;"></div>
@@ -289,9 +317,80 @@ $temDadosGrafico = max($valores) > 0;
         </section>
         <?php endif; ?>
 
-        <!-- MAIN GRID: Gráficos e Lista (Stack layout) -->
+        <?php if($mesFiltro === date('Y-m') || $mesFiltro === 'todos'): 
+            $comp = $comparativoMeses;
+            $mesAtualLabel = $mesesPt[substr($comp['mes_atual'], 5, 2)] . ' ' . substr($comp['mes_atual'], 0, 4);
+            $mesAnteriorLabel = $mesesPt[substr($comp['mes_anterior'], 5, 2)] . ' ' . substr($comp['mes_anterior'], 0, 4);
+        ?>
+        <section class="comparison-container">
+            <div class="comparison-header">
+                <div class="comparison-title">📊 Comparativo Mensal</div>
+                <div class="comparison-subtitle"><?= $mesAnteriorLabel ?> vs <?= $mesAtualLabel ?></div>
+            </div>
+            
+            <div class="comparison-grid">
+                <div class="comparison-card comparison-card--previous">
+                    <div class="comparison-label">Mês Anterior</div>
+                    <div class="comparison-value">R$ <?= number_format($comp['total_mes_anterior'], 2, ',', '.') ?></div>
+                    <div class="comparison-date"><?= $mesAnteriorLabel ?></div>
+                </div>
+
+                <div class="comparison-divider">
+                    <div class="comparison-arrow">→</div>
+                </div>
+
+                <div class="comparison-card comparison-card--current">
+                    <div class="comparison-label">Mês Atual</div>
+                    <div class="comparison-value">R$ <?= number_format($comp['total_mes_atual'], 2, ',', '.') ?></div>
+                    <div class="comparison-date"><?= $mesAtualLabel ?></div>
+                </div>
+            </div>
+
+            <div class="comparison-result <?= $comp['tendencia'] ?>">
+                <div class="comparison-result__icon">
+                    <?php if($comp['tendencia'] === 'aumento'): ?>
+                        📈
+                    <?php elseif($comp['tendencia'] === 'reducao'): ?>
+                        📉
+                    <?php else: ?>
+                        ➡️
+                    <?php endif; ?>
+                </div>
+                <div class="comparison-result__content">
+                    <div class="comparison-result__difference">
+                        <?php if($comp['diferenca'] > 0): ?>
+                            <span class="text-danger">+R$ <?= number_format($comp['diferenca'], 2, ',', '.') ?></span>
+                        <?php elseif($comp['diferenca'] < 0): ?>
+                            <span class="text-success">-R$ <?= number_format(abs($comp['diferenca']), 2, ',', '.') ?></span>
+                        <?php else: ?>
+                            <span>Sem alteração</span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="comparison-result__percentage">
+                        <?php if($comp['percentual'] > 0): ?>
+                            <span class="text-danger">↑ <?= number_format($comp['percentual'], 1, ',', '.') ?>%</span>
+                        <?php elseif($comp['percentual'] < 0): ?>
+                            <span class="text-success">↓ <?= number_format(abs($comp['percentual']), 1, ',', '.') ?>%</span>
+                        <?php else: ?>
+                            <span>0% de variação</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-insight">
+                <?php if($comp['tendencia'] === 'aumento'): ?>
+                    <div class="insight-warning">⚠️ Seus gastos aumentaram comparado ao mês anterior. Considere revisar sua rotina de gastos.</div>
+                <?php elseif($comp['tendencia'] === 'reducao'): ?>
+                    <div class="insight-success">✅ Parabéns! Você gastou menos que o mês anterior. Continue assim!</div>
+                <?php else: ?>
+                    <div class="insight-neutral">ℹ️ Seus gastos se mantiveram estáveis em relação ao mês anterior.</div>
+                <?php endif; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
         <div class="grid" style="grid-template-columns: 1fr;">
-            <!-- Topo: Gráficos -->
             <section>
                 
                 <div class="chart-container">
@@ -337,7 +436,19 @@ $temDadosGrafico = max($valores) > 0;
             <section class="card" style="align-self: start;">
                 <div class="flex justify-between items-center mb-4">
                     <h2>Transações</h2>
-                    <div style="display:flex; gap:0.5rem;">
+                <div style="display:flex; gap:0.5rem; align-items: center;">
+                        <?php
+                            $csvParams = http_build_query([
+                                'route' => 'exportar_csv',
+                                'mes' => $mesFiltro,
+                                'prioridade' => $prioridadeFiltro,
+                                'tipo' => $tipoFiltro,
+                                'categoria' => $categoriaFiltro,
+                                'busca' => $buscaFiltro,
+                            ]);
+                        ?>
+                        <a href="index.php?<?= htmlspecialchars($csvParams) ?>" class="btn btn-outline btn-sm" title="Exportar transações como CSV" id="btnExportarCsv" style="font-size: 0.8rem; letter-spacing: 0.02em;">↓ Exportar .csv</a>
+                        <a href="#modalImportarCsv" class="btn btn-outline btn-sm" title="Importar transações de um CSV" id="btnImportarCsv" style="font-size: 0.8rem; letter-spacing: 0.02em;">↑ Importar .csv</a>
                         <a href="#modalHistorico" class="btn btn-outline btn-sm" title="Lixeira">🗑️</a>
                     </div>
                 </div>
@@ -603,6 +714,17 @@ $temDadosGrafico = max($valores) > 0;
                         <?php else: ?>
                             <div class="expense-item__value expense-item__value--expense">- R$ <?= number_format($h['valor'], 2, ',', '.') ?></div>
                         <?php endif; ?>
+                        
+                        <?php if($del): ?>
+                            <div class="expense-actions-btns" style="margin-left: 1rem;">
+                                <form method="post" action="index.php?route=dashboard" style="margin:0;">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                                    <input type="hidden" name="action" value="restaurar">
+                                    <input type="hidden" name="despesa_id" value="<?= htmlspecialchars($h['id']) ?>">
+                                    <button type="submit" class="btn-icon" title="Restaurar" style="background: var(--color-primary-transparent, rgba(14,165,233,0.1)); color: var(--color-primary); border: 1px solid var(--color-primary);">♻️</button>
+                                </form>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -703,12 +825,7 @@ $temDadosGrafico = max($valores) > 0;
                                             <button type="submit" class="btn-icon" title="Reativar" style="background: var(--color-success-bg); color: var(--color-success);">▶️</button>
                                         </form>
                                     <?php endif; ?>
-                                    <form method="post" action="index.php?route=dashboard" style="margin:0;">
-                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
-                                        <input type="hidden" name="action" value="remover_recorrente">
-                                        <input type="hidden" name="recorrente_id" value="<?= htmlspecialchars($rec['id']) ?>">
-                                        <button type="submit" class="btn-icon danger" title="Remover Permanentemente">🗑️</button>
-                                    </form>
+                                    <a href="#confirmarRemoverFixo_<?= htmlspecialchars($rec['id']) ?>" class="btn-icon danger" title="Remover">🗑️</a>
                                 </div>
                             </div>
                         </div>
@@ -717,6 +834,49 @@ $temDadosGrafico = max($valores) > 0;
             </div>
         </div>
     </div>
+
+    <!-- Modais de confirmação de remoção de fixos -->
+    <?php if (!empty($despesasRecorrentes)): ?>
+        <?php foreach ($despesasRecorrentes as $rec): ?>
+            <div id="confirmarRemoverFixo_<?= htmlspecialchars($rec['id']) ?>" class="modal-overlay">
+                <div class="modal-content" style="max-width: 500px; text-align: center;">
+                    <a href="#modalDespesasFixas" class="modal-close">✕</a>
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                    <h2 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Remover Fixo</h2>
+                    <p style="color: var(--color-text-light); margin-bottom: 0.5rem;">
+                        Deseja remover "<strong><?= htmlspecialchars($rec['nome']) ?></strong>"?
+                    </p>
+                    <p style="color: var(--color-text-light); margin-bottom: 2rem; font-size: 0.9rem;">
+                        Escolha o que fazer com as transações já lançadas nos meses anteriores:
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; align-items: stretch;">
+                        <!-- Opção 1: Manter histórico -->
+                        <form method="post" action="index.php?route=dashboard" style="margin:0;">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                            <input type="hidden" name="action" value="remover_recorrente">
+                            <input type="hidden" name="recorrente_id" value="<?= htmlspecialchars($rec['id']) ?>">
+                            <button type="submit" class="btn btn-primary btn-block" style="padding: 0.85rem; font-size: 0.95rem;">
+                                📋 Só parar de repetir<br>
+                                <small style="opacity: 0.8; font-weight: 400;">Mantém as transações já lançadas</small>
+                            </button>
+                        </form>
+                        <!-- Opção 2: Apagar tudo -->
+                        <form method="post" action="index.php?route=dashboard" style="margin:0;">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                            <input type="hidden" name="action" value="remover_recorrente_completo">
+                            <input type="hidden" name="recorrente_id" value="<?= htmlspecialchars($rec['id']) ?>">
+                            <button type="submit" class="btn btn-danger btn-block" style="padding: 0.85rem; font-size: 0.95rem;">
+                                🗑️ Apagar tudo<br>
+                                <small style="opacity: 0.8; font-weight: 400;">Remove o fixo e todas as transações geradas</small>
+                            </button>
+                        </form>
+                        <!-- Cancelar -->
+                        <a href="#modalDespesasFixas" class="btn btn-outline" style="padding: 0.75rem;">Cancelar</a>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
 
     <!-- Modal: Criar Novo Recorrente (Despesa ou Saldo) -->
     <div id="modalNovaRecorrente" class="modal-overlay">
@@ -913,7 +1073,87 @@ $temDadosGrafico = max($valores) > 0;
         </div>
     </div>
 
+    <!-- Modal: Editar Perfil (US23) -->
+    <div id="modalPerfil" class="modal-overlay">
+        <div class="modal-content" style="max-width: 440px;">
+            <a href="#!" class="modal-close">✕</a>
+            <h2>👤 Meu Perfil</h2>
+            <p class="text-sm mb-4" style="color: var(--color-text-light);">Atualize seu nome de exibição e, se quiser, defina uma nova senha. Por segurança, confirme sua senha atual para salvar.</p>
 
+            <form method="post" action="index.php?route=dashboard" style="margin-top:1.5rem;">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                <input type="hidden" name="action" value="atualizar_perfil">
+
+                <div class="form-floating">
+                    <input id="perfil_email_display" type="email" value="<?= htmlspecialchars($userEmail) ?>" placeholder="E-mail" disabled style="opacity:0.6; cursor: not-allowed;">
+                    <label for="perfil_email_display">E-mail (não editável)</label>
+                </div>
+
+                <div class="form-floating">
+                    <input id="perfil_nome" name="perfil_nome" type="text" required maxlength="120" placeholder="Seu nome" value="<?= htmlspecialchars($userNome) ?>">
+                    <label for="perfil_nome">Nome</label>
+                </div>
+
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--color-border);">
+
+                <p class="text-sm mb-4" style="color: var(--color-text-light);">Deixe os campos abaixo em branco para manter a senha atual.</p>
+
+                <div class="form-floating">
+                    <input id="perfil_nova_senha" name="perfil_nova_senha" type="password" autocomplete="new-password" placeholder="Nova senha (opcional)">
+                    <label for="perfil_nova_senha">Nova senha (opcional)</label>
+                </div>
+
+                <div class="form-floating">
+                    <input id="perfil_confirmar_senha" name="perfil_confirmar_senha" type="password" autocomplete="new-password" placeholder="Confirme a nova senha">
+                    <label for="perfil_confirmar_senha">Confirmar nova senha</label>
+                </div>
+
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--color-border);">
+
+                <div class="form-floating">
+                    <input id="perfil_senha_atual" name="perfil_senha_atual" type="password" required autocomplete="current-password" placeholder="Senha atual">
+                    <label for="perfil_senha_atual">Senha atual (obrigatória para salvar)</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block mt-4" style="padding: 1rem; font-size:1.05rem;">Salvar Perfil</button>
+            </form>
+        </div>
+    </div>
+
+
+
+    <!-- Modal: Importar CSV (US22) -->
+    <div id="modalImportarCsv" class="modal-overlay">
+        <div class="modal-content" style="max-width: 520px;">
+            <a href="#!" class="modal-close">✕</a>
+            <h2>📤 Importar Transações via CSV</h2>
+            <p class="text-sm mb-4" style="color: var(--color-text-light);">
+                Faça upload de um arquivo <strong>.csv</strong> com suas transações. O sistema cria automaticamente as despesas e entradas.
+            </p>
+
+            <div style="background: var(--color-surface-hover); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--color-text-light);">
+                <strong style="color: var(--color-text);">📋 Formato esperado (separador: ponto e vírgula)</strong>
+                <pre style="margin: 0.5rem 0 0; white-space: pre-wrap; font-family: monospace; font-size: 0.8rem; line-height: 1.5;">Data;Tipo;Nome;Descrição;Valor (R$)
+09/06/2026;Saída;Aluguel;Apto Centro;-1.500,00
+09/06/2026;Entrada;Salário;Empresa XYZ;+3.500,00</pre>
+                <div style="margin-top: 0.5rem; font-size: 0.78rem;">
+                    💡 <strong>Dica:</strong> Exporte primeiro para ter um modelo do formato ideal.
+                </div>
+            </div>
+
+            <form method="post" action="index.php?route=dashboard" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                <input type="hidden" name="action" value="importar_csv">
+
+                <div class="form-floating" style="margin-bottom: 1rem;">
+                    <input id="csv_file_input" name="csv_file" type="file" accept=".csv" required style="padding-top: 1.5rem;">
+                    <label for="csv_file_input" style="top: -5px; font-size: 0.85rem;">Arquivo CSV</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" style="padding: 1rem; font-size: 1.05rem;">📤 Importar Transações</button>
+            </form>
+        </div>
+    </div>
 
     <!-- Dark Mode Toggle -->
     <button class="theme-toggle" id="themeToggleBtn" title="Alternar Modo Escuro" aria-label="Alternar modo escuro">

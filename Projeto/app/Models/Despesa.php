@@ -103,6 +103,20 @@ class Despesa {
         ]);
     }
 
+    public function restaurarDespesa(string $id): bool {
+        if ($this->userId === null) return false;
+
+        $stmt = $this->connection->prepare(
+            'UPDATE despesas SET deletado_em = NULL 
+             WHERE id = :id AND usuario_id = :usuario_id'
+        );
+
+        return $stmt->execute([
+            'id' => $id,
+            'usuario_id' => $this->userId
+        ]);
+    }
+
     /**
      * Calcula a média de gastos mensais do usuário.
      * Agrupa despesas por mês (YYYY-MM) e retorna a média dos totais mensais.
@@ -130,6 +144,51 @@ class Despesa {
         }
 
         return $somaTotal / count($resultados);
+    }
+
+
+    public function obterTotalMes(string $mes): float {
+        if ($this->userId === null) return 0.0;
+
+        $stmt = $this->connection->prepare(
+            'SELECT SUM(valor) AS total_mes
+             FROM despesas
+             WHERE usuario_id = :usuario_id 
+             AND deletado_em IS NULL
+             AND DATE_FORMAT(data, "%Y-%m") = :mes'
+        );
+
+        $stmt->execute(['usuario_id' => $this->userId, 'mes' => $mes]);
+        $result = $stmt->fetch();
+
+        return (float) ($result['total_mes'] ?? 0.0);
+    }
+
+    public function obterComparativoMeses(): array {
+        if ($this->userId === null) return [];
+
+        $dataAtual = new \DateTime();
+        $mesAtual = $dataAtual->format('Y-m');
+        
+        $mesAnterior = new \DateTime('first day of last month');
+        $mesAnterior = $mesAnterior->format('Y-m');
+
+        $totalMesAtual = $this->obterTotalMes($mesAtual);
+        $totalMesAnterior = $this->obterTotalMes($mesAnterior);
+
+        $diferenca = $totalMesAtual - $totalMesAnterior;
+        $percentual = $totalMesAnterior > 0 ? ($diferenca / $totalMesAnterior) * 100 : 0;
+
+        return [
+            'mes_atual' => $mesAtual,
+            'mes_anterior' => $mesAnterior,
+            'total_mes_atual' => $totalMesAtual,
+            'total_mes_anterior' => $totalMesAnterior,
+            'diferenca' => $diferenca,
+            'percentual' => $percentual,
+            'aumentou' => $diferenca > 0,
+            'tendencia' => $diferenca > 0 ? 'aumento' : ($diferenca < 0 ? 'reducao' : 'estavel')
+        ];
     }
 
     public function editarDespesa(string $id, array $dados): bool {

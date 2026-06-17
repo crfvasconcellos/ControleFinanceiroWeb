@@ -345,7 +345,15 @@ API_DOCS.md
 - **US19** – Remover Gastos Fixos do Histórico ao Excluir
 - **US20** – Implementar Modo Escuro na Interface
 - **US21** – Exibir Média de Gastos Mensais
-- **US22** - Limite de Gastos Mensais
+
+## Sprint 5 — Exportação, Perfil e Inteligência Financeira
+
+> Empoderar o usuário com dados exportáveis, visão de perfil e alertas financeiros inteligentes.
+
+- **US22** – Exportar e Importar Transações via CSV
+- **US23** – Alertas Visuais de Orçamento
+- **US24** – Restaurar Transação da Lixeira
+
 ---
 
 # 📊 Backlog do Produto
@@ -375,7 +383,12 @@ As estimativas seguem a **Sequência de Fibonacci**.
 | US19 | Remover gastos fixos do histórico | 3 | ✅ | Remover registros vinculados |
 | US20 | Implementar modo escuro | 5 | ✅ | Alternância de tema |
 | US21 | Exibir média de gastos mensais | 3 | ✅ | Média automática |
-| US22 | Limite de gastos mensais | 3 | ✅ | Fedbeek visual |
+| US22 | Exportar e importar transações via CSV | 5 | ✅ | Download CSV com filtros + upload com criação em lote |
+| US23 | Editar perfil do usuário (nome e senha) | 5 | ✅ | Modal de perfil com validação de senha |
+| US24 | Alertas visuais de orçamento ao se aproximar do limite | 3 | ✅ | Notificação no dashboard a 75%, 95% e acima |
+| US25 | Comparativo de gastos entre mês atual e anterior | 5 | ✅ | Card com variação percentual e indicador visual |
+| US26 | Restaurar transação excluída da lixeira | 3 | ✅ | Botão restaurar no histórico, reativar `deletado_em` |
+
 > ✅ Concluído • 📋 Planejado
 
 ---
