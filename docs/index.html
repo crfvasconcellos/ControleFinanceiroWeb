@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Financeiro Pessoal — Gerencie suas finanças com simplicidade</title>
+    <meta name="description" content="Aplicação web para registro, acompanhamento e análise de gastos pessoais. Desenvolvido na UFT.">
+    <link rel="icon" href="img/logo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- NAV -->
+    <nav class="nav" id="nav">
+        <div class="nav-inner">
+            <a href="#" class="nav-brand">
+                <img src="img/logo.png" alt="Logo Controle Financeiro" class="nav-logo" draggable="false">
+                Controle Financeiro
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="#produto">Produto</a>
+                <a href="#como-funciona">Como Funciona</a>
+                <a href="#equipe">Equipe</a>
+                <a href="https://github.com/crfvasconcellos/ControleFinanceiroWeb" target="_blank" rel="noopener" class="nav-gh">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    GitHub
+                </a>
+            </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="hero">
+        <div class="hero-inner">
+            <img src="img/logo.png" alt="Logo" class="hero-logo" draggable="false">
+            <h1>Controle Financeiro Pessoal</h1>
+            <p class="hero-desc">Registre despesas, acompanhe seu saldo, visualize gráficos de gastos e mantenha suas finanças organizadas.</p>
+            <p class="hero-meta">Projeto acadêmico · Engenharia de Software · UFT 2026</p>
+            <div class="hero-actions">
+                <a href="https://github.com/crfvasconcellos/ControleFinanceiroWeb" target="_blank" rel="noopener" class="btn-main">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    Ver repositório
+                </a>
+                <a href="#produto" class="btn-sec">Ver produto</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- PRODUTO: PAINEL PRINCIPAL -->
+    <section id="produto" class="section">
+        <div class="container">
+            <h2 class="sec-title reveal">O que o sistema faz</h2>
+            <p class="sec-desc reveal">Um painel completo para controlar entradas, saídas, orçamento mensal e despesas recorrentes.</p>
+
+            <!-- BLOCO: RESUMO FINANCEIRO (recriação do dashboard real) -->
+            <div class="app-window reveal">
+                <div class="app-topbar">
+                    <div class="app-topbar-left">
+                        <img src="img/logo.png" alt="" class="app-topbar-logo" draggable="false">
+                        <span>Olá, Samir</span>
+                    </div>
+                    <div class="app-topbar-right">
+                        <span class="app-btn app-btn--red">Despesa</span>
+                        <span class="app-btn app-btn--green">Saldo</span>
+                        <span class="app-btn app-btn--outline">Fixas</span>
+                        <span class="app-btn app-btn--outline">Orçamento</span>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <!-- Stat cards -->
+                    <div class="app-stats">
+                        <div class="app-stat">
+                            <div class="app-stat-icon app-stat-icon--blue">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            </div>
+                            <span class="app-stat-label">Gastos no Período</span>
+                            <span class="app-stat-value">R$ 2.847,50</span>
+                        </div>
+                        <div class="app-stat">
+                            <div class="app-stat-icon app-stat-icon--green">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                            </div>
+                            <span class="app-stat-label">Saldo Disponível</span>
+                            <span class="app-stat-value app-stat-value--green">R$ 4.152,50</span>
+                        </div>
+                        <div class="app-stat">
+                            <div class="app-stat-icon app-stat-icon--purple">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            <span class="app-stat-label">Transações</span>
+                            <span class="app-stat-value">18</span>
+                        </div>
+                        <div class="app-stat">
+                            <div class="app-stat-icon app-stat-icon--amber">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                            </div>
+                            <span class="app-stat-label">Média Mensal</span>
+                            <span class="app-stat-value">R$ 1.923,00</span>
+                        </div>
+                    </div>
+
+                    <!-- Budget bar -->
+                    <div class="app-budget">
+                        <div class="app-budget-header">
+                            <span class="app-budget-title">Orçamento Mensal</span>
+                            <span class="app-budget-amounts">R$ 2.847,50 <span class="app-budget-sep">/</span> <strong>R$ 4.000,00</strong></span>
+                        </div>
+                        <div class="app-budget-track"><div class="app-budget-fill" style="width:71%"></div></div>
+                        <span class="app-budget-pct">71,2% consumido</span>
+                    </div>
+
+                    <!-- Chart (inline SVG recreation) -->
+                    <div class="app-chart">
+                        <h4 class="app-chart-title">Gastos Mensais</h4>
+                        <div class="app-chart-area">
+                            <svg viewBox="0 0 600 200" preserveAspectRatio="none" class="app-chart-svg">
+                                <defs>
+                                    <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#0284c7" stop-opacity="0.3"/>
+                                        <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
+                                    </linearGradient>
+                                </defs>
+                                <path d="M0 200 L0 140 L100 120 L200 155 L300 90 L400 110 L500 60 L600 80 L600 200Z" fill="url(#cg)"/>
+                                <polyline points="0,140 100,120 200,155 300,90 400,110 500,60 600,80" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+                                <circle cx="0" cy="140" r="4" fill="#fff" stroke="#0284c7" stroke-width="2"/>
+                                <circle cx="100" cy="120" r="4" fill="#fff" stroke="#0284c7" stroke-width="2"/>
+                                <circle cx="200" cy="155" r="4" fill="#fff" stroke="#0284c7" stroke-width="2"/>
+                                <circle cx="300" cy="90" r="4" fill="#fff" stroke="#0284c7" stroke-width="2"/>
+                                <circle cx="400" cy="110" r="4" fill="#fff" stroke="#0284c7" stroke-width="2"/>
+                                <circle cx="500" cy="60" r="4" fill="#fff" stroke="#0284c7" stroke-width="2"/>
+                                <circle cx="600" cy="80" r="4" fill="#fff" stroke="#0284c7" stroke-width="2"/>
+                            </svg>
+                            <div class="app-chart-labels">
+                                <span>Jan</span><span>Fev</span><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span><span>Jul</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transaction list -->
+                    <div class="app-transactions">
+                        <h4 class="app-chart-title">Transações</h4>
+                        <div class="app-tx">
+                            <div class="app-tx-left">
+                                <span class="app-tx-icon">🛒</span>
+                                <div>
+                                    <div class="app-tx-name">Supermercado <span class="app-badge app-badge--red">alta</span></div>
+                                    <div class="app-tx-date">14 Jun, 2026</div>
+                                </div>
+                            </div>
+                            <span class="app-tx-val app-tx-val--red">- R$ 523,40</span>
+                        </div>
+                        <div class="app-tx">
+                            <div class="app-tx-left">
+                                <span class="app-tx-icon">💼</span>
+                                <div>
+                                    <div class="app-tx-name">Salário <span class="app-badge app-badge--green">entrada</span></div>
+                                    <div class="app-tx-date">05 Jun, 2026</div>
+                                </div>
+                            </div>
+                            <span class="app-tx-val app-tx-val--green">+ R$ 4.500,00</span>
+                        </div>
+                        <div class="app-tx">
+                            <div class="app-tx-left">
+                                <span class="app-tx-icon">⚡</span>
+                                <div>
+                                    <div class="app-tx-name">Conta de Luz <span class="app-badge app-badge--yellow">média</span></div>
+                                    <div class="app-tx-date">10 Jun, 2026</div>
+                                </div>
+                            </div>
+                            <span class="app-tx-val app-tx-val--red">- R$ 187,30</span>
+                        </div>
+                        <div class="app-tx">
+                            <div class="app-tx-left">
+                                <span class="app-tx-icon">🚗</span>
+                                <div>
+                                    <div class="app-tx-name">Gasolina <span class="app-badge app-badge--yellow">média</span></div>
+                                    <div class="app-tx-date">12 Jun, 2026</div>
+                                </div>
+                            </div>
+                            <span class="app-tx-val app-tx-val--red">- R$ 245,00</span>
+                        </div>
+                        <div class="app-tx">
+                            <div class="app-tx-left">
+                                <span class="app-tx-icon">📶</span>
+                                <div>
+                                    <div class="app-tx-name">Internet <span class="app-badge">baixa</span></div>
+                                    <div class="app-tx-date">01 Jun, 2026</div>
+                                </div>
+                            </div>
+                            <span class="app-tx-val app-tx-val--red">- R$ 99,90</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMO FUNCIONA -->
+    <section id="como-funciona" class="section section--alt">
+        <div class="container">
+            <h2 class="sec-title reveal">O que você consegue fazer</h2>
+
+            <div class="features-list">
+                <div class="feat reveal">
+                    <div class="feat-num">01</div>
+                    <div>
+                        <h3>Registrar despesas e entradas</h3>
+                        <p>Cadastre transações com nome, valor, data, categoria e até comprovante em PDF. Cada registro é classificado automaticamente por prioridade (alta, média, baixa) conforme o valor.</p>
+                    </div>
+                </div>
+                <div class="feat reveal">
+                    <div class="feat-num">02</div>
+                    <div>
+                        <h3>Acompanhar pelo dashboard</h3>
+                        <p>Gráfico de evolução de gastos (mensal ou diário), resumo com saldo disponível, total gasto, número de transações e média mensal — tudo atualizado em tempo real.</p>
+                    </div>
+                </div>
+                <div class="feat reveal">
+                    <div class="feat-num">03</div>
+                    <div>
+                        <h3>Gerenciar recorrentes</h3>
+                        <p>Configure despesas e saldos fixos mensais (aluguel, salário, internet). O sistema gera automaticamente a cada mês, com opção de pausar e reativar.</p>
+                    </div>
+                </div>
+                <div class="feat reveal">
+                    <div class="feat-num">04</div>
+                    <div>
+                        <h3>Controlar orçamento</h3>
+                        <p>Defina um limite mensal e receba alertas visuais ao atingir 75%, 95% ou exceder o valor. A barra de progresso muda de cor conforme o consumo.</p>
+                    </div>
+                </div>
+                <div class="feat reveal">
+                    <div class="feat-num">05</div>
+                    <div>
+                        <h3>Filtrar, buscar e exportar</h3>
+                        <p>Filtre por mês, tipo, categoria ou valor. Busque transações por nome. Exporte tudo em CSV ou importe de arquivos externos.</p>
+                    </div>
+                </div>
+                <div class="feat reveal">
+                    <div class="feat-num">06</div>
+                    <div>
+                        <h3>Modo escuro e lixeira</h3>
+                        <p>Alterne entre tema claro e escuro. Transações excluídas vão para a lixeira e podem ser restauradas a qualquer momento.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TECH + ARCH compact -->
+    <section class="section section--alt">
+        <div class="container">
+            <h2 class="sec-title reveal">Tecnologias e arquitetura</h2>
+            <div class="tech-row">
+                <div class="tech-block reveal">
+                    <h3>Stack</h3>
+                    <ul class="tech-list">
+                        <li><strong>PHP 8.x</strong> — Backend com padrão MVC</li>
+                        <li><strong>MySQL / MariaDB</strong> — Banco de dados relacional</li>
+                        <li><strong>PDO</strong> — Queries parametrizadas (segurança)</li>
+                        <li><strong>HTML5 + CSS3</strong> — Interface responsiva, zero frameworks JS</li>
+                        <li><strong>SVG</strong> — Gráficos dinâmicos gerados pelo servidor</li>
+                        <li><strong>PHPUnit 9</strong> — Testes automatizados com banco real</li>
+                    </ul>
+                </div>
+                <div class="tech-block reveal">
+                    <h3>Estrutura do projeto</h3>
+                    <pre class="code-block"><code>Projeto/
+├── app/
+│   ├── Config/Database.php
+│   ├── Controllers/
+│   │   ├── AuthController.php
+│   │   ├── DespesaController.php
+│   │   └── ApiController.php
+│   ├── Middleware/Auth.php
+│   ├── Models/
+│   │   ├── Despesa.php
+│   │   ├── Saldo.php
+│   │   ├── Usuario.php
+│   │   └── DespesaRecorrente.php
+│   └── Views/
+├── database/schema.sql
+└── public/
+    ├── assets/style.css
+    └── index.php</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EQUIPE -->
+    <section id="equipe" class="section">
+        <div class="container">
+            <h2 class="sec-title reveal">Equipe</h2>
+            <p class="sec-desc reveal">Disciplina de Engenharia de Software — Universidade Federal do Tocantins</p>
+            <div class="team-row reveal">
+                <div class="team-member"><img src="img/brendo_henrique.png" class="team-av-img" alt="Brendo Henrique"><a href="https://github.com/JurRter" target="_blank" rel="noopener">Brendo Henrique</a></div>
+                <div class="team-member"><img src="img/claudio_vasconcellos.png" class="team-av-img" alt="Claudio Vasconcellos"><a href="https://github.com/crfvasconcellos" target="_blank" rel="noopener">Claudio Vasconcellos</a></div>
+                <div class="team-member"><img src="img/otavio_augusto.png" class="team-av-img" alt="Otavio Augusto"><a href="https://github.com/otavio-asr" target="_blank" rel="noopener">Otavio Augusto</a></div>
+                <div class="team-member"><img src="img/samir_batista.png" class="team-av-img" alt="Samir Batista"><a href="https://github.com/Samir-pmw" target="_blank" rel="noopener">Samir Batista</a></div>
+                <div class="team-member"><img src="img/tiago_veras.jpeg" class="team-av-img" alt="Tiago Veras"><a href="https://github.com/tiagoverasf" target="_blank" rel="noopener">Tiago Veras</a></div>
+            </div>
+            <p class="team-prof">Orientador: <strong>Edeilson Milhomem da Silva</strong></p>
+        </div>
+    </section>
+
+    <!-- INSTALAÇÃO -->
+    <section class="section section--alt">
+        <div class="container">
+            <h2 class="sec-title reveal">Como rodar localmente</h2>
+            <div class="install-steps">
+                <div class="install-step reveal">
+                    <span class="install-n">1</span>
+                    <div>
+                        <strong>Pré-requisitos</strong>
+                        <p>PHP 8.0+, MySQL ou MariaDB, extensão <code>pdo_mysql</code></p>
+                    </div>
+                </div>
+                <div class="install-step reveal">
+                    <span class="install-n">2</span>
+                    <div>
+                        <strong>Clone e crie o banco</strong>
+                        <pre class="code-inline">git clone https://github.com/crfvasconcellos/ControleFinanceiroWeb.git
+mysql -u root -p -e "CREATE DATABASE controle_financeiro CHARACTER SET utf8mb4;"</pre>
+                    </div>
+                </div>
+                <div class="install-step reveal">
+                    <span class="install-n">3</span>
+                    <div>
+                        <strong>Inicie o servidor</strong>
+                        <pre class="code-inline">cd Projeto/public && php -S localhost:8000</pre>
+                    </div>
+                </div>
+                <div class="install-step reveal">
+                    <span class="install-n">4</span>
+                    <div>
+                        <strong>Acesse</strong>
+                        <pre class="code-inline">http://localhost:8000</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container footer-inner">
+            <div class="footer-left">
+                <img src="img/logo.png" alt="" class="footer-logo" draggable="false">
+                <span>Controle Financeiro</span>
+            </div>
+            <div class="footer-links">
+                <a href="#produto">Produto</a>
+                <a href="#como-funciona">Funcionalidades</a>
+                <a href="#equipe">Equipe</a>
+                <a href="https://github.com/crfvasconcellos/ControleFinanceiroWeb" target="_blank" rel="noopener">GitHub</a>
+            </div>
+        </div>
+        <div class="container footer-copy">
+            Engenharia de Software — Universidade Federal do Tocantins — 2026
+        </div>
+    </footer>
+
+    <script>
+    (function(){
+        var nav=document.getElementById('nav'),toggle=document.getElementById('navToggle'),links=document.getElementById('navLinks');
+        window.addEventListener('scroll',function(){nav.classList.toggle('nav--solid',window.scrollY>40)});
+        toggle.addEventListener('click',function(){links.classList.toggle('open');toggle.classList.toggle('active')});
+        links.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){links.classList.remove('open');toggle.classList.remove('active')})});
+        document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener('click',function(e){var t=document.querySelector(this.getAttribute('href'));if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'})}})});
+
+        // Reveal Animations on Scroll
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15, rootMargin: "0px 0px -50px 0px" });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    })();
+    </script>
+</body>
+</html>
