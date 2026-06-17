@@ -351,10 +351,8 @@ API_DOCS.md
 > Empoderar o usuário com dados exportáveis, visão de perfil e alertas financeiros inteligentes.
 
 - **US22** – Exportar e Importar Transações via CSV
-- **US23** – Editar Perfil do Usuário (Nome e Senha)
-- **US24** – Alertas Visuais de Orçamento
-- **US25** – Comparativo Mês Atual vs. Anterior
-- **US26** – Restaurar Transação da Lixeira
+- **US23** – Alertas Visuais de Orçamento
+- **US24** – Restaurar Transação da Lixeira
 
 ---
 
@@ -388,7 +386,7 @@ As estimativas seguem a **Sequência de Fibonacci**.
 | US22 | Exportar e importar transações via CSV | 5 | ✅ | Download CSV com filtros + upload com criação em lote |
 | US23 | Editar perfil do usuário (nome e senha) | 5 | ✅ | Modal de perfil com validação de senha |
 | US24 | Alertas visuais de orçamento ao se aproximar do limite | 3 | ✅ | Notificação no dashboard a 75%, 95% e acima |
-| US25 | Comparativo de gastos entre mês atual e anterior | 5 | 📋 | Card com variação percentual e indicador visual |
+| US25 | Comparativo de gastos entre mês atual e anterior | 5 | ✅ | Card com variação percentual e indicador visual |
 | US26 | Restaurar transação excluída da lixeira | 3 | ✅ | Botão restaurar no histórico, reativar `deletado_em` |
 
 > ✅ Concluído • 📋 Planejado
